@@ -238,4 +238,3 @@ describe('learning router', () => {
     expect(window.location.hash).toBe('#/mission/balance-delivery/balance-20-a/mission-result');
   });
 });
-
