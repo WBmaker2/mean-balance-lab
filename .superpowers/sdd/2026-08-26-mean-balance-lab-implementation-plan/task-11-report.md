@@ -90,7 +90,7 @@ Task 11 범위에서 남은 구현 미해결 사항은 없습니다. 모바일·
 - Type/build: `npm run typecheck` 통과, `npm run build` 통과.
 - Formatting: `git diff --check` 통과.
 - 줄 수: production TS/TSX 최대 `src/domain/session.ts` 및 `src/domain/evaluation.ts` 각 349줄이며 모든 production 파일이 500줄 미만입니다.
-- 새 커밋: `fix: preserve evidence editor heading order` (`422dfcbc7223b14b0e3d90f69e48829fc954e9d4`).
+- 새 커밋: `fix: preserve evidence editor heading order` (`f7a405d3abb4b76f1c5c8cd45df6540bfef86f49`).
 
 ### 미해결 사항
 
