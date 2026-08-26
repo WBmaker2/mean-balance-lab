@@ -107,11 +107,24 @@ export const UpdateHistoryDialog = () => {
       }
     };
 
+    const handleBackgroundClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const isBackgroundTarget = background?.contains(target) ?? false;
+      const isInertTarget = target.closest('[inert]') !== null;
+      if (!isBackgroundTarget && !isInertTarget) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+    };
+
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('focusin', handleFocusIn, true);
+    document.addEventListener('click', handleBackgroundClick, true);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('focusin', handleFocusIn, true);
+      document.removeEventListener('click', handleBackgroundClick, true);
       savedStates.forEach(restoreElementState);
     };
   }, [isOpen]);

@@ -164,6 +164,42 @@ describe('UpdateHistoryDialog', () => {
     expect(window.location.hash).toBe('#main-content');
   });
 
+  it('blocks programmatic background activation while open and restores it after close', async () => {
+    renderAppAt('#/');
+    const user = userEvent.setup();
+    const trigger = screen.getByRole('button', { name: '업데이트 내역' });
+    const skipLink = screen.getByRole('link', { name: '본문으로 건너뛰기' });
+    const backgroundButton = document.createElement('button');
+    backgroundButton.type = 'button';
+    backgroundButton.textContent = '배경 테스트';
+    let backgroundActivations = 0;
+    backgroundButton.addEventListener('click', () => {
+      backgroundActivations += 1;
+    });
+    document.getElementById('app-shell-content')?.append(backgroundButton);
+
+    await user.click(trigger);
+    window.location.hash = '#/';
+
+    skipLink.click();
+    const dispatched = backgroundButton.dispatchEvent(
+      new MouseEvent('click', { bubbles: true, cancelable: true }),
+    );
+
+    expect(window.location.hash).toBe('#/');
+    expect(backgroundActivations).toBe(0);
+    expect(dispatched).toBe(false);
+    expect(screen.getByRole('dialog', { name: '업데이트 내역' })).toBeVisible();
+    expect(screen.getByRole('button', { name: '닫기' })).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    expect(trigger).toHaveFocus();
+    await user.click(skipLink);
+    expect(window.location.hash).toBe('#main-content');
+    await user.click(backgroundButton);
+    expect(backgroundActivations).toBe(1);
+  });
+
   it('recaptures forced programmatic focus from the background', async () => {
     renderAppAt('#/');
     const user = userEvent.setup();
