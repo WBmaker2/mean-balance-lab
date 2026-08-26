@@ -1,8 +1,8 @@
 # Task 16 report — 평균 균형 조정실 문서·MVP 검증
 
 최종 검증일: 2026-08-26 (Asia/Seoul)
-검증 기준 소스 커밋: `8e79875 fix: close final mean balance quality gaps`
-문서 전용 커밋은 이 소스 커밋 이후 검증 증거만 갱신하며 소스 동작을 변경하지 않습니다.
+검증 기준 소스 커밋: `e7da7cd style: clean final test whitespace`
+기능 구현은 `8e79875`에서 완료했고, `e7da7cd`는 테스트 EOF whitespace-only 정리 커밋입니다. 이 커밋 이후의 문서 전용 커밋은 검증 증거만 갱신하며 소스 동작을 변경하지 않습니다.
 
 ## RED → GREEN
 
@@ -18,7 +18,7 @@
 | lockfile diff | `git diff --exit-code -- package-lock.json` 통과, 변경 없음 |
 | typecheck | `npm run typecheck` 통과 |
 | unit/component | `npm test -- --run`: 25 test files, 239 tests passed |
-| Chromium E2E | `CI=1 npm run test:e2e -- --workers=1`: 19 passed |
+| Chromium E2E | `CI=1 npx playwright test --config=/private/tmp/mean-balance-playwright-4189.config.ts --workers=1`: 19 passed (4189, 기존 4173 미사용) |
 | build | `npm run build` 통과 |
 | production scans | privacy scan 5 matches/4 files, 모두 substring/comment 또는 negative/positive documentation contract; network scan 무출력 |
 | source line count | 최대 447줄: `src/domain/session.test.ts`; 모든 TS/TSX/CSS 450줄 미만 |
@@ -29,7 +29,7 @@
 ## 최종 문서 산출물
 
 - `README.md`: 학습 목표, 4개 미션·8개 고정 자료, 로컬 실행, 접근성·저장·개인정보·교육적 경계를 기록했습니다.
-- `docs/qa/mvp-checklist.md`: source SHA `8e79875`, 25/239, E2E 19, 최대 447줄, 최신 hashed assets와 전체 Completion Gate 증거를 기록했습니다.
+- `docs/qa/mvp-checklist.md`: source SHA `e7da7cd`, 기능 구현 SHA `8e79875`, 25/239, E2E 19, 최대 447줄, 최신 hashed assets와 전체 Completion Gate 증거를 기록했습니다.
 - `final-fix-report.md`: 6개 required fix의 원인, RED/GREEN, 파일, 검증을 기록합니다.
 - `progress.md`: 지시대로 변경하지 않았습니다.
 

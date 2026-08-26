@@ -1,10 +1,10 @@
 # 평균 균형 조정실 MVP 검증 체크리스트
 
 검증일: 2026-08-26 (Asia/Seoul)
-검증 기준 소스 커밋: `8e79875`
+검증 기준 소스 커밋: `e7da7cd`
 검증 범위: 로컬 소스, `dist/` preview, Vitest, Playwright Chromium. 원격 저장소·push·배포·HVC 등록은 확인 범위가 아닙니다.
 
-`8e79875` 이후의 문서 전용 커밋은 검증된 소스를 변경하지 않고 검증 증거와 provenance만 갱신합니다.
+기능 구현은 `8e79875`에서 완료했고, `e7da7cd`는 테스트 EOF whitespace-only 정리 커밋입니다. `e7da7cd` 이후의 문서 전용 커밋은 검증된 소스를 변경하지 않고 검증 증거와 provenance만 갱신합니다.
 
 ## Specification and Traceability
 
