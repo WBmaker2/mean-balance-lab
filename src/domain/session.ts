@@ -223,7 +223,7 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
     case 'UNDO_MOVE': {
       const run = state.activeRun;
       const redistribution = run?.artifacts.redistribution;
-      if (!run || !redistribution || redistribution.undoStack.length === 0) return state;
+      if (!run || run.stage !== 'redistribute' || !redistribution || redistribution.undoStack.length === 0) return state;
       const stack = [...redistribution.undoStack];
       const previous = stack.pop();
       if (!previous) return state;

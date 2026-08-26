@@ -69,4 +69,24 @@ describe('recoverable lab session reducer', () => {
     expect(comparisonAttempt.activeRun?.artifacts.comparison).toBeUndefined();
     expect(comparisonAttempt.activeRun?.revisions).toBe(2);
   });
+
+  it('does not undo a redistribution after leaving its owning stage', () => {
+    let state = sessionReducer(createInitialSession(), {
+      type: 'START_DATASET', missionId: 'balance-delivery', datasetId: 'balance-20-a',
+    });
+    state = sessionReducer(state, { type: 'ADVANCE_STAGE' });
+    state = sessionReducer(state, { type: 'SET_PREDICTION', value: 5 });
+    state = sessionReducer(state, { type: 'ADVANCE_STAGE' });
+    for (const move of [
+      { fromIndex: 3, toIndex: 0 }, { fromIndex: 3, toIndex: 0 },
+      { fromIndex: 2, toIndex: 0 }, { fromIndex: 3, toIndex: 1 },
+    ]) state = sessionReducer(state, { type: 'MOVE_ONE', move });
+    state = sessionReducer(state, { type: 'ADVANCE_STAGE' });
+    const beforeUndo = state.activeRun?.artifacts.redistribution;
+    const rejected = sessionReducer(state, { type: 'UNDO_MOVE' });
+    expect(rejected.activeRun?.stage).toBe('calculate');
+    expect(rejected.activeRun?.artifacts.redistribution).toEqual(beforeUndo);
+    expect(rejected.activeRun?.revisions).toBe(state.activeRun?.revisions);
+    expect(rejected.activeRun?.transientFeedback).toBe(state.activeRun?.transientFeedback);
+  });
 });
