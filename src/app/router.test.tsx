@@ -417,4 +417,34 @@ describe('learning router', () => {
     expect(await screen.findByRole('heading', { name: '평균을 계산해 볼까요?' })).toBeVisible();
     expect(window.location.hash).toContain('/calculate');
   });
+
+  it('recovers an old-revision evidence mission-result deep link instead of opening results', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'representative-review' as const,
+        datasetId: 'review-cards-a' as const,
+        stage: 'mission-result' as const,
+        artifacts: {
+          calculations: {
+            current: { target: 'current' as const, total: 20, count: 5, average: 4, verified: true },
+          },
+          evidence: {
+            missionId: 'representative-review' as const,
+            datasetId: 'review-cards-a' as const,
+            selectedIds: ['mean-use-and-limit'] as const,
+            sentence: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.',
+            level: 2 as const,
+            revisions: 0,
+          },
+        },
+        revisions: 1,
+        transientFeedback: null,
+      },
+    };
+    renderAppAt('#/mission/representative-review/review-cards-a/mission-result', initialState);
+    expect(await screen.findByText('자료를 찾지 못해 시작 화면으로 돌아왔어요.')).toBeVisible();
+    expect(window.location.hash).toBe('#/');
+    expect(screen.queryByRole('heading', { name: '전체 결과' })).not.toBeInTheDocument();
+  });
 });

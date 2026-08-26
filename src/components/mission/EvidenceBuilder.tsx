@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from 'react';
-import { EVIDENCE_FRAGMENTS, SAFETY_COPY } from '../../content/copy';
-import { buildEvidenceSentence, deriveEvidenceLevel } from '../../domain/evaluation';
+import { useEffect, useState, type FormEvent } from 'react';
+import { EVIDENCE_EMPTY_COPY, EVIDENCE_FRAGMENTS, SAFETY_COPY } from '../../content/copy';
+import {
+  buildEvidenceSentence, deriveEvidenceLevel, isCanonicalEvidenceRecord,
+} from '../../domain/evaluation';
 import type {
   EvidenceChoiceId, EvidenceRecord, MissionDataset, MissionId,
 } from '../../domain/types';
@@ -40,11 +42,11 @@ const OPTIONS: Readonly<Record<MissionId, readonly ChoiceOption[]>> = {
   ],
 };
 
-const EMPTY_FEEDBACK = {
-  isCorrect: false,
+const emptyFeedback = (mission: MissionId) => ({
+  isCorrect: false as const,
   message: '근거를 하나 이상 선택해 보세요.',
-  nextAction: '평균의 도움과 한계를 보여 주는 근거를 선택해 보세요.',
-} as const;
+  nextAction: EVIDENCE_EMPTY_COPY[mission],
+});
 
 const isRepresentative = (mission: MissionId): mission is 'representative-review' =>
   mission === 'representative-review';
@@ -52,25 +54,44 @@ const isRepresentative = (mission: MissionId): mission is 'representative-review
 const validExistingRecord = (
   mission: MissionId,
   dataset: MissionDataset,
+  revisions: number,
   record: EvidenceRecord | undefined,
 ): record is EvidenceRecord => record !== undefined
-  && record.missionId === mission
-  && record.datasetId === dataset.id
-  && record.selectedIds.length > 0
-  && new Set(record.selectedIds).size === record.selectedIds.length
-  && record.selectedIds.every((id) => OPTIONS[mission].some((option) => option.id === id))
-  && record.sentence === buildEvidenceSentence(mission, dataset.id, record.selectedIds)
-  && record.level === deriveEvidenceLevel(mission, record.selectedIds)
-  && Number.isInteger(record.revisions)
-  && record.revisions >= 0;
+  && isCanonicalEvidenceRecord(record, mission, dataset.id, revisions);
+
+const evidenceSignature = (
+  mission: MissionId,
+  dataset: MissionDataset,
+  revisions: number,
+  record: EvidenceRecord | undefined,
+): string => JSON.stringify({
+  mission,
+  dataset: dataset.id,
+  revisions,
+  record: record ? {
+    missionId: record.missionId,
+    datasetId: record.datasetId,
+    selectedIds: record.selectedIds,
+    sentence: record.sentence,
+    level: record.level,
+    revisions: record.revisions,
+  } : null,
+});
 
 export const EvidenceBuilder = ({
   mission, dataset, revisions, onSubmit, existingRecord,
 }: EvidenceBuilderProps) => {
-  const restored = validExistingRecord(mission, dataset, existingRecord) ? existingRecord : undefined;
+  const restored = validExistingRecord(mission, dataset, revisions, existingRecord) ? existingRecord : undefined;
+  const signature = evidenceSignature(mission, dataset, revisions, existingRecord);
   const [selectedIds, setSelectedIds] = useState<readonly EvidenceChoiceId[]>(restored?.selectedIds ?? []);
   const [submitted, setSubmitted] = useState<EvidenceRecord | undefined>(restored);
-  const [feedback, setFeedback] = useState<typeof EMPTY_FEEDBACK | null>(null);
+  const [feedback, setFeedback] = useState<ReturnType<typeof emptyFeedback> | null>(null);
+  useEffect(() => {
+    const nextRestored = validExistingRecord(mission, dataset, revisions, existingRecord) ? existingRecord : undefined;
+    setSelectedIds(nextRestored?.selectedIds ?? []);
+    setSubmitted(nextRestored);
+    setFeedback(null);
+  }, [signature]);
   const orderedSelectedIds = isRepresentative(mission)
     ? OPTIONS[mission].map(({ id }) => id).filter((id) => selectedIds.includes(id))
     : [...selectedIds];
@@ -98,7 +119,7 @@ export const EvidenceBuilder = ({
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (selectedIds.length === 0) {
-      setFeedback(EMPTY_FEEDBACK);
+      setFeedback(emptyFeedback(mission));
       return;
     }
     const record: EvidenceRecord = {

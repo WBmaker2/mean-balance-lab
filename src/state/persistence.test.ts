@@ -101,4 +101,29 @@ describe('session persistence guards', () => {
     value.activeRun.artifacts.comparison = { selectedIds: ['same-mean'], verified: true };
     expect(isLabSessionState(value)).toBe(false);
   });
+
+  it('rejects mixed representative evidence and an old-revision active evidence artifact', () => {
+    const mixed = stateWithCompletedEvidenceAndWrongFeedback() as any;
+    mixed.activeRun.missionId = 'representative-review';
+    mixed.activeRun.datasetId = 'review-cards-a';
+    mixed.activeRun.stage = 'explain';
+    mixed.activeRun.revisions = 1;
+    mixed.activeRun.artifacts = {
+      calculations: {
+        current: { target: 'current', total: 20, count: 5, average: 4, verified: true },
+      },
+      evidence: {
+        missionId: 'representative-review', datasetId: 'review-cards-a',
+        selectedIds: ['mean-use-and-limit', 'mean-always-enough'],
+        sentence: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.', level: 2, revisions: 1,
+      },
+    };
+    expect(isLabSessionState(mixed)).toBe(false);
+    mixed.activeRun.artifacts.evidence = {
+      missionId: 'representative-review', datasetId: 'review-cards-a',
+      selectedIds: ['mean-use-and-limit'],
+      sentence: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.', level: 2, revisions: 0,
+    };
+    expect(isLabSessionState(mixed)).toBe(false);
+  });
 });

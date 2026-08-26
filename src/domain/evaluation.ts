@@ -1,4 +1,4 @@
-import { getMission } from '../content/missions';
+import { getMission, isDatasetId, isMissionId } from '../content/missions';
 import {
   buildBalanceCalculationSentence,
   buildBalanceEvidenceSentence,
@@ -53,11 +53,27 @@ const hasChoice = (
   choice: ComparisonChoiceId | EvidenceChoiceId,
 ): boolean => selectedIds.includes(choice as never);
 
-const MISSION_EVIDENCE_IDS: Readonly<Record<MissionId, readonly EvidenceChoiceId[]>> = {
+export const MISSION_EVIDENCE_IDS: Readonly<Record<MissionId, readonly EvidenceChoiceId[]>> = {
   'balance-delivery': ['redistribution-and-division', 'redistribution-only', 'calculation-only'],
   'mean-twins': ['same-mean-and-different-spread', 'same-mean-only', 'same-shape'],
   'outlier-alert': ['sum-change-and-mean-change', 'direction-only', 'guess-only'],
   'representative-review': ['mean-use-and-limit', 'range-or-individual-values', 'mean-always-enough'],
+};
+
+/** 미션별 근거 루브릭의 허용 조합만 통과시키는 공유 계약입니다. */
+export const isAllowedEvidenceSelection = (
+  missionId: MissionId,
+  selectedIds: readonly EvidenceChoiceId[],
+): boolean => {
+  if (selectedIds.length === 0 || new Set(selectedIds).size !== selectedIds.length) return false;
+  if (!selectedIds.every((id) => MISSION_EVIDENCE_IDS[missionId].includes(id))) return false;
+  if (missionId !== 'representative-review') return selectedIds.length === 1;
+  const selected = new Set(selectedIds);
+  if (selected.has('mean-always-enough')) return selectedIds.length === 1;
+  return selectedIds.length === 1
+    || (selectedIds.length === 2
+      && selected.has('mean-use-and-limit')
+      && selected.has('range-or-individual-values'));
 };
 
 const isMissionEvidenceSelection = (
@@ -73,6 +89,52 @@ const isOnlyEvidence = (
 ): boolean => isMissionEvidenceSelection(missionId, selectedIds)
   && new Set(selectedIds).size === 1
   && selectedIds[0] === expected;
+
+const isEvidenceShape = (value: unknown): value is {
+  missionId: unknown;
+  datasetId: unknown;
+  selectedIds: unknown;
+  sentence: unknown;
+  level: unknown;
+  revisions: unknown;
+} => typeof value === 'object'
+  && value !== null
+  && !Array.isArray(value)
+  && Object.keys(value).length === 6
+  && ['missionId', 'datasetId', 'selectedIds', 'sentence', 'level', 'revisions']
+    .every((key) => key in value);
+
+/** 저장·복원·활성 산출물이 동일한 검수 근거 계약을 쓰도록 합니다. */
+export const isCanonicalEvidenceRecord = (
+  value: unknown,
+  expectedMissionId?: MissionId,
+  expectedDatasetId?: DatasetId,
+  expectedRevisions?: number,
+): value is import('./types').EvidenceRecord => {
+  if (!isEvidenceShape(value)
+    || typeof value.missionId !== 'string'
+    || typeof value.datasetId !== 'string'
+    || !isMissionId(value.missionId)
+    || !isDatasetId(value.datasetId)) return false;
+  const missionId = value.missionId;
+  const datasetId = value.datasetId;
+  if (expectedMissionId !== undefined && missionId !== expectedMissionId) return false;
+  if (expectedDatasetId !== undefined && datasetId !== expectedDatasetId) return false;
+  if (!getMission(missionId).datasets.some((dataset) => dataset.id === datasetId)) return false;
+  if (!Array.isArray(value.selectedIds)
+    || !value.selectedIds.every((id): id is EvidenceChoiceId =>
+      typeof id === 'string' && MISSION_EVIDENCE_IDS[missionId].includes(id as EvidenceChoiceId))) return false;
+  const selectedIds = value.selectedIds;
+  if (!isAllowedEvidenceSelection(missionId, selectedIds)) return false;
+  if (value.level !== 1 && value.level !== 2 && value.level !== 3) return false;
+  if (typeof value.sentence !== 'string'
+    || typeof value.revisions !== 'number'
+    || !Number.isInteger(value.revisions)
+    || value.revisions < 0
+    || (expectedRevisions !== undefined && value.revisions !== expectedRevisions)) return false;
+  return value.sentence === buildEvidenceSentence(missionId, datasetId, selectedIds)
+    && value.level === deriveEvidenceLevel(missionId, selectedIds);
+};
 
 export const evaluateCalculation = (input: CalculationInput): EvaluationResult => {
   const expectedTotal = sum(input.values);
@@ -163,6 +225,7 @@ export const deriveEvidenceLevel = (
   missionId: MissionId,
   selectedIds: readonly EvidenceChoiceId[],
 ): EvidenceLevel => {
+  if (!isAllowedEvidenceSelection(missionId, selectedIds)) return 1;
   switch (missionId) {
     case 'balance-delivery':
       if (isOnlyEvidence(missionId, selectedIds, 'redistribution-and-division')) return 3;

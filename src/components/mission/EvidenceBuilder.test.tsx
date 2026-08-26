@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getDataset } from '../../content/missions';
 import { deriveEvidenceLevel, buildEvidenceSentence } from '../../domain/evaluation';
@@ -135,6 +135,89 @@ describe('EvidenceBuilder', () => {
     renderEvidenceBuilder('representative-review', 'review-cards-a', 1, forged);
     expect(screen.queryByText('근거 문장을 저장했어요.')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '근거 문장 수정' })).not.toBeInTheDocument();
+    expect(screen.getByText('근거를 선택하면 문장이 나타나요.')).toBeVisible();
+  });
+
+  it.each([
+    ['balance-delivery', '고르게 옮긴 결과와 합계 ÷ 개수를 보여 주는 근거를 선택해 보세요.'],
+    ['mean-twins', '평균이 같고 퍼짐이 다른 근거를 선택해 보세요.'],
+    ['outlier-alert', '합계 변화와 평균 변화를 연결한 근거를 선택해 보세요.'],
+    ['representative-review', '평균의 도움 또는 범위와 각 값의 근거를 선택해 보세요.'],
+  ] as const)('gives mission-specific next action for empty %s evidence', async (mission, nextAction) => {
+    const datasetId = mission === 'balance-delivery' ? 'balance-20-a'
+      : mission === 'mean-twins' ? 'twins-4-a'
+        : mission === 'outlier-alert' ? 'outlier-5-a' : 'review-cards-a';
+    renderEvidenceBuilder(mission, datasetId);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: '근거 문장 완성' }));
+    expect(screen.getByText(`다음 행동: ${nextAction}`)).toBeVisible();
+  });
+
+  it('resets restored state when canonical props change', () => {
+    const record: EvidenceRecord = {
+      missionId: 'representative-review',
+      datasetId: 'review-cards-a',
+      selectedIds: ['mean-use-and-limit', 'range-or-individual-values'],
+      sentence: '평균은 4장이지만 한 선반에 12장이 몰려 있어 범위와 각 값을 함께 봐야 합니다.',
+      level: 3,
+      revisions: 1,
+    };
+    const view = render(
+      <EvidenceBuilder
+        mission="representative-review"
+        dataset={getDataset('review-cards-a')}
+        revisions={1}
+        onSubmit={vi.fn()}
+        existingRecord={record}
+      />,
+    );
+    expect(screen.getByText('근거 문장을 저장했어요.')).toBeVisible();
+    view.rerender(
+      <EvidenceBuilder
+        mission="representative-review"
+        dataset={getDataset('review-baskets-b')}
+        revisions={1}
+        onSubmit={vi.fn()}
+      />,
+    );
+    expect(screen.queryByText('근거 문장을 저장했어요.')).not.toBeInTheDocument();
+    expect(screen.getByText('근거를 선택하면 문장이 나타나요.')).toBeVisible();
+  });
+
+  it('resets when the existing record changes at the same revision', () => {
+    const first: EvidenceRecord = {
+      missionId: 'representative-review', datasetId: 'review-cards-a',
+      selectedIds: ['mean-use-and-limit'], sentence: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.', level: 2, revisions: 1,
+    };
+    const second: EvidenceRecord = {
+      ...first,
+      selectedIds: ['range-or-individual-values'], sentence: '범위와 각 값도 함께 봐야 합니다.',
+    };
+    const view = render(
+      <EvidenceBuilder mission="representative-review" dataset={getDataset('review-cards-a')} revisions={1} onSubmit={vi.fn()} existingRecord={first} />,
+    );
+    view.rerender(
+      <EvidenceBuilder mission="representative-review" dataset={getDataset('review-cards-a')} revisions={1} onSubmit={vi.fn()} existingRecord={second} />,
+    );
+    expect(screen.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.' })).not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: '범위와 각 값도 함께 봐야 합니다.' })).toBeChecked();
+    expect(within(screen.getByRole('region', { name: '완성된 근거 문장' })).getByText(second.sentence)).toBeVisible();
+  });
+
+  it('does not restore a valid old-revision record or a mixed representative record', () => {
+    const oldRevision: EvidenceRecord = {
+      missionId: 'representative-review', datasetId: 'review-cards-a',
+      selectedIds: ['mean-use-and-limit'], sentence: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.', level: 2, revisions: 0,
+    };
+    const mixed: EvidenceRecord = {
+      ...oldRevision,
+      selectedIds: ['mean-use-and-limit', 'mean-always-enough'],
+    };
+    renderEvidenceBuilder('representative-review', 'review-cards-a', 1, oldRevision);
+    expect(screen.queryByText('근거 문장을 저장했어요.')).not.toBeInTheDocument();
+    cleanup();
+    renderEvidenceBuilder('representative-review', 'review-cards-a', 0, mixed);
+    expect(screen.queryByText('근거 문장을 저장했어요.')).not.toBeInTheDocument();
     expect(screen.getByText('근거를 선택하면 문장이 나타나요.')).toBeVisible();
   });
 });

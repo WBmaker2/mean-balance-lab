@@ -271,4 +271,45 @@ describe('recoverable lab session reducer', () => {
     expect(sessionReducer(balance, { type: 'ADVANCE_STAGE' }).activeRun?.stage).toBe('explain');
     expect(sessionReducer(representative, { type: 'ADVANCE_STAGE' }).activeRun?.stage).toBe('compare');
   });
+
+  it('rejects mixed representative evidence and old-revision evidence at explain/result gates', () => {
+    const base = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'representative-review' as const,
+        datasetId: 'review-cards-a' as const,
+        stage: 'explain' as const,
+        artifacts: {
+          calculations: {
+            current: { target: 'current' as const, total: 20, count: 5, average: 4, verified: true },
+          },
+        },
+        revisions: 1,
+        transientFeedback: null,
+      },
+    };
+    const mixed = {
+      missionId: 'representative-review' as const,
+      datasetId: 'review-cards-a' as const,
+      selectedIds: ['mean-use-and-limit', 'mean-always-enough'] as const,
+      sentence: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.',
+      level: 2 as const,
+      revisions: 1,
+    };
+    const rejectedMixed = sessionReducer(base, { type: 'SUBMIT_EVIDENCE', record: mixed });
+    expect(rejectedMixed.activeRun?.artifacts.evidence).toBeUndefined();
+    expect(rejectedMixed.activeRun?.revisions).toBe(2);
+
+    const valid = {
+      ...mixed,
+      selectedIds: ['mean-use-and-limit'] as const,
+      sentence: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.',
+      level: 2 as const,
+      revisions: 0,
+    };
+    const oldRevision = { ...base, activeRun: { ...base.activeRun, artifacts: { ...base.activeRun.artifacts, evidence: valid } } };
+    expect(canAdvance(oldRevision)).toEqual({ allowed: false, reason: '근거 문장을 완성해 보세요.' });
+    const resultRun = { ...oldRevision, activeRun: { ...oldRevision.activeRun, stage: 'mission-result' as const } };
+    expect(canAdvance(resultRun)).toEqual({ allowed: false, reason: '근거 문장을 다시 확인해 보세요.' });
+  });
 });

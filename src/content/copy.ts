@@ -48,6 +48,15 @@ export const EVIDENCE_FRAGMENTS: Readonly<Record<EvidenceChoiceId, string>> = {
   'mean-always-enough': '평균만으로 모든 자료를 판단할 수 있다고 생각했어요.',
 };
 
+export const EVIDENCE_EMPTY_COPY: Readonly<Record<
+  'balance-delivery' | 'mean-twins' | 'outlier-alert' | 'representative-review', string
+>> = {
+  'balance-delivery': '고르게 옮긴 결과와 합계 ÷ 개수를 보여 주는 근거를 선택해 보세요.',
+  'mean-twins': '평균이 같고 퍼짐이 다른 근거를 선택해 보세요.',
+  'outlier-alert': '합계 변화와 평균 변화를 연결한 근거를 선택해 보세요.',
+  'representative-review': '평균의 도움 또는 범위와 각 값의 근거를 선택해 보세요.',
+};
+
 /** 숫자는 도메인에서 계산하고, 학생에게 보이는 문장 틀은 이 검토된 팩토리에서만 만듭니다. */
 export const buildBalanceEvidenceSentence = (
   total: number,

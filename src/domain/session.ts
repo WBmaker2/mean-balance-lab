@@ -1,11 +1,10 @@
 import { getDataset, getMission, isDatasetId, isMissionId } from '../content/missions';
 import {
-  buildEvidenceSentence, deriveEvidenceLevel, evaluateCalculation, evaluateComparison,
-  isAllowedComparisonSelection,
+  evaluateCalculation, evaluateComparison, isAllowedComparisonSelection, isCanonicalEvidenceRecord,
 } from './evaluation';
 import { isBalanced, moveOne, sum, type QuantityMove } from './math';
 import type {
-  CalculationTarget, ComparisonChoiceId, DatasetId, EvidenceChoiceId, EvidenceRecord,
+  CalculationTarget, ComparisonChoiceId, DatasetId, EvidenceRecord,
   EvaluationResult, LearningStage, MissionId, PredictionValue, SaveMode,
 } from './types';
 import type { CalculationInput } from './evaluation';
@@ -158,10 +157,14 @@ export const canAdvance = (state: LabSessionState): AdvanceGate => {
         : { allowed: false, reason: '비교할 근거를 선택해 보세요.' };
     case 'explain':
       return run.artifacts.evidence
+        && isCanonicalEvidenceRecord(run.artifacts.evidence, run.missionId, run.datasetId, run.revisions)
         ? { allowed: true }
         : { allowed: false, reason: '근거 문장을 완성해 보세요.' };
     case 'mission-result':
-      return { allowed: true };
+      return run.artifacts.evidence
+        && isCanonicalEvidenceRecord(run.artifacts.evidence, run.missionId, run.datasetId, run.revisions)
+        ? { allowed: true }
+        : { allowed: false, reason: '근거 문장을 다시 확인해 보세요.' };
   }
 };
 
@@ -174,20 +177,8 @@ const markRequiredMission = (state: LabSessionState, run: ActiveRun): LabSession
 const resetActive = (state: LabSessionState): LabSessionState =>
   state.activeRun ? { ...state, activeRun: makeActiveRun(state.activeRun.missionId, state.activeRun.datasetId) } : state;
 
-const evidenceChoicesByMission: Readonly<Record<MissionId, readonly EvidenceChoiceId[]>> = {
-  'balance-delivery': ['redistribution-and-division', 'redistribution-only', 'calculation-only'],
-  'mean-twins': ['same-mean-and-different-spread', 'same-mean-only', 'same-shape'],
-  'outlier-alert': ['sum-change-and-mean-change', 'direction-only', 'guess-only'],
-  'representative-review': ['mean-use-and-limit', 'range-or-individual-values', 'mean-always-enough'],
-};
-
 const isEvidenceSubmission = (run: ActiveRun, record: EvidenceRecord): boolean => {
-  if (record.missionId !== run.missionId || record.datasetId !== run.datasetId) return false;
-  if (record.revisions !== run.revisions) return false;
-  if (record.selectedIds.length === 0 || new Set(record.selectedIds).size !== record.selectedIds.length) return false;
-  if (!record.selectedIds.every((id) => evidenceChoicesByMission[run.missionId].includes(id))) return false;
-  const expectedSentence = buildEvidenceSentence(run.missionId, run.datasetId, record.selectedIds);
-  return record.sentence === expectedSentence && record.level === deriveEvidenceLevel(run.missionId, record.selectedIds);
+  return isCanonicalEvidenceRecord(record, run.missionId, run.datasetId, run.revisions);
 };
 
 export const sessionReducer = (state: LabSessionState, action: LabAction): LabSessionState => {

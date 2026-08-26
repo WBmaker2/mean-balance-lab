@@ -7,29 +7,29 @@ import {
 import { buildEvidenceSentence, deriveEvidenceLevel } from '../domain/evaluation';
 import type { EvidenceRecord, MissionId } from '../domain/types';
 
-const balanceEvidence = (): EvidenceRecord => ({
+const balanceEvidence = (revisions = 0): EvidenceRecord => ({
   missionId: 'balance-delivery',
   datasetId: 'balance-20-a',
   selectedIds: ['redistribution-and-division'],
   sentence: buildEvidenceSentence('balance-delivery', 'balance-20-a', ['redistribution-and-division']),
   level: deriveEvidenceLevel('balance-delivery', ['redistribution-and-division']),
-  revisions: 0,
+  revisions,
 });
 
-export const verifiedBalanceArtifacts = (): StageArtifacts => ({
+export const verifiedBalanceArtifacts = (revisions = 0): StageArtifacts => ({
   prediction: { value: 5 },
   redistribution: {
     initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [], confirmed: true,
   },
   calculations: { current: { target: 'current', total: 20, count: 4, average: 5, verified: true } },
-  evidence: balanceEvidence(),
+  evidence: balanceEvidence(revisions),
 });
 
 export const completedBalanceStateWithTwoRetries = (): LabSessionState => ({
   ...createInitialSession(),
   activeRun: {
     missionId: 'balance-delivery', datasetId: 'balance-20-a', stage: 'mission-result',
-    artifacts: verifiedBalanceArtifacts(), revisions: 2, transientFeedback: null,
+    artifacts: verifiedBalanceArtifacts(2), revisions: 2, transientFeedback: null,
   },
   attempts: { 'balance-20-a': balanceEvidence() },
   completedRequiredMissions: ['balance-delivery'],

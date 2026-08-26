@@ -1,10 +1,10 @@
 import {
-  buildEvidenceSentence, deriveEvidenceLevel, evaluateComparison, isAllowedComparisonSelection,
+  evaluateComparison, isAllowedComparisonSelection, isCanonicalEvidenceRecord,
 } from '../domain/evaluation';
 import { getDataset, getMission, isDatasetId, isLearningStage, isMissionId } from '../content/missions';
 import { mean, sum } from '../domain/math';
 import type {
-  CalculationTarget, ComparisonChoiceId, DatasetId, EvidenceChoiceId, EvidenceRecord,
+  CalculationTarget, ComparisonChoiceId, DatasetId,
   EvaluationResult, MissionId, PredictionValue, SaveMode,
 } from '../domain/types';
 import type { ActiveRun, CalculationArtifact, LabSessionState, StageArtifacts } from '../domain/session';
@@ -30,18 +30,6 @@ const isNatural = (value: unknown): value is number => Number.isInteger(value) &
 const isString = (value: unknown): value is string => typeof value === 'string';
 const isSaveMode = (value: unknown): value is SaveMode => value === 'tab' || value === 'device';
 
-const evidenceChoices = new Set<EvidenceChoiceId>([
-  'redistribution-and-division', 'redistribution-only', 'calculation-only',
-  'same-mean-and-different-spread', 'same-mean-only', 'same-shape',
-  'sum-change-and-mean-change', 'direction-only', 'guess-only',
-  'mean-use-and-limit', 'range-or-individual-values', 'mean-always-enough',
-]);
-const evidenceChoicesByMission: Readonly<Record<MissionId, readonly EvidenceChoiceId[]>> = {
-  'balance-delivery': ['redistribution-and-division', 'redistribution-only', 'calculation-only'],
-  'mean-twins': ['same-mean-and-different-spread', 'same-mean-only', 'same-shape'],
-  'outlier-alert': ['sum-change-and-mean-change', 'direction-only', 'guess-only'],
-  'representative-review': ['mean-use-and-limit', 'range-or-individual-values', 'mean-always-enough'],
-};
 const calculationTargets = new Set<CalculationTarget>(['current', 'left', 'right', 'before', 'after']);
 
 const isPrediction = (value: unknown): value is PredictionValue =>
@@ -50,29 +38,6 @@ const isPrediction = (value: unknown): value is PredictionValue =>
 const isEvaluationResult = (value: unknown): value is EvaluationResult => {
   if (!isRecord(value) || !hasExactKeys(value, ['isCorrect', 'message', 'nextAction'])) return false;
   return typeof value.isCorrect === 'boolean' && isString(value.message) && isString(value.nextAction);
-};
-
-const isEvidenceRecord = (
-  value: unknown,
-  expectedMissionId?: MissionId,
-  expectedDatasetId?: DatasetId,
-): value is EvidenceRecord => {
-  if (!isRecord(value) || !hasExactKeys(value, ['missionId', 'datasetId', 'selectedIds', 'sentence', 'level', 'revisions'])) return false;
-  if (!isMissionId(value.missionId as string) || !isDatasetId(value.datasetId as string)) return false;
-  const missionId = value.missionId as MissionId;
-  const datasetId = value.datasetId as DatasetId;
-  if (expectedMissionId && missionId !== expectedMissionId) return false;
-  if (expectedDatasetId && datasetId !== expectedDatasetId) return false;
-  const mission = getMission(missionId);
-  if (!mission.datasets.some((dataset) => dataset.id === datasetId)) return false;
-  if (!Array.isArray(value.selectedIds) || value.selectedIds.length === 0) return false;
-  if (new Set(value.selectedIds).size !== value.selectedIds.length
-    || !value.selectedIds.every((id) => evidenceChoices.has(id as EvidenceChoiceId)
-      && evidenceChoicesByMission[missionId].includes(id as EvidenceChoiceId))) return false;
-  if (value.level !== 1 && value.level !== 2 && value.level !== 3) return false;
-  if (!isNatural(value.revisions) || !isString(value.sentence)) return false;
-  return value.sentence === buildEvidenceSentence(missionId, datasetId, value.selectedIds as EvidenceChoiceId[])
-    && value.level === deriveEvidenceLevel(missionId, value.selectedIds as EvidenceChoiceId[]);
 };
 
 const isCalculationArtifact = (value: unknown, target: CalculationTarget): value is CalculationArtifact => {
@@ -109,7 +74,12 @@ const canonicalValuesForTarget = (
   return null;
 };
 
-const isArtifacts = (value: unknown, run: { datasetId: DatasetId; stage: import('../domain/types').LearningStage }): value is StageArtifacts => {
+const isArtifacts = (value: unknown, run: {
+  missionId: MissionId;
+  datasetId: DatasetId;
+  stage: import('../domain/types').LearningStage;
+  revisions: number;
+}): value is StageArtifacts => {
   if (!isRecord(value)) return false;
   const allowed = ['prediction', 'redistribution', 'calculations', 'comparison', 'evidence'];
   if (!Object.keys(value).every((key) => allowed.includes(key))) return false;
@@ -171,7 +141,10 @@ const isArtifacts = (value: unknown, run: { datasetId: DatasetId; stage: import(
     if (!isAllowedComparisonSelection(dataset, selectedIds)) return false;
     if (comparison.verified && !evaluateComparison(dataset, selectedIds).isCorrect) return false;
   }
-  if ('evidence' in value && !isEvidenceRecord(value.evidence, getMissionForDataset(run.datasetId), run.datasetId)) return false;
+  if ('evidence' in value) {
+    if (!['explain', 'mission-result'].includes(run.stage)
+      || !isCanonicalEvidenceRecord(value.evidence, run.missionId, run.datasetId, run.revisions)) return false;
+  }
   return true;
 };
 
@@ -193,7 +166,7 @@ const isActiveRun = (value: unknown): value is ActiveRun => {
   const dataset = mission.datasets.find((item) => item.id === datasetId);
   if (!dataset || !dataset.stages.includes(stage)) return false;
   return isNatural(value.revisions) && (value.transientFeedback === null || isEvaluationResult(value.transientFeedback))
-    && isArtifacts(value.artifacts, { datasetId, stage });
+    && isArtifacts(value.artifacts, { missionId, datasetId, stage, revisions: value.revisions });
 };
 
 export const isLabSessionState = (value: unknown): value is LabSessionState => {
@@ -203,7 +176,7 @@ export const isLabSessionState = (value: unknown): value is LabSessionState => {
   if (new Set(value.completedRequiredMissions).size !== value.completedRequiredMissions.length
     || !value.completedRequiredMissions.every((id) => isMissionId(id as string))) return false;
   for (const [datasetId, record] of Object.entries(value.attempts)) {
-    if (!isDatasetId(datasetId) || !isEvidenceRecord(record, getMissionForDataset(datasetId), datasetId)) return false;
+    if (!isDatasetId(datasetId) || !isCanonicalEvidenceRecord(record, getMissionForDataset(datasetId), datasetId)) return false;
   }
   return true;
 };

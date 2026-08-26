@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { getMission, isDatasetId, isLearningStage, isMissionId, MISSIONS } from '../content/missions';
 import { isBalanced, sum } from '../domain/math';
-import { evaluateComparison } from '../domain/evaluation';
+import { evaluateComparison, isCanonicalEvidenceRecord } from '../domain/evaluation';
 import { canAdvance, type LabSessionState } from '../domain/session';
 import { useLabSession } from '../state/LabSessionContext';
 import type { DatasetId, LearningStage, MissionDataset, MissionDefinition, MissionId } from '../domain/types';
@@ -68,9 +68,11 @@ const hasRequiredArtifact = (
       return run.artifacts.comparison?.verified === true
         && evaluateComparison(dataset, run.artifacts.comparison.selectedIds).isCorrect;
     case 'explain':
-      return run.artifacts.evidence !== undefined;
+      return run.artifacts.evidence !== undefined
+        && isCanonicalEvidenceRecord(run.artifacts.evidence, run.missionId, run.datasetId, run.revisions);
     case 'mission-result':
-      return run.artifacts.evidence !== undefined;
+      return run.artifacts.evidence !== undefined
+        && isCanonicalEvidenceRecord(run.artifacts.evidence, run.missionId, run.datasetId, run.revisions);
   }
 };
 

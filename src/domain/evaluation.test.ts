@@ -4,6 +4,8 @@ import {
   COMPARISON_CHOICE_IDS_BY_KIND,
   buildEvidenceSentence,
   isAllowedComparisonSelection,
+  isAllowedEvidenceSelection,
+  isCanonicalEvidenceRecord,
   deriveEvidenceLevel,
   evaluateCalculation,
   evaluateComparison,
@@ -120,6 +122,37 @@ describe('comparison feedback', () => {
 });
 
 describe('evidence levels', () => {
+  it('allows only the exact evidence rubric combinations', () => {
+    expect(isAllowedEvidenceSelection('balance-delivery', ['redistribution-and-division'])).toBe(true);
+    expect(isAllowedEvidenceSelection('balance-delivery', ['redistribution-only', 'calculation-only'])).toBe(false);
+    expect(isAllowedEvidenceSelection('mean-twins', ['same-mean-only', 'same-shape'])).toBe(false);
+    expect(isAllowedEvidenceSelection('outlier-alert', ['sum-change-and-mean-change', 'direction-only'])).toBe(false);
+    expect(isAllowedEvidenceSelection('representative-review', ['mean-use-and-limit'])).toBe(true);
+    expect(isAllowedEvidenceSelection('representative-review', ['mean-use-and-limit', 'range-or-individual-values'])).toBe(true);
+    expect(isAllowedEvidenceSelection('representative-review', ['range-or-individual-values', 'mean-use-and-limit'])).toBe(true);
+    expect(isAllowedEvidenceSelection('representative-review', ['mean-use-and-limit', 'mean-always-enough'])).toBe(false);
+    expect(isAllowedEvidenceSelection('representative-review', ['mean-use-and-limit', 'range-or-individual-values', 'mean-always-enough'])).toBe(false);
+    expect(isAllowedEvidenceSelection('representative-review', ['mean-use-and-limit', 'range-or-individual-values', 'range-or-individual-values'])).toBe(false);
+    expect(isAllowedEvidenceSelection('representative-review', [])).toBe(false);
+  });
+
+  it('checks canonical evidence content and expected active-run revision', () => {
+    const record = {
+      missionId: 'representative-review' as const,
+      datasetId: 'review-cards-a' as const,
+      selectedIds: ['mean-use-and-limit', 'range-or-individual-values'] as const,
+      sentence: '평균은 4장이지만 한 선반에 12장이 몰려 있어 범위와 각 값을 함께 봐야 합니다.',
+      level: 3 as const,
+      revisions: 2,
+    };
+    expect(isCanonicalEvidenceRecord(record, 'representative-review', 'review-cards-a', 2)).toBe(true);
+    expect(isCanonicalEvidenceRecord({ ...record, revisions: 1 }, 'representative-review', 'review-cards-a', 2)).toBe(false);
+    expect(isCanonicalEvidenceRecord({ ...record, sentence: '임의 문장' }, 'representative-review', 'review-cards-a', 2)).toBe(false);
+    expect(isCanonicalEvidenceRecord({ ...record, selectedIds: ['mean-use-and-limit', 'mean-always-enough'] }, 'representative-review', 'review-cards-a', 2)).toBe(false);
+    expect(isCanonicalEvidenceRecord({ ...record, revisions: -1 }, 'representative-review', 'review-cards-a')).toBe(false);
+    expect(deriveEvidenceLevel('representative-review', ['mean-use-and-limit', 'range-or-individual-values', 'range-or-individual-values'])).toBe(1);
+  });
+
   it.each([
     ['balance-delivery', ['redistribution-and-division'], 3],
     ['balance-delivery', ['redistribution-only'], 2],
