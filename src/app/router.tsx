@@ -103,7 +103,8 @@ const MissionRoute = () => {
   let visibleStage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute'>;
   if (matching) {
     if (!isImplementedStage(allowedStage, dataset)) {
-      return <Navigate to={pathFor(mission.id, dataset.id, 'predict')} replace />;
+      const fallbackStage = dataset.kind === 'balance' ? 'redistribute' : 'predict';
+      return <Navigate to={pathFor(mission.id, dataset.id, fallbackStage)} replace />;
     }
     visibleStage = allowedStage;
   } else {

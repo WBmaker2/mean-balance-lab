@@ -76,4 +76,30 @@ describe('learning router', () => {
     expect(await screen.findByRole('heading', { name: '상황을 살펴볼까요?' })).toBeVisible();
     expect(window.location.hash).toContain('/situation');
   });
+
+  it('returns a completed balance run from calculation to the usable redistribution stage', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'redistribute' as const,
+        artifacts: {
+          prediction: { value: 5 as const },
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [], confirmed: true,
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/balance-delivery/balance-20-a/calculate', initialState);
+
+    expect(await screen.findByRole('heading', { name: '구슬을 고르게 옮겨 볼까요?' })).toBeVisible();
+    expect(window.location.hash).toContain('/redistribute');
+    await user.click(screen.getByRole('button', { name: '고르게 나누기 확인' }));
+    expect(screen.getByRole('status')).toHaveTextContent('고르게 나눴어요. 전체는 20개로 같아요.');
+  });
 });

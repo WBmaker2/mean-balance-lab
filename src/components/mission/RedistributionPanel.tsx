@@ -26,7 +26,15 @@ export const RedistributionPanel = ({ dataset, run, dispatch }: RedistributionPa
   const recommendedMove = useMemo(() => nextBalancingMove(currentValues), [currentValues]);
   const destinationRecommendation = selectedSource === null
     ? null
-    : currentValues.findIndex((value, index) => value < mean(currentValues) && index !== selectedSource);
+    : (() => {
+      const belowMean = currentValues.findIndex(
+        (value, index) => value < mean(currentValues) && index !== selectedSource,
+      );
+      if (belowMean >= 0) return belowMean;
+      // A learner may choose the only below-mean box as the source. Keep one
+      // deterministic valid destination CTA available in that case.
+      return currentValues.findIndex((_, index) => index !== selectedSource);
+    })();
   const canUndo = (redistribution?.undoStack.length ?? 0) > 0;
 
   const showFeedback = (messageText: string, nextAction: string) => {
@@ -68,7 +76,7 @@ export const RedistributionPanel = ({ dataset, run, dispatch }: RedistributionPa
       return;
     }
     dispatch({ type: 'MOVE_ONE', move: { fromIndex: selectedSource, toIndex: index } });
-    announce(`${selectedSource + 1}번 상자에서 1개를 ${index + 1}번 상자로 옮겼어요. 전체는 ${initialTotal}개로 같아요.`);
+    announce(`${selectedSource + 1}번 상자에서 1개를 ${index + 1}번 상자로 옮겼어요. 현재 수량 ${result.values.join(', ')}. 전체는 ${initialTotal}개로 같아요.`);
     setFeedback(null);
     setSelectedSource(null);
   };

@@ -4,6 +4,25 @@ import {
 } from './persistence';
 import { invalidShapeSession, stateWithCompletedEvidenceAndWrongFeedback } from '../test/fixtures';
 
+const redistributionState = (confirmed: unknown) => ({
+  schemaVersion: 1,
+  saveMode: 'tab',
+  activeRun: {
+    missionId: 'balance-delivery',
+    datasetId: 'balance-20-a',
+    stage: 'redistribute',
+    artifacts: {
+      redistribution: {
+        initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [], confirmed,
+      },
+    },
+    revisions: 0,
+    transientFeedback: null,
+  },
+  attempts: {},
+  completedRequiredMissions: [],
+});
+
 describe('session persistence guards', () => {
   it('restores completed evidence but clears current-stage judgment', () => {
     const restored = sanitizeRestoredSession(stateWithCompletedEvidenceAndWrongFeedback());
@@ -47,5 +66,20 @@ describe('session persistence guards', () => {
       },
     };
     expect(isLabSessionState(value)).toBe(false);
+  });
+
+  it.each([true, false])('restores redistribution confirmed=%s', (confirmed) => {
+    const value = redistributionState(confirmed);
+    expect(isLabSessionState(value)).toBe(true);
+    sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(value));
+    expect(loadSession(sessionStorage, TAB_STORAGE_KEY)?.activeRun?.artifacts.redistribution?.confirmed)
+      .toBe(confirmed);
+  });
+
+  it('rejects a non-boolean redistribution confirmation', () => {
+    const value = redistributionState('yes');
+    expect(isLabSessionState(value)).toBe(false);
+    sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(value));
+    expect(loadSession(sessionStorage, TAB_STORAGE_KEY)).toBeNull();
   });
 });

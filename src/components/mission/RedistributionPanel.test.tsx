@@ -39,7 +39,9 @@ describe('RedistributionPanel', () => {
     await user.click(screen.getByRole('button', { name: '4번 상자에서 1개 꺼내기' }));
     await user.click(screen.getByRole('button', { name: '1번 상자에 1개 넣기' }));
     expect(screen.getByText('현재 수량 3, 4, 6, 7')).toBeVisible();
-    expect(screen.getByRole('status')).toHaveTextContent('4번 상자에서 1개를 1번 상자로 옮겼어요. 전체는 20개로 같아요.');
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '4번 상자에서 1개를 1번 상자로 옮겼어요. 현재 수량 3, 4, 6, 7. 전체는 20개로 같아요.',
+    );
   });
 
   it('undoes the latest successful move', async () => {
@@ -57,9 +59,13 @@ describe('RedistributionPanel', () => {
     renderBalancePanel([0, 4, 6, 10]);
     expect(screen.getByRole('button', { name: '1번 상자에서 1개 꺼내기' })).toBeDisabled();
     await user.click(screen.getByRole('button', { name: '2번 상자에서 1개 꺼내기' }));
+    expect(screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true'))
+      .toHaveLength(1);
     await user.click(screen.getByRole('button', { name: '2번 상자에 1개 넣기' }));
     expect(screen.getByRole('alert')).toHaveTextContent('같은 상자에서는 옮길 수 없어요.');
     expect(screen.getByRole('alert')).toHaveTextContent('다른 상자의 +1 버튼을 눌러 보세요.');
+    expect(screen.getByText('현재 수량 0, 4, 6, 10')).toBeVisible();
+    expect(screen.getByRole('button', { name: '마지막 이동 취소' })).toBeDisabled();
   });
 
   it('marks exactly one enabled next action', () => {
@@ -68,5 +74,30 @@ describe('RedistributionPanel', () => {
       .filter((button) => button.dataset.currentAction === 'true' && !(button as HTMLButtonElement).disabled);
     expect(currentActions).toHaveLength(1);
     expect(currentActions[0]).toHaveAccessibleName(/고르게 나누기 확인/);
+  });
+
+  it('keeps exactly one enabled recommendation through every source-selection state', async () => {
+    const user = userEvent.setup();
+    const currentActionCount = () => screen.getAllByRole('button')
+      .filter((button) => button.dataset.currentAction === 'true' && !(button as HTMLButtonElement).disabled)
+      .length;
+
+    renderBalancePanel([2, 4, 6, 8]);
+    expect(currentActionCount()).toBe(1);
+    await user.click(screen.getByRole('button', { name: '2번 상자에서 1개 꺼내기' }));
+    expect(currentActionCount()).toBe(1);
+    await user.click(screen.getByRole('button', { name: '1번 상자에 1개 넣기' }));
+    expect(currentActionCount()).toBe(1);
+
+    cleanup();
+    renderBalancePanel([1, 5, 5, 9]);
+    await user.click(screen.getByRole('button', { name: '1번 상자에서 1개 꺼내기' }));
+    expect(currentActionCount()).toBe(1);
+    expect(screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true')[0])
+      .toHaveAccessibleName('2번 상자에 1개 넣기');
+
+    cleanup();
+    renderBalancePanel([5, 5, 5, 5]);
+    expect(currentActionCount()).toBe(1);
   });
 });
