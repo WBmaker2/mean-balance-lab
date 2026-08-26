@@ -238,7 +238,7 @@ describe('learning router', () => {
     expect(window.location.hash).toBe('#/results');
   });
 
-  it('recovers a consistent but not-yet-implemented compare run to the start screen', async () => {
+  it('opens a verified twin compare run with calculations before the plots', async () => {
     const initialState = {
       ...createInitialSession(),
       activeRun: {
@@ -257,7 +257,39 @@ describe('learning router', () => {
       },
     };
     renderAppAt('#/mission/mean-twins/twins-4-a/compare', initialState);
-    expect(await screen.findByText('자료를 찾지 못해 시작 화면으로 돌아왔어요.')).toBeVisible();
-    expect(window.location.hash).toBe('#/');
+    expect(await screen.findByRole('heading', { name: '평균 쌍둥이 자료를 비교해 볼까요?' })).toBeVisible();
+    expect(window.location.hash).toBe('#/mission/mean-twins/twins-4-a/compare');
+    expect(screen.getByText('평균 4·4 / 범위 0·6')).toBeVisible();
+  });
+
+  it('advances only after both twin calculations are verified', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'mean-twins' as const,
+        datasetId: 'twins-4-a' as const,
+        stage: 'calculate' as const,
+        artifacts: { prediction: { value: 'same' as const } },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/mean-twins/twins-4-a/calculate', initialState);
+    const fillCalculation = async (total: string, count: string, average: string) => {
+      const inputs = screen.getAllByRole('spinbutton');
+      await user.type(inputs[0]!, total);
+      await user.type(inputs[1]!, count);
+      await user.type(inputs[2]!, average);
+      await user.click(screen.getAllByRole('button', { name: '계산 확인' })[0]!);
+    };
+
+    await fillCalculation('16', '4', '4');
+    expect(window.location.hash).toContain('/calculate');
+    await fillCalculation('16', '4', '4');
+    await user.click(screen.getByRole('button', { name: '다음 단계' }));
+
+    expect(window.location.hash).toContain('/compare');
+    expect(await screen.findByRole('heading', { name: '평균 쌍둥이 자료를 비교해 볼까요?' })).toBeVisible();
   });
 });

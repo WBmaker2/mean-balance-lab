@@ -10,11 +10,12 @@ import { PredictionPanel } from './PredictionPanel';
 import { SituationPanel } from './SituationPanel';
 import { RedistributionPanel } from './RedistributionPanel';
 import { CalculationCheck } from './CalculationCheck';
+import { ComparisonPanel } from './ComparisonPanel';
 
 interface MissionScreenProps {
   mission: MissionDefinition;
   dataset: MissionDataset;
-  stage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate'>;
+  stage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare'>;
 }
 
 export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) => {
@@ -39,7 +40,7 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
     const index = dataset.stages.indexOf(stage);
     const next = dataset.stages[index + 1];
     if (!next) return;
-    if (next !== 'situation' && next !== 'predict' && next !== 'redistribute' && next !== 'calculate') return;
+    if (next !== 'situation' && next !== 'predict' && next !== 'redistribute' && next !== 'calculate' && next !== 'compare') return;
     dispatch({ type: 'ADVANCE_STAGE' });
     navigate(`/mission/${mission.id}/${dataset.id}/${next}`);
   };
@@ -122,6 +123,13 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
           <h1 id="calculation-heading">평균을 계산해 볼까요?</h1>
           {renderCalculation('current')}
         </section>
+      ) : stage === 'compare' && dataset.kind === 'twins' && run ? (
+        <ComparisonPanel
+          dataset={dataset}
+          artifacts={run.artifacts}
+          dispatch={dispatch}
+          feedback={run.transientFeedback}
+        />
       ) : (
         <PredictionPanel
           dataset={dataset}

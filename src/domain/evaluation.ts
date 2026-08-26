@@ -86,6 +86,9 @@ const evaluateTwinsComparison = (
 ): EvaluationResult => {
   const sameMean = mean(dataset.leftValues) === mean(dataset.rightValues);
   const differentSpread = range(dataset.leftValues) !== range(dataset.rightValues);
+  if (hasChoice(selectedIds, 'same-shape')) {
+    return result(false, COMPARISON_COPY.twinsShapeMessage, COMPARISON_COPY.twinsShapeNextAction);
+  }
   if (!hasChoice(selectedIds, 'same-mean') || !sameMean) {
     return result(false, '두 자료의 평균을 먼저 비교해 보세요.', COMPARISON_COPY.twinsMeanNextActionDetail);
   }

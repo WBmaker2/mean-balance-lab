@@ -16,6 +16,8 @@ export const COMPARISON_COPY = {
   twinsMeanNextActionDetail: '자료 A와 자료 B의 합계를 각각 자료 개수로 나누어 보세요.',
   twinsSpreadMessage: '점들이 얼마나 퍼져 있는지도 살펴보세요.',
   twinsSpreadNextAction: '두 자료의 범위나 각 값을 비교해 보세요.',
+  twinsShapeMessage: '평균이 같아도 각 값과 퍼짐은 다를 수 있어요.',
+  twinsShapeNextAction: '점도표에서 각 값과 퍼짐을 다시 살펴보세요.',
   twinsSuccessMessage: '평균은 같지만 자료의 모양은 다를 수 있어요.',
   outlierSumMessage: '합계 변화를 먼저 살펴보세요.',
   outlierSumNextAction: '변경 전후의 전체 양을 비교해 보세요.',

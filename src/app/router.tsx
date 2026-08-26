@@ -10,15 +10,16 @@ import { ResultScreen } from '../components/result/ResultScreen';
 import { StartScreen } from '../components/start/StartScreen';
 
 export const RECOVERY_MESSAGE = '자료를 찾지 못해 시작 화면으로 돌아왔어요.';
-const IMPLEMENTED_STAGES: readonly LearningStage[] = ['situation', 'predict', 'redistribute', 'calculate'];
+const IMPLEMENTED_STAGES: readonly LearningStage[] = ['situation', 'predict', 'redistribute', 'calculate', 'compare'];
 const isImplementedStage = (
   stage: LearningStage,
   dataset: MissionDataset,
-): stage is Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate'> =>
+): stage is Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare'> =>
   stage === 'situation'
   || stage === 'predict'
   || (stage === 'redistribute' && dataset.kind === 'balance')
-  || (stage === 'calculate' && dataset.stages.includes('calculate'));
+  || (stage === 'calculate' && dataset.stages.includes('calculate'))
+  || (stage === 'compare' && dataset.kind === 'twins');
 
 export const routeFor = (missionId: MissionId, datasetId: DatasetId, stage: LearningStage): string =>
   `#/mission/${missionId}/${datasetId}/${stage}`;
@@ -122,7 +123,7 @@ const MissionRoute = () => {
   if (matching && allowedStage !== stage) {
     return <Navigate to={pathFor(mission.id, dataset.id, allowedStage)} replace />;
   }
-  let visibleStage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate'>;
+  let visibleStage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare'>;
   if (matching) {
     if (!isImplementedStage(allowedStage, dataset)) {
       const fallbackStage = dataset.kind === 'balance' ? 'redistribute' : 'predict';

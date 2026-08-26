@@ -284,10 +284,11 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
       if (!action.selectedIds.every((id) => comparisonChoices.has(id))) {
         return withRun(state, incrementRevision(run, failure('비교 선택을 다시 살펴보세요.', '자료를 비교할 근거를 선택해 보세요.')));
       }
-      const result = evaluateComparison(getDataset(run.datasetId), action.selectedIds);
+      const selectedIds = [...new Set(action.selectedIds)];
+      const result = evaluateComparison(getDataset(run.datasetId), selectedIds);
       const nextRun = {
         ...run,
-        artifacts: { ...run.artifacts, comparison: { selectedIds: [...action.selectedIds], verified: result.isCorrect } },
+        artifacts: { ...run.artifacts, comparison: { selectedIds, verified: result.isCorrect } },
         transientFeedback: result,
       };
       return result.isCorrect ? withRun(state, nextRun) : withRun(state, incrementRevision(nextRun, result));
