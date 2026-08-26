@@ -1,52 +1,38 @@
 # Task 16 report — 평균 균형 조정실 문서·MVP 검증
 
-검증일: 2026-08-26 (Asia/Seoul)
-기준 HEAD: `8657f1d test: cover all dataset prediction boundaries`
+최종 검증일: 2026-08-26 (Asia/Seoul)
+검증 기준 소스 커밋: `8e79875 fix: close final mean balance quality gaps`
+문서 전용 커밋은 이 소스 커밋 이후 검증 증거만 갱신하며 소스 동작을 변경하지 않습니다.
 
 ## RED → GREEN
 
-- RED: `npm test -- src/content/documentation.test.ts` 실행 시 README가 없어 `ENOENT: no such file or directory, open '.../README.md'`로 실패했습니다. 계획의 문서 계약을 실제 부재 원인으로 확인했습니다.
-- GREEN: `README.md` 작성 후 같은 명령이 `Test Files 1 passed, Tests 1 passed`를 보고했습니다.
-- `src/content/documentation.test.ts`는 Vitest 변환 환경에서 `new URL(..., import.meta.url)`이 file URL이 되지 않는 문제를 피하기 위해 `process.cwd()` 기준으로 README를 읽고, Node 타입 reference를 파일에 선언했습니다. 패키지·lockfile은 변경하지 않았습니다.
+- Task 16 문서 계약 RED: README가 없던 초기 실행에서 `ENOENT`가 발생했습니다.
+- Task 16 문서 계약 GREEN: README 작성 후 documentation test가 통과했습니다.
+- 최종 수정 RED: 예측 패널 초기 current action 0개, print E2E의 완료 상태 주입, 모바일 print 표 최소 폭, 비자연수 이동 허용, 위조 RESTORE 경로, 480줄 라우터 테스트를 각각 회귀 테스트로 재현했습니다.
+- 최종 수정 GREEN: 예측 empty/feedback/selected current-action 테스트, 공개 A 미션 print flow, 9개 비정상 수량 테스트, forged former RESTORE no-op 테스트가 모두 통과했습니다. 라우터 테스트는 책임별 파일로 분리했습니다.
 
-## 구현 문서
+## 최종 Full Gate
 
-- `README.md`: 학습 목표, 4개 미션, A/B 8개 고정 자료의 exact values, 로컬 명령, 키보드·접근성, 저장 범위와 개인정보 제외, 교육용 이산 모형 경계, MVP 제외, 업데이트 내역 정책, 현재 no remote/deploy 범위를 기록했습니다.
-- `docs/qa/mvp-checklist.md`: Specification and Traceability 13행을 `요구사항 | 자동 검증 | 수동 확인 | 결과` 열로 기록하고, Completion Gate 16개를 각각 실제 명령·테스트 경로·viewport·관찰 증거와 함께 기록했습니다.
-- `src/content/updateHistory.ts`: Asia/Seoul 현재 날짜의 두 literal 항목이 이미 정확하여 변경하지 않았습니다.
-- `progress.md`: 변경하지 않았습니다.
-- 문서 구조 확인: Specification and Traceability 13행과 Completion Gate 16행을 확인했으며, README·체크리스트·이 보고서의 항목에 구체적인 근거가 기재되어 있습니다.
+| 단계 | 결과 |
+|---|---|
+| lockfile diff | `git diff --exit-code -- package-lock.json` 통과, 변경 없음 |
+| typecheck | `npm run typecheck` 통과 |
+| unit/component | `npm test -- --run`: 25 test files, 239 tests passed |
+| Chromium E2E | `CI=1 npm run test:e2e -- --workers=1`: 19 passed |
+| build | `npm run build` 통과 |
+| production scans | privacy scan 5 matches/4 files, 모두 substring/comment 또는 negative/positive documentation contract; network scan 무출력 |
+| source line count | 최대 447줄: `src/domain/session.test.ts`; 모든 TS/TSX/CSS 450줄 미만 |
+| built assets | `dist/assets/index-B9QVr0ob.js`, `dist/assets/index-aUwCFU65.css` |
+| built preview | 제목 `평균 균형 조정실`, valid hash routes, console/page errors 0, non-loopback requests `[]` |
+| print | 공개 A 4개 완료 → `전체 결과 보기` 진입 후 375×812, 375×3000, 1440×900 print E2E 통과; TeacherSummary 단독·가로 overflow·표 우측 clipping 없음 |
 
-## Full gate (계획 순서)
+## 최종 문서 산출물
 
-1. 사전 lockfile 증거: `shasum -a 256 package-lock.json` → `d2c6cd586488c3d2134f0a02bab48b2ff0ce899d242565562d9c14c15ba2cbdd`; `git diff -- package-lock.json` 무출력.
-2. `npm ci`: 성공, 128 packages added, audited 129 packages, 0 vulnerabilities.
-3. 사후 lockfile 증거: 같은 SHA-256 `d2c6cd586488c3d2134f0a02bab48b2ff0ce899d242565562d9c14c15ba2cbdd`; `git diff -- package-lock.json` 무출력.
-4. `npm run typecheck`: 성공.
-5. `npm test`: 23 test files passed, 227 tests passed.
-6. `CI=1 npm run test:e2e`: 첫 sandbox 실행은 Chromium macOS `bootstrap_check_in ... Permission denied`로 18개 런치 실패. 승인된 권한으로 같은 명령을 재실행하여 18 passed.
-7. `npm run build`: 성공. `dist/index.html`, `dist/assets/index-qWhS_shg.js`, `dist/assets/index-CW3jMkM3.css` 생성.
-8. 개인정보 scan: `rg -n "이름|학번|성적|키|몸무게|학생.*순위" src`는 4개 파일의 5줄을 반환했습니다. `src/domain/evaluation.ts:63`은 `시키는`의 `키` 부분 문자열이 걸린 주석 오탐 1건, `src/content/documentation.test.ts:15`는 `키보드` heading의 `키` 부분 문자열 오탐 1건, `src/content/documentation.test.ts:29`는 README 안전 문구에 금지어가 포함되었는지 검증하는 테스트 1건, `src/components/result/TeacherSummary.test.tsx:19`와 `src/components/mission/EvidenceBuilder.test.tsx:120`은 각각 금지 label 부재를 확인하는 부정 테스트 1건씩입니다. 실제 개인정보 입력·저장·real-person fixture는 없습니다.
-9. production network scan: `rg -n "fetch\(|axios|analytics|gtag|firebase|openai|gemini" src` 무출력. 테스트 listener의 외부 요청 문자열도 production source에는 없습니다.
-10. line count: `find src -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.css' \) -print0 | xargs -0 wc -l` 결과 최대 480줄(`src/app/router.test.tsx`)로 모두 500줄 미만입니다.
+- `README.md`: 학습 목표, 4개 미션·8개 고정 자료, 로컬 실행, 접근성·저장·개인정보·교육적 경계를 기록했습니다.
+- `docs/qa/mvp-checklist.md`: source SHA `8e79875`, 25/239, E2E 19, 최대 447줄, 최신 hashed assets와 전체 Completion Gate 증거를 기록했습니다.
+- `final-fix-report.md`: 6개 required fix의 원인, RED/GREEN, 파일, 검증을 기록합니다.
+- `progress.md`: 지시대로 변경하지 않았습니다.
 
-## Finding correction verification
+## 범위 경계
 
-- 이번 문서 정정 후 `npm test -- src/content/documentation.test.ts`는 1 file/1 test passed, `npm test`는 23 files/227 tests passed, `npm run typecheck`와 `npm run build`는 성공했습니다.
-- `git diff --check`도 성공했습니다. 문서만 수정했고 production/test behavior는 변경하지 않았으므로 전체 E2E는 재실행하지 않았습니다. 기존 기록의 Chromium E2E 18 passed 및 preview 외부 요청 0개 증거는 그대로 유효합니다.
-
-## Built preview Chromium evidence
-
-`npm run preview -- --host 127.0.0.1`로 빌드된 `dist`를 127.0.0.1:4173에 시작하고, `node /private/tmp/mean-preview-check.mjs`를 Chromium viewport 1280×800에서 실행했습니다. 읽기 전용으로 다음을 관찰했습니다.
-
-- `document.title`: `평균 균형 조정실`.
-- 시작 heading이 보이고, `미션 시작` 후 valid URL은 `http://127.0.0.1:4173/#/mission/balance-delivery/balance-20-a/situation`입니다.
-- 새 브라우저 컨텍스트에서 later-stage `/explain` direct reload는 `/predict`로 guard되며 `평균을 먼저 예측해 볼까요?`가 표시됩니다.
-- console error 0, page error 0, non-loopback requests `[]`.
-- local hashed assets 2개: `index-qWhS_shg.js`, `index-CW3jMkM3.css`.
-- 기존 canonical learner E2E에서 4개 A 미션·4개 B challenge·키보드·reload/history·print summary를 검증했습니다. `tests/e2e/responsive-motion.spec.ts`의 print 테스트는 교사용 요약만 visible임을 확인했습니다.
-- preview 프로세스는 검증 후 Ctrl-C로 종료했습니다.
-
-## Scope boundary
-
-이번 결과는 로컬 문서·테스트·빌드·preview 검증입니다. 패키지 추가/버전 변경, `npm install`, remote, push, deploy, HVC 등록은 실행하지 않았습니다.
+이번 검증에서 패키지 설치, package/version 변경, remote/push/deploy, HVC 등록은 수행하지 않았습니다.
