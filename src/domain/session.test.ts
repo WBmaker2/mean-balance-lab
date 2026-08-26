@@ -5,6 +5,81 @@ import { buildEvidenceSentence, deriveEvidenceLevel } from './evaluation';
 import { isLabSessionState, loadSession, saveSession } from '../state/persistence';
 
 describe('recoverable lab session reducer', () => {
+  it('updates only an existing canonical evidence attempt without changing revisions', () => {
+    const original = {
+      missionId: 'balance-delivery' as const,
+      datasetId: 'balance-20-a' as const,
+      selectedIds: ['redistribution-only'] as const,
+      sentence: buildEvidenceSentence('balance-delivery', 'balance-20-a', ['redistribution-only']),
+      level: deriveEvidenceLevel('balance-delivery', ['redistribution-only']),
+      revisions: 2,
+    };
+    const updated = {
+      ...original,
+      selectedIds: ['redistribution-and-division'] as const,
+      sentence: buildEvidenceSentence('balance-delivery', 'balance-20-a', ['redistribution-and-division']),
+      level: deriveEvidenceLevel('balance-delivery', ['redistribution-and-division']),
+    };
+    const state = {
+      ...createInitialSession(),
+      attempts: { 'balance-20-a': original },
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'mission-result' as const,
+        artifacts: { evidence: original },
+        revisions: 2,
+        transientFeedback: null,
+      },
+    };
+    const next = sessionReducer(state, { type: 'UPDATE_EVIDENCE_ATTEMPT', record: updated });
+    expect(next.attempts['balance-20-a']).toEqual(updated);
+    expect(next.activeRun?.artifacts.evidence).toEqual(updated);
+    expect(next.activeRun?.revisions).toBe(2);
+  });
+
+  it('advances a canonical explanation to the mission-result stage and records the required mission', () => {
+    const selectedIds = ['redistribution-and-division'] as const;
+    const record = {
+      missionId: 'balance-delivery' as const,
+      datasetId: 'balance-20-a' as const,
+      selectedIds,
+      sentence: buildEvidenceSentence('balance-delivery', 'balance-20-a', selectedIds),
+      level: deriveEvidenceLevel('balance-delivery', selectedIds),
+      revisions: 0,
+    };
+    const state = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'explain' as const,
+        artifacts: { evidence: record }, revisions: 0, transientFeedback: null,
+      },
+    };
+    const next = sessionReducer(state, { type: 'ADVANCE_STAGE' });
+    expect(next.activeRun?.stage).toBe('mission-result');
+    expect(next.completedRequiredMissions).toEqual(['balance-delivery']);
+  });
+
+  it('rejects edits for missing, forged, or revision-mismatched attempts', () => {
+    const original = {
+      missionId: 'balance-delivery' as const,
+      datasetId: 'balance-20-a' as const,
+      selectedIds: ['redistribution-only'] as const,
+      sentence: buildEvidenceSentence('balance-delivery', 'balance-20-a', ['redistribution-only']),
+      level: deriveEvidenceLevel('balance-delivery', ['redistribution-only']),
+      revisions: 2,
+    };
+    const state = { ...createInitialSession(), attempts: { 'balance-20-a': original } };
+    const forged = { ...original, sentence: '임의 문장' };
+    expect(sessionReducer(state, { type: 'UPDATE_EVIDENCE_ATTEMPT', record: forged }).attempts).toEqual(state.attempts);
+    expect(sessionReducer(createInitialSession(), { type: 'UPDATE_EVIDENCE_ATTEMPT', record: original }).attempts).toEqual({});
+    expect(sessionReducer(state, {
+      type: 'UPDATE_EVIDENCE_ATTEMPT',
+      record: { ...original, revisions: 3 },
+    }).attempts).toEqual(state.attempts);
+  });
   it('supports one-item movement and undo without losing total', () => {
     const started = sessionReducer(createInitialSession(), {
       type: 'START_DATASET', missionId: 'balance-delivery', datasetId: 'balance-20-a',

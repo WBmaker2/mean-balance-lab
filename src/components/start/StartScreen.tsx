@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLabSession } from '../../state/LabSessionContext';
-import type { DatasetId } from '../../domain/types';
+import { MISSIONS } from '../../content/missions';
 import { routeFor } from '../../app/router';
 import { ActionButton } from '../shared/ActionButton';
 
@@ -16,7 +16,7 @@ const goals = [
 
 export const StartScreen = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('a');
-  const { dispatch } = useLabSession();
+  const { state, dispatch } = useLabSession();
   const navigate = useNavigate();
   const location = useLocation();
   const locationState: unknown = location.state;
@@ -26,11 +26,13 @@ export const StartScreen = () => {
     && typeof locationState.recoveryMessage === 'string'
     ? locationState.recoveryMessage
     : undefined;
-  const datasetId: DatasetId = difficulty === 'a' ? 'balance-20-a' : 'balance-24-b';
+  const nextMission = MISSIONS.find((mission) => !state.completedRequiredMissions.includes(mission.id));
+  const dataset = nextMission?.datasets.find((candidate) => candidate.id.endsWith(difficulty)) ?? nextMission?.datasets[0];
 
   const start = () => {
-    dispatch({ type: 'START_DATASET', missionId: 'balance-delivery', datasetId });
-    navigate(routeFor('balance-delivery', datasetId, 'situation').replace(/^#/, ''));
+    if (!nextMission || !dataset) return;
+    dispatch({ type: 'START_DATASET', missionId: nextMission.id, datasetId: dataset.id });
+    navigate(routeFor(nextMission.id, dataset.id, 'situation').replace(/^#/, ''));
   };
 
   return (
@@ -40,19 +42,26 @@ export const StartScreen = () => {
       <h1 id="start-heading">평균은 여러 값을 어떻게 대표하며, 한 값이 달라지면 평균은 왜 움직일까요?</h1>
       <h2>오늘의 목표</h2>
       <ul>{goals.map((goal) => <li key={goal}>{goal}</li>)}</ul>
-      <fieldset>
-        <legend>자료 난이도</legend>
-        <label>
-          <input type="radio" name="difficulty" value="a" checked={difficulty === 'a'} onChange={() => setDifficulty('a')} />
-          기본(A 세트)
-        </label>
-        <label>
-          <input type="radio" name="difficulty" value="b" checked={difficulty === 'b'} onChange={() => setDifficulty('b')} />
-          도전(B 세트)
-        </label>
-      </fieldset>
-      <p>{difficulty === 'a' ? '기본 자료로 시작' : '도전 자료로 시작'}</p>
-      <ActionButton type="button" emphasis="next" onClick={start}>미션 시작</ActionButton>
+      {nextMission ? (
+        <>
+          <p>다음 미션: {nextMission.title}</p>
+          <fieldset>
+            <legend>자료 난이도</legend>
+            <label>
+              <input type="radio" name="difficulty" value="a" checked={difficulty === 'a'} onChange={() => setDifficulty('a')} />
+              기본(A 세트)
+            </label>
+            <label>
+              <input type="radio" name="difficulty" value="b" checked={difficulty === 'b'} onChange={() => setDifficulty('b')} />
+              도전(B 세트)
+            </label>
+          </fieldset>
+          <p>{difficulty === 'a' ? '기본 자료로 시작' : '도전 자료로 시작'}</p>
+          <ActionButton type="button" emphasis="next" onClick={start}>미션 시작</ActionButton>
+        </>
+      ) : (
+        <ActionButton type="button" emphasis="next" onClick={() => navigate('/results')}>전체 결과 보기</ActionButton>
+      )}
     </section>
   );
 };

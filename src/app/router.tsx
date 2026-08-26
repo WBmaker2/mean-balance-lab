@@ -11,13 +11,10 @@ import { ResultScreen } from '../components/result/ResultScreen';
 import { StartScreen } from '../components/start/StartScreen';
 
 export const RECOVERY_MESSAGE = '자료를 찾지 못해 시작 화면으로 돌아왔어요.';
-const IMPLEMENTED_STAGES: readonly LearningStage[] = [
-  'situation', 'predict', 'redistribute', 'calculate', 'compare', 'explain',
-];
 const isImplementedStage = (
   stage: LearningStage,
   dataset: MissionDataset,
-): stage is Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare' | 'explain'> =>
+): stage is Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare' | 'explain' | 'mission-result'> =>
   stage === 'situation'
   || stage === 'predict'
   || (stage === 'redistribute' && dataset.kind === 'balance')
@@ -25,7 +22,8 @@ const isImplementedStage = (
   || (stage === 'compare' && (
     dataset.kind === 'twins' || dataset.kind === 'outlier' || dataset.kind === 'representativeness'
   ))
-  || (stage === 'explain' && dataset.stages.includes('explain'));
+  || (stage === 'explain' && dataset.stages.includes('explain'))
+  || (stage === 'mission-result' && dataset.stages.includes('mission-result'));
 
 export const routeFor = (missionId: MissionId, datasetId: DatasetId, stage: LearningStage): string =>
   `#/mission/${missionId}/${datasetId}/${stage}`;
@@ -118,7 +116,6 @@ const MissionRoute = () => {
     const runStage = state.activeRun.stage;
     const internallyAllowedStage = resolveAllowedStage(state, mission, dataset, runStage);
     if (internallyAllowedStage !== runStage) return <InvalidRoute />;
-    if (runStage === 'mission-result') return <Navigate to="/results" replace />;
     if (!isImplementedStage(runStage, dataset)) return <InvalidRoute />;
 
     const canSynchronizeSituationToPrediction = runStage === 'situation'
@@ -132,7 +129,7 @@ const MissionRoute = () => {
   if (matching && allowedStage !== stage) {
     return <Navigate to={pathFor(mission.id, dataset.id, allowedStage)} replace />;
   }
-  let visibleStage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare' | 'explain'>;
+  let visibleStage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare' | 'explain' | 'mission-result'>;
   if (matching) {
     if (!isImplementedStage(allowedStage, dataset)) {
       const fallbackStage = dataset.kind === 'balance' ? 'redistribute' : 'predict';

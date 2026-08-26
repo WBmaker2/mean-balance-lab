@@ -12,11 +12,12 @@ import { RedistributionPanel } from './RedistributionPanel';
 import { CalculationCheck } from './CalculationCheck';
 import { ComparisonPanel } from './ComparisonPanel';
 import { EvidenceBuilder } from './EvidenceBuilder';
+import { MissionSummary } from './MissionSummary';
 
 interface MissionScreenProps {
   mission: MissionDefinition;
   dataset: MissionDataset;
-  stage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare' | 'explain'>;
+  stage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare' | 'explain' | 'mission-result'>;
 }
 
 export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) => {
@@ -45,6 +46,11 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
       && next !== 'calculate' && next !== 'compare' && next !== 'explain') return;
     dispatch({ type: 'ADVANCE_STAGE' });
     navigate(`/mission/${mission.id}/${dataset.id}/${next}`);
+  };
+
+  const startDataset = (datasetId: MissionDataset['id']) => {
+    dispatch({ type: 'START_DATASET', missionId: mission.id, datasetId });
+    navigate(`/mission/${mission.id}/${datasetId}/situation`);
   };
 
   const submitCalculation = (target: CalculationTarget, input: CalculationInput) => {
@@ -156,6 +162,17 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
           revisions={run.revisions}
           {...(run.artifacts.evidence ? { existingRecord: run.artifacts.evidence } : {})}
           onSubmit={(record) => dispatch({ type: 'SUBMIT_EVIDENCE', record })}
+          onAdvance={nextStage}
+        />
+      ) : stage === 'mission-result' && run?.artifacts.evidence ? (
+        <MissionSummary
+          mission={mission}
+          dataset={dataset}
+          attempt={run.artifacts.evidence}
+          dispatch={dispatch}
+          onRetry={() => startDataset(dataset.id)}
+          onAlternate={() => startDataset(mission.datasets.find((candidate) => candidate.id !== dataset.id)?.id ?? dataset.id)}
+          onFinish={() => navigate('/')}
         />
       ) : (
         <PredictionPanel

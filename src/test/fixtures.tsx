@@ -16,6 +16,20 @@ const balanceEvidence = (revisions = 0): EvidenceRecord => ({
   revisions,
 });
 
+const evidenceFor = (
+  missionId: MissionId,
+  datasetId: Parameters<typeof buildEvidenceSentence>[1],
+  selectedIds: Parameters<typeof buildEvidenceSentence>[2],
+  revisions = 0,
+): EvidenceRecord => ({
+  missionId,
+  datasetId,
+  selectedIds,
+  sentence: buildEvidenceSentence(missionId, datasetId, selectedIds),
+  level: deriveEvidenceLevel(missionId, selectedIds),
+  revisions,
+});
+
 export const verifiedBalanceArtifacts = (revisions = 0): StageArtifacts => ({
   prediction: { value: 5 },
   redistribution: {
@@ -52,11 +66,20 @@ export const stateWithCompletedEvidenceAndWrongFeedback = (): LabSessionState =>
 
 export const sessionWithThreeRequiredMissions = (): LabSessionState => ({
   ...completedBalanceStateWithTwoRetries(),
+  attempts: {
+    'balance-20-a': balanceEvidence(),
+    'twins-4-a': evidenceFor('mean-twins', 'twins-4-a', ['same-mean-and-different-spread']),
+    'outlier-5-a': evidenceFor('outlier-alert', 'outlier-5-a', ['sum-change-and-mean-change']),
+  },
   completedRequiredMissions: ['balance-delivery', 'mean-twins', 'outlier-alert'],
 });
 
 export const completedSession = (): LabSessionState => ({
   ...sessionWithThreeRequiredMissions(),
+  attempts: {
+    ...sessionWithThreeRequiredMissions().attempts,
+    'review-cards-a': evidenceFor('representative-review', 'review-cards-a', ['mean-use-and-limit', 'range-or-individual-values']),
+  },
   completedRequiredMissions: ['balance-delivery', 'mean-twins', 'outlier-alert', 'representative-review'],
 });
 

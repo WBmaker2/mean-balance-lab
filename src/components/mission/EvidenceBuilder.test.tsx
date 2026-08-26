@@ -232,4 +232,22 @@ describe('EvidenceBuilder', () => {
     expect(screen.getByText('근거를 선택하면 문장이 나타나요.')).toBeVisible();
     expect(screen.queryByText('근거 문장을 저장했어요.')).not.toBeInTheDocument();
   });
+
+  it('offers mission result navigation only after a canonical submission', async () => {
+    const onAdvance = vi.fn();
+    render(
+      <EvidenceBuilder
+        mission="balance-delivery"
+        dataset={getDataset('balance-20-a')}
+        revisions={0}
+        onSubmit={vi.fn()}
+        onAdvance={onAdvance}
+      />,
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('radio', { name: /고르게 옮긴 결과와 합계/ }));
+    await user.click(screen.getByRole('button', { name: '근거 문장 완성' }));
+    await user.click(screen.getByRole('button', { name: '미션 결과 보기' }));
+    expect(onAdvance).toHaveBeenCalledOnce();
+  });
 });

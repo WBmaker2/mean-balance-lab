@@ -232,10 +232,10 @@ describe('learning router', () => {
   it.each([
     '#/mission/balance-delivery/balance-20-a/mission-result',
     '#/mission/balance-delivery/balance-20-a/redistribute',
-  ])('settles a complete mission-result run on the results screen (%s)', async (hash) => {
+  ])('settles a complete mission-result run on the mission summary (%s)', async (hash) => {
     renderAppAt(hash, completedBalanceStateWithTwoRetries());
-    expect(await screen.findByRole('heading', { name: '전체 결과' })).toBeVisible();
-    expect(window.location.hash).toBe('#/results');
+    expect(await screen.findByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+    expect(window.location.hash).toBe('#/mission/balance-delivery/balance-20-a/mission-result');
   });
 
   it('opens a verified twin compare run with calculations before the plots', async () => {

@@ -58,6 +58,7 @@ export type LabAction =
   | { type: 'SUBMIT_CALCULATION'; target: CalculationTarget; input: CalculationInput }
   | { type: 'SET_COMPARISON'; selectedIds: readonly ComparisonChoiceId[] }
   | { type: 'SUBMIT_EVIDENCE'; record: EvidenceRecord }
+  | { type: 'UPDATE_EVIDENCE_ATTEMPT'; record: EvidenceRecord }
   | { type: 'ADVANCE_STAGE' }
   | { type: 'SET_SAVE_MODE'; mode: SaveMode }
   | { type: 'RESET_ACTIVE_DATASET' }
@@ -305,6 +306,26 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
       }
       const attempts = { ...state.attempts, [run.datasetId]: action.record };
       return withRun({ ...state, attempts }, { ...run, artifacts: { ...run.artifacts, evidence: action.record }, transientFeedback: null });
+    }
+    case 'UPDATE_EVIDENCE_ATTEMPT': {
+      const existing = state.attempts[action.record.datasetId];
+      if (!existing || existing.datasetId !== action.record.datasetId
+        || !isCanonicalEvidenceRecord(existing, existing.missionId, existing.datasetId, existing.revisions)) return state;
+      if (!isCanonicalEvidenceRecord(action.record, existing.missionId, existing.datasetId, existing.revisions)) return state;
+      const activeRun = state.activeRun;
+      const sameActiveEvidence = activeRun
+        && activeRun.missionId === existing.missionId
+        && activeRun.datasetId === existing.datasetId
+        && activeRun.artifacts.evidence
+        && isCanonicalEvidenceRecord(activeRun.artifacts.evidence, activeRun.missionId, activeRun.datasetId, activeRun.revisions)
+        && activeRun.revisions === existing.revisions;
+      return {
+        ...state,
+        attempts: { ...state.attempts, [action.record.datasetId]: action.record },
+        ...(sameActiveEvidence && activeRun
+          ? { activeRun: { ...activeRun, artifacts: { ...activeRun.artifacts, evidence: action.record } } }
+          : {}),
+      };
     }
     case 'ADVANCE_STAGE': {
       const run = state.activeRun;

@@ -15,6 +15,7 @@ export interface EvidenceBuilderProps {
   revisions: number;
   onSubmit: (record: EvidenceRecord) => void;
   existingRecord?: EvidenceRecord;
+  onAdvance?: () => void;
 }
 
 type ChoiceOption = { id: EvidenceChoiceId; label: string };
@@ -79,7 +80,7 @@ const evidenceSignature = (
 });
 
 export const EvidenceBuilder = ({
-  mission, dataset, revisions, onSubmit, existingRecord,
+  mission, dataset, revisions, onSubmit, existingRecord, onAdvance,
 }: EvidenceBuilderProps) => {
   const restored = validExistingRecord(mission, dataset, revisions, existingRecord) ? existingRecord : undefined;
   const signature = evidenceSignature(mission, dataset, revisions, restored);
@@ -189,7 +190,10 @@ export const EvidenceBuilder = ({
 
         {feedback ? <FeedbackPrompt {...feedback} /> : null}
         {submitted ? (
-          <ActionButton type="button" emphasis="next" onClick={edit}>근거 문장 수정</ActionButton>
+          <>
+            <ActionButton type="button" onClick={edit}>근거 문장 수정</ActionButton>
+            {onAdvance ? <ActionButton type="button" emphasis="next" onClick={onAdvance}>미션 결과 보기</ActionButton> : null}
+          </>
         ) : (
           <ActionButton type="submit" emphasis="next">근거 문장 완성</ActionButton>
         )}
