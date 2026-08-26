@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEVICE_STORAGE_KEY, TAB_STORAGE_KEY, isLabSessionState, loadSession, sanitizeRestoredSession,
+  DEVICE_STORAGE_KEY, TAB_STORAGE_KEY, isLabSessionState, loadSession, sanitizeRestoredSession, saveSession,
 } from './persistence';
 import { invalidShapeSession, stateWithCompletedEvidenceAndWrongFeedback } from '../test/fixtures';
 
@@ -46,6 +46,18 @@ describe('session persistence guards', () => {
   it('uses separate tab and device keys', () => {
     expect(TAB_STORAGE_KEY).toBe('mean-balance-lab:tab:v1');
     expect(DEVICE_STORAGE_KEY).toBe('mean-balance-lab:device:v1');
+  });
+
+  it('keeps storage access failures inside the persistence boundary', () => {
+    const blockedStorage = {
+      getItem: () => { throw new DOMException('blocked', 'SecurityError'); },
+      setItem: () => { throw new DOMException('blocked', 'QuotaExceededError'); },
+      removeItem: () => { throw new DOMException('blocked', 'SecurityError'); },
+    };
+
+    expect(() => loadSession(blockedStorage, TAB_STORAGE_KEY)).not.toThrow();
+    expect(loadSession(blockedStorage, TAB_STORAGE_KEY)).toBeNull();
+    expect(() => saveSession(blockedStorage, TAB_STORAGE_KEY, stateWithCompletedEvidenceAndWrongFeedback())).not.toThrow();
   });
 
   it('rejects a verified calculation forged with non-canonical totals', () => {

@@ -70,6 +70,9 @@ export const LabSessionProvider = ({ children, initialState }: LabSessionProvide
       safeRemove(deviceStorage, DEVICE_STORAGE_KEY);
     }
     if (state.saveMode === 'device') {
+      // Restore checks the tab key first, so device mode must keep both keys
+      // identical to avoid reviving stale progress after a reload.
+      if (tabStorage) saveSession(tabStorage, TAB_STORAGE_KEY, state);
       if (deviceStorage) saveSession(deviceStorage, DEVICE_STORAGE_KEY, state);
     } else if (tabStorage) {
       saveSession(tabStorage, TAB_STORAGE_KEY, state);
