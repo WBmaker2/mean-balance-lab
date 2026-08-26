@@ -59,36 +59,56 @@ test('visible interactive controls meet the 44px touch target', async ({ page })
 });
 
 test('keeps teacher summary as the only visible print content', async ({ page }) => {
+  const printViewports = [812, 3000] as const;
   await page.goto('/#/');
   await page.evaluate((state) => {
     sessionStorage.clear();
     localStorage.setItem('mean-balance-lab:device:v1', JSON.stringify(state));
   }, completedState);
-  await page.reload();
-  await page.goto('/#/results');
-  await expect(page.getByRole('heading', { name: '교사용 활동 요약' })).toBeVisible();
-  await page.emulateMedia({ media: 'print' });
-  await expect(page.locator('.teacher-summary')).toBeVisible();
-  await expect(page.getByRole('heading', { name: '교사용 활동 요약' })).toBeVisible();
-  await expect(page.getByRole('region', { name: '교사용 요약 표' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '교사용 요약 인쇄' })).not.toBeVisible();
-  await expect(page.getByRole('button', { name: '처음부터 다시' })).not.toBeVisible();
-  await expect(page.locator('header')).not.toBeVisible();
-
-  const studentResultRemoved = await page.locator('.full-result > :not(.teacher-summary)').evaluateAll((elements) =>
-    elements.length > 0 && elements.every((element) => getComputedStyle(element).display === 'none'));
-  expect(studentResultRemoved).toBe(true);
-
-  const printExtent = await page.evaluate(() => {
-    const root = document.querySelector('#root');
-    const summary = document.querySelector('.teacher-summary');
-    return {
-      bodyHeight: document.body.scrollHeight,
-      rootHeight: root?.scrollHeight ?? 0,
-      summaryHeight: summary?.getBoundingClientRect().height ?? 0,
-    };
-  });
-  const allowedShellSpace = printExtent.summaryHeight + 256;
-  expect(printExtent.bodyHeight).toBeLessThanOrEqual(allowedShellSpace);
-  expect(printExtent.rootHeight).toBeLessThanOrEqual(allowedShellSpace);
+  const extents = [];
+  for (const height of printViewports) {
+    await page.setViewportSize({ width: 375, height });
+    await page.reload();
+    await page.goto('/#/results');
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.locator('.teacher-summary')).toBeVisible();
+    await expect(page.getByRole('heading', { name: '교사용 활동 요약' })).toBeVisible();
+    await expect(page.getByRole('region', { name: '교사용 요약 표' })).toBeVisible();
+    const studentResultRemoved = await page.locator('.full-result > :not(.teacher-summary)').evaluateAll((elements) =>
+      elements.length > 0 && elements.every((element) => getComputedStyle(element).display === 'none'));
+    expect(studentResultRemoved).toBe(true);
+    for (const selector of ['.teacher-summary-controls', 'header', 'footer', '.app-settings', '.update-history-trigger', '.update-history-dialog']) {
+      await expect(page.locator(selector)).not.toBeVisible();
+    }
+    extents.push(await page.evaluate(() => {
+      const root = document.querySelector('#root');
+      const main = document.querySelector('main');
+      const result = document.querySelector('.full-result');
+      const summary = document.querySelector('.teacher-summary');
+      const mainStyle = main ? getComputedStyle(main) : null;
+      const resultStyle = result ? getComputedStyle(result) : null;
+      const summaryStyle = summary ? getComputedStyle(summary) : null;
+      const px = (value: string | undefined) => Number.parseFloat(value ?? '0');
+      const shellAllowance = mainStyle && resultStyle && summaryStyle
+        ? px(mainStyle.paddingTop) + px(mainStyle.paddingBottom)
+          + px(resultStyle.paddingTop) + px(resultStyle.paddingBottom)
+          + px(resultStyle.borderTopWidth) + px(resultStyle.borderBottomWidth)
+          + px(summaryStyle.marginTop)
+        : 0;
+      return {
+        bodyHeight: document.body.scrollHeight,
+        rootHeight: root?.scrollHeight ?? 0,
+        summaryHeight: summary?.getBoundingClientRect().height ?? 0,
+        shellAllowance,
+      };
+    }));
+  }
+  const [shortPrintExtent, tallPrintExtent] = extents;
+  for (const extent of extents) {
+    const maxExtent = Math.ceil(extent.summaryHeight + extent.shellAllowance);
+    expect(extent.bodyHeight).toBeLessThanOrEqual(maxExtent);
+    expect(extent.rootHeight).toBeLessThanOrEqual(maxExtent);
+  }
+  expect(tallPrintExtent.bodyHeight).toBe(shortPrintExtent.bodyHeight);
+  expect(tallPrintExtent.rootHeight).toBe(shortPrintExtent.rootHeight);
 });
