@@ -56,7 +56,13 @@ const validExistingRecord = (
 ): record is EvidenceRecord => record !== undefined
   && record.missionId === mission
   && record.datasetId === dataset.id
-  && record.selectedIds.length > 0;
+  && record.selectedIds.length > 0
+  && new Set(record.selectedIds).size === record.selectedIds.length
+  && record.selectedIds.every((id) => OPTIONS[mission].some((option) => option.id === id))
+  && record.sentence === buildEvidenceSentence(mission, dataset.id, record.selectedIds)
+  && record.level === deriveEvidenceLevel(mission, record.selectedIds)
+  && Number.isInteger(record.revisions)
+  && record.revisions >= 0;
 
 export const EvidenceBuilder = ({
   mission, dataset, revisions, onSubmit, existingRecord,

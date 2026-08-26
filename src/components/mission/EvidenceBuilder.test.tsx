@@ -122,4 +122,19 @@ describe('EvidenceBuilder', () => {
     expect(screen.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.' })).toBeChecked();
     expect(screen.getByRole('button', { name: '근거 문장 수정' })).toBeVisible();
   });
+
+  it('does not restore a forged record as a successful sentence', () => {
+    const forged: EvidenceRecord = {
+      missionId: 'representative-review',
+      datasetId: 'review-cards-a',
+      selectedIds: ['mean-use-and-limit', 'range-or-individual-values'],
+      sentence: '임의로 바꾼 문장',
+      level: 3,
+      revisions: 1,
+    };
+    renderEvidenceBuilder('representative-review', 'review-cards-a', 1, forged);
+    expect(screen.queryByText('근거 문장을 저장했어요.')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '근거 문장 수정' })).not.toBeInTheDocument();
+    expect(screen.getByText('근거를 선택하면 문장이 나타나요.')).toBeVisible();
+  });
 });
