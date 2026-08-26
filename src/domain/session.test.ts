@@ -36,4 +36,37 @@ describe('recoverable lab session reducer', () => {
     expect(rejected.activeRun?.revisions).toBe(1);
     expect(rejected.activeRun?.transientFeedback?.isCorrect).toBe(false);
   });
+
+  it('never trusts forged calculation values supplied by an action', () => {
+    const started = sessionReducer(createInitialSession(), {
+      type: 'START_DATASET', missionId: 'mean-twins', datasetId: 'twins-4-a',
+    });
+    const predicting = sessionReducer(started, { type: 'ADVANCE_STAGE' });
+    const calculating = sessionReducer(
+      sessionReducer(predicting, { type: 'SET_PREDICTION', value: 4 }),
+      { type: 'ADVANCE_STAGE' },
+    );
+    const forged = sessionReducer(calculating, {
+      type: 'SUBMIT_CALCULATION', target: 'left',
+      input: { values: [1, 1, 1, 1], enteredTotal: 4, enteredCount: 4, enteredMean: 1 },
+    });
+    expect(forged.activeRun?.artifacts.calculations?.left?.verified).toBe(false);
+    expect(forged.activeRun?.revisions).toBe(1);
+  });
+
+  it('does not pre-seed later artifacts from an owning-stage mismatch', () => {
+    const started = sessionReducer(createInitialSession(), {
+      type: 'START_DATASET', missionId: 'mean-twins', datasetId: 'twins-4-a',
+    });
+    const predictionAttempt = sessionReducer(started, {
+      type: 'SUBMIT_CALCULATION', target: 'left',
+      input: { values: [4, 4, 4, 4], enteredTotal: 16, enteredCount: 4, enteredMean: 4 },
+    });
+    const comparisonAttempt = sessionReducer(predictionAttempt, {
+      type: 'SET_COMPARISON', selectedIds: ['same-mean', 'different-spread'],
+    });
+    expect(comparisonAttempt.activeRun?.artifacts.calculations).toBeUndefined();
+    expect(comparisonAttempt.activeRun?.artifacts.comparison).toBeUndefined();
+    expect(comparisonAttempt.activeRun?.revisions).toBe(2);
+  });
 });

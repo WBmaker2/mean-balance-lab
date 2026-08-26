@@ -1,5 +1,6 @@
 import { buildEvidenceSentence, deriveEvidenceLevel } from '../domain/evaluation';
 import { getDataset, getMission, isDatasetId, isLearningStage, isMissionId } from '../content/missions';
+import { mean, sum } from '../domain/math';
 import type {
   CalculationTarget, ComparisonChoiceId, DatasetId, EvidenceChoiceId, EvidenceRecord,
   EvaluationResult, MissionId, PredictionValue, SaveMode,
@@ -82,7 +83,35 @@ const isCalculationArtifact = (value: unknown, target: CalculationTarget): value
     && isNatural(value.average) && typeof value.verified === 'boolean';
 };
 
-const isArtifacts = (value: unknown, run: { datasetId: DatasetId }): value is StageArtifacts => {
+const requiredCalculationTargets = (datasetId: DatasetId): readonly CalculationTarget[] => {
+  const kind = getDataset(datasetId).kind;
+  if (kind === 'twins') return ['left', 'right'];
+  if (kind === 'outlier') return ['before', 'after'];
+  return ['current'];
+};
+
+const canonicalValuesForTarget = (
+  datasetId: DatasetId,
+  target: CalculationTarget,
+  redistribution: Record<string, unknown> | undefined,
+): readonly number[] | null => {
+  const dataset = getDataset(datasetId);
+  if (dataset.kind === 'balance') {
+    if (target !== 'current' || !redistribution || !Array.isArray(redistribution.currentValues)) return null;
+    return redistribution.currentValues.every(isNatural) ? redistribution.currentValues : null;
+  }
+  if (dataset.kind === 'representativeness') return target === 'current' ? dataset.values : null;
+  if (dataset.kind === 'twins') {
+    if (target === 'left') return dataset.leftValues;
+    if (target === 'right') return dataset.rightValues;
+    return null;
+  }
+  if (target === 'before') return dataset.beforeValues;
+  if (target === 'after') return dataset.afterValues;
+  return null;
+};
+
+const isArtifacts = (value: unknown, run: { datasetId: DatasetId; stage: import('../domain/types').LearningStage }): value is StageArtifacts => {
   if (!isRecord(value)) return false;
   const allowed = ['prediction', 'redistribution', 'calculations', 'comparison', 'evidence'];
   if (!Object.keys(value).every((key) => allowed.includes(key))) return false;
@@ -111,7 +140,23 @@ const isArtifacts = (value: unknown, run: { datasetId: DatasetId }): value is St
     if (!isRecord(value.calculations)) return false;
     for (const [target, artifact] of Object.entries(value.calculations)) {
       if (!calculationTargets.has(target as CalculationTarget) || !isCalculationArtifact(artifact, target as CalculationTarget)) return false;
+      const canonical = canonicalValuesForTarget(run.datasetId, target as CalculationTarget,
+        'redistribution' in value && isRecord(value.redistribution) ? value.redistribution : undefined);
+      if (!canonical) return false;
+      if (artifact.verified && (artifact.total !== sum(canonical)
+        || artifact.count !== canonical.length || artifact.average !== mean(canonical))) return false;
     }
+    if (['compare', 'explain', 'mission-result'].includes(run.stage)) {
+      const expected = requiredCalculationTargets(run.datasetId);
+      const actual = Object.keys(value.calculations) as CalculationTarget[];
+      if (actual.length !== expected.length || !expected.every((target) => actual.includes(target))) return false;
+      const calculations = value.calculations;
+      if (!expected.every((target) => isRecord(calculations[target]) && calculations[target].verified === true)) return false;
+    }
+  }
+  if (['compare', 'explain', 'mission-result'].includes(run.stage)) {
+    const calculations = value.calculations;
+    if (!isRecord(calculations)) return false;
   }
   if ('comparison' in value) {
     const comparison = value.comparison;
@@ -142,7 +187,7 @@ const isActiveRun = (value: unknown): value is ActiveRun => {
   const dataset = mission.datasets.find((item) => item.id === datasetId);
   if (!dataset || !dataset.stages.includes(stage)) return false;
   return isNatural(value.revisions) && (value.transientFeedback === null || isEvaluationResult(value.transientFeedback))
-    && isArtifacts(value.artifacts, { datasetId });
+    && isArtifacts(value.artifacts, { datasetId, stage });
 };
 
 export const isLabSessionState = (value: unknown): value is LabSessionState => {

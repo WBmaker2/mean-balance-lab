@@ -20,6 +20,14 @@ const browserStorage = (name: 'sessionStorage' | 'localStorage'): WebStorageLike
   }
 };
 
+const safeRemove = (storage: WebStorageLike | null, key: string): void => {
+  try {
+    storage?.removeItem(key);
+  } catch {
+    // A blocked or full storage must not interrupt the in-memory session.
+  }
+};
+
 const loadInitialState = (): LabSessionState => {
   const tabStorage = browserStorage('sessionStorage');
   const deviceStorage = browserStorage('localStorage');
@@ -41,11 +49,11 @@ export const LabSessionProvider = ({ children, initialState }: LabSessionProvide
   const dispatch = useCallback((action: LabAction) => {
     if (action.type === 'RESET_ALL') {
       skipNextPersist.current = true;
-      browserStorage('sessionStorage')?.removeItem(TAB_STORAGE_KEY);
-      browserStorage('localStorage')?.removeItem(DEVICE_STORAGE_KEY);
+      safeRemove(browserStorage('sessionStorage'), TAB_STORAGE_KEY);
+      safeRemove(browserStorage('localStorage'), DEVICE_STORAGE_KEY);
     }
     if (action.type === 'SET_SAVE_MODE' && action.mode === 'tab') {
-      browserStorage('localStorage')?.removeItem(DEVICE_STORAGE_KEY);
+      safeRemove(browserStorage('localStorage'), DEVICE_STORAGE_KEY);
     }
     reduce(action);
   }, []);
@@ -59,7 +67,7 @@ export const LabSessionProvider = ({ children, initialState }: LabSessionProvide
     const tabStorage = browserStorage('sessionStorage');
     const deviceStorage = browserStorage('localStorage');
     if (previousMode.current === 'device' && state.saveMode === 'tab') {
-      deviceStorage?.removeItem(DEVICE_STORAGE_KEY);
+      safeRemove(deviceStorage, DEVICE_STORAGE_KEY);
     }
     if (state.saveMode === 'device') {
       if (deviceStorage) saveSession(deviceStorage, DEVICE_STORAGE_KEY, state);
@@ -78,4 +86,3 @@ export const useLabSession = (): LabSessionContextValue => {
   if (!context) throw new Error('useLabSession must be used inside LabSessionProvider');
   return context;
 };
-

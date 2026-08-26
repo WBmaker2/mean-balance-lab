@@ -194,7 +194,7 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
       return { ...state, activeRun: makeActiveRun(action.missionId, action.datasetId) };
     }
     case 'SET_PREDICTION': {
-      if (!state.activeRun) return state;
+      if (!state.activeRun || state.activeRun.stage !== 'predict') return state;
       return withRun(state, {
         ...state.activeRun,
         artifacts: { ...state.activeRun.artifacts, prediction: { value: action.value } },
@@ -238,10 +238,14 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
     case 'SUBMIT_CALCULATION': {
       const run = state.activeRun;
       if (!run) return state;
-      if (!valuesForTarget(run, action.target)) {
+      if (run.stage !== 'calculate') {
+        return withRun(state, incrementRevision(run, failure('아직 계산 단계가 아니에요.', '계산 단계에서 평균을 확인해 보세요.')));
+      }
+      const canonicalValues = valuesForTarget(run, action.target);
+      if (!canonicalValues) {
         return withRun(state, incrementRevision(run, failure('평균 계산을 다시 확인해 보세요.', '현재 자료의 평균을 계산해 보세요.')));
       }
-      const result = evaluateCalculation(action.input);
+      const result = evaluateCalculation({ ...action.input, values: canonicalValues });
       const artifact: CalculationArtifact = {
         target: action.target,
         total: action.input.enteredTotal,
@@ -256,6 +260,9 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
     case 'SET_COMPARISON': {
       const run = state.activeRun;
       if (!run) return state;
+      if (run.stage !== 'compare') {
+        return withRun(state, incrementRevision(run, failure('아직 비교 단계가 아니에요.', '비교 단계에서 자료를 살펴보세요.')));
+      }
       if (!action.selectedIds.every((id) => comparisonChoices.has(id))) {
         return withRun(state, incrementRevision(run, failure('비교 선택을 다시 살펴보세요.', '자료를 비교할 근거를 선택해 보세요.')));
       }
@@ -270,6 +277,9 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
     case 'SUBMIT_EVIDENCE': {
       const run = state.activeRun;
       if (!run) return state;
+      if (run.stage !== 'explain') {
+        return withRun(state, incrementRevision(run, failure('아직 설명 단계가 아니에요.', '설명 단계에서 근거 문장을 완성해 보세요.')));
+      }
       if (!isEvidenceSubmission(run, action.record)) {
         return withRun(state, incrementRevision(run, failure('근거 문장을 다시 살펴보세요.', '선택한 근거로 문장을 완성해 보세요.')));
       }

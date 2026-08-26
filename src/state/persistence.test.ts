@@ -28,4 +28,24 @@ describe('session persistence guards', () => {
     expect(TAB_STORAGE_KEY).toBe('mean-balance-lab:tab:v1');
     expect(DEVICE_STORAGE_KEY).toBe('mean-balance-lab:device:v1');
   });
+
+  it('rejects a verified calculation forged with non-canonical totals', () => {
+    const value = stateWithCompletedEvidenceAndWrongFeedback() as any;
+    value.activeRun.stage = 'explain';
+    value.activeRun.artifacts.calculations.current.total = 99;
+    expect(isLabSessionState(value)).toBe(false);
+  });
+
+  it('rejects an irrelevant verified calculation target after comparison', () => {
+    const value = stateWithCompletedEvidenceAndWrongFeedback() as any;
+    value.activeRun.stage = 'compare';
+    value.activeRun.missionId = 'mean-twins';
+    value.activeRun.datasetId = 'twins-4-a';
+    value.activeRun.artifacts = {
+      calculations: {
+        current: { target: 'current', total: 16, count: 4, average: 4, verified: true },
+      },
+    };
+    expect(isLabSessionState(value)).toBe(false);
+  });
 });
