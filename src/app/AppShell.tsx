@@ -16,8 +16,8 @@ export const AppShell = () => {
 
   return (
     <>
-      <a className="skip-link" href="#main-content">본문으로 건너뛰기</a>
       <div id="app-shell-content">
+        <a className="skip-link" href="#main-content">본문으로 건너뛰기</a>
         <header>
           <p>평균 균형 조정실</p>
           <Link to="/">처음으로</Link>

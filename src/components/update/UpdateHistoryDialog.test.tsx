@@ -138,6 +138,32 @@ describe('UpdateHistoryDialog', () => {
     expect((trigger as HTMLElement & { inert?: boolean }).inert).toBe(true);
   });
 
+  it('keeps the skip link inside the inert shell boundary and restores navigation after close', async () => {
+    renderAppAt('#/');
+    const user = userEvent.setup();
+    const trigger = screen.getByRole('button', { name: '업데이트 내역' });
+    const skipLink = screen.getByRole('link', { name: '본문으로 건너뛰기' });
+    const background = document.getElementById('app-shell-content');
+
+    expect(background).not.toBeNull();
+    expect(background).toContainElement(skipLink);
+
+    await user.click(trigger);
+
+    expect(background).toHaveAttribute('inert');
+    expect(background).toHaveAttribute('aria-hidden', 'true');
+    expect(background).toContainElement(skipLink);
+
+    await user.keyboard('{Escape}');
+
+    expect(background).not.toHaveAttribute('inert');
+    expect(background).not.toHaveAttribute('aria-hidden');
+    skipLink.focus();
+    expect(skipLink).toHaveFocus();
+    await user.click(skipLink);
+    expect(window.location.hash).toBe('#main-content');
+  });
+
   it('recaptures forced programmatic focus from the background', async () => {
     renderAppAt('#/');
     const user = userEvent.setup();
