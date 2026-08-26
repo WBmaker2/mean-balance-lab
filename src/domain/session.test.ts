@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getDataset } from '../content/missions';
 import { createInitialSession, canAdvance, sessionReducer } from './session';
+import { buildEvidenceSentence, deriveEvidenceLevel } from './evaluation';
 
 describe('recoverable lab session reducer', () => {
   it('supports one-item movement and undo without losing total', () => {
@@ -192,5 +193,82 @@ describe('recoverable lab session reducer', () => {
       type: 'SET_COMPARISON', selectedIds: ['mean-changed-after', 'sum-changed-first'],
     });
     expect(reversed.activeRun?.artifacts.comparison?.verified).toBe(false);
+  });
+
+  it('accepts only a canonical evidence record at explain and preserves revisions', () => {
+    const state = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'explain' as const,
+        artifacts: {
+          calculations: {
+            current: { target: 'current' as const, total: 20, count: 4, average: 5, verified: true },
+          },
+        },
+        revisions: 2,
+        transientFeedback: null,
+      },
+    };
+    const selectedIds = ['redistribution-and-division'] as const;
+    const record = {
+      missionId: 'balance-delivery' as const,
+      datasetId: 'balance-20-a' as const,
+      selectedIds,
+      sentence: buildEvidenceSentence('balance-delivery', 'balance-20-a', selectedIds),
+      level: deriveEvidenceLevel('balance-delivery', selectedIds),
+      revisions: 2,
+    };
+    const submitted = sessionReducer(state, { type: 'SUBMIT_EVIDENCE', record });
+    expect(submitted.activeRun?.artifacts.evidence).toEqual(record);
+    expect(submitted.attempts['balance-20-a']).toEqual(record);
+    expect(submitted.activeRun?.revisions).toBe(2);
+
+    const forged = sessionReducer(state, {
+      type: 'SUBMIT_EVIDENCE',
+      record: { ...record, sentence: '학생이 쓴 임의의 문장', revisions: 0 },
+    });
+    expect(forged.activeRun?.artifacts.evidence).toBeUndefined();
+    expect(forged.activeRun?.revisions).toBe(3);
+  });
+
+  it('allows balance and representative calculation handoffs without opening mission result', () => {
+    const base = createInitialSession();
+    const balance = {
+      ...base,
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'calculate' as const,
+        artifacts: {
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [], confirmed: true,
+          },
+          calculations: {
+            current: { target: 'current' as const, total: 20, count: 4, average: 5, verified: true },
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const representative = {
+      ...base,
+      activeRun: {
+        missionId: 'representative-review' as const,
+        datasetId: 'review-cards-a' as const,
+        stage: 'calculate' as const,
+        artifacts: {
+          calculations: {
+            current: { target: 'current' as const, total: 20, count: 5, average: 4, verified: true },
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    expect(sessionReducer(balance, { type: 'ADVANCE_STAGE' }).activeRun?.stage).toBe('explain');
+    expect(sessionReducer(representative, { type: 'ADVANCE_STAGE' }).activeRun?.stage).toBe('compare');
   });
 });

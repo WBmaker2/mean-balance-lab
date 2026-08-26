@@ -3,19 +3,20 @@ import { COMPARISON_COPY } from '../../content/copy';
 import { evaluateComparison, isAllowedComparisonSelection } from '../../domain/evaluation';
 import { mean, range } from '../../domain/math';
 import type { StageArtifacts } from '../../domain/session';
-import type { EvaluationResult, TwinDataset } from '../../domain/types';
+import type { EvaluationResult, ReviewDataset, TwinDataset } from '../../domain/types';
 import type { OutlierDataset } from '../../domain/types';
 import type { LabAction } from '../../domain/session';
 import { ActionButton } from '../shared/ActionButton';
 import { DotPlot } from '../shared/DotPlot';
 import { FeedbackPrompt } from '../shared/FeedbackPrompt';
-import { OutlierDeltaPanel } from './OutlierDeltaPanel';
+import { OutlierDeltaPanel, type OutlierDeltaPanelProps } from './OutlierDeltaPanel';
 
 interface TwinComparisonPanelProps {
   dataset: TwinDataset;
   artifacts: StageArtifacts;
   dispatch: Dispatch<LabAction>;
   feedback?: EvaluationResult | null;
+  onAdvance?: () => void;
 }
 
 interface OutlierComparisonPanelProps {
@@ -23,13 +24,25 @@ interface OutlierComparisonPanelProps {
   artifacts: StageArtifacts;
   dispatch: Dispatch<LabAction>;
   feedback?: EvaluationResult | null;
+  onAdvance?: () => void;
 }
 
-export type ComparisonPanelProps = TwinComparisonPanelProps | OutlierComparisonPanelProps;
+interface RepresentativeComparisonPanelProps {
+  dataset: ReviewDataset;
+  artifacts: StageArtifacts;
+  dispatch: Dispatch<LabAction>;
+  feedback?: EvaluationResult | null;
+  onAdvance?: () => void;
+}
+
+export type ComparisonPanelProps =
+  | TwinComparisonPanelProps
+  | OutlierComparisonPanelProps
+  | RepresentativeComparisonPanelProps;
 
 const unique = (ids: readonly ('same-mean' | 'different-spread' | 'same-shape')[]) => [...new Set(ids)];
 
-const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null }: TwinComparisonPanelProps) => {
+const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null, onAdvance }: TwinComparisonPanelProps) => {
   const rawSavedIds = artifacts.comparison?.selectedIds ?? [];
   const savedIds = isAllowedComparisonSelection(dataset, rawSavedIds) ? rawSavedIds.filter(
     (id): id is 'same-mean' | 'different-spread' | 'same-shape' =>
@@ -46,6 +59,7 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null }:
   const rightRange = range(dataset.rightValues);
   const savedComparisonIds = unique(savedIds);
   const verified = artifacts.comparison?.verified === true
+    && evaluateComparison(dataset, savedComparisonIds).isCorrect
     && savedComparisonIds.length > 0
     && selectedIds.length === savedComparisonIds.length
     && selectedIds.every((id) => savedComparisonIds.includes(id));
@@ -132,8 +146,8 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null }:
 
       {shownFeedback ? <FeedbackPrompt {...shownFeedback} /> : null}
       {verified ? (
-        <ActionButton type="button" emphasis="next" onClick={() => plotExplanationRef.current?.focus()}>
-          비교 완료
+        <ActionButton type="button" emphasis="next" onClick={onAdvance ?? (() => plotExplanationRef.current?.focus())}>
+          다음 단계
         </ActionButton>
       ) : (
         <ActionButton type="button" emphasis="next" onClick={submit}>
@@ -144,24 +158,113 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null }:
   );
 };
 
+const RepresentativeComparisonPanel = ({
+  dataset, artifacts, dispatch, feedback = null, onAdvance,
+}: RepresentativeComparisonPanelProps) => {
+  const rawSavedIds = artifacts.comparison?.selectedIds ?? [];
+  const savedIds = isAllowedComparisonSelection(dataset, rawSavedIds)
+    ? rawSavedIds.filter((id): id is 'range-or-individual-values' | 'mean-always-enough' =>
+      id === 'range-or-individual-values' || id === 'mean-always-enough')
+    : [];
+  const [selectedIds, setSelectedIds] = useState<readonly ('range-or-individual-values' | 'mean-always-enough')[]>(savedIds);
+  const [localFeedback, setLocalFeedback] = useState<EvaluationResult | null>(null);
+  const verified = artifacts.comparison?.verified === true
+    && evaluateComparison(dataset, savedIds).isCorrect
+    && selectedIds.length === savedIds.length
+    && selectedIds.every((id) => savedIds.includes(id));
+  const shownFeedback = verified
+    ? (feedback ?? localFeedback ?? {
+      isCorrect: true,
+      message: COMPARISON_COPY.representativeSuccessMessage,
+      nextAction: COMPARISON_COPY.evidenceNextAction,
+    })
+    : localFeedback;
+  const currentSelection = selectedIds[0];
+
+  const submit = () => {
+    const normalized = [...new Set(selectedIds)];
+    const result = evaluateComparison(dataset, normalized);
+    setLocalFeedback(result);
+    dispatch({ type: 'SET_COMPARISON', selectedIds: normalized });
+  };
+
+  return (
+    <section aria-labelledby="representative-comparison-heading">
+      <h1 id="representative-comparison-heading">평균과 자료의 모습을 비교해 볼까요?</h1>
+      <p>평균과 범위, 각 값을 함께 살펴보고 평균만으로 충분한지 판단해 보세요.</p>
+      <section aria-label="대표값 비교 결과">
+        <h2>계산 결과</h2>
+        <p>평균 {mean(dataset.values)} / 범위 {range(dataset.values)}</p>
+        <p>각 값: {dataset.values.join(', ')}</p>
+      </section>
+      <fieldset>
+        <legend>평균만으로 자료를 설명할 수 있을까요?</legend>
+        <label>
+          <input
+            type="radio"
+            name="representative-comparison-choice"
+            checked={currentSelection === 'range-or-individual-values'}
+            onChange={() => { setSelectedIds(['range-or-individual-values']); setLocalFeedback(null); }}
+          />
+          범위나 각 값을 함께 살펴봐야 합니다.
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="representative-comparison-choice"
+            checked={currentSelection === 'mean-always-enough'}
+            onChange={() => { setSelectedIds(['mean-always-enough']); setLocalFeedback(null); }}
+          />
+          평균만으로 모든 자료를 판단할 수 있습니다.
+        </label>
+      </fieldset>
+      {shownFeedback ? <FeedbackPrompt {...shownFeedback} /> : null}
+      {verified ? (
+        <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음 단계</ActionButton>
+      ) : (
+        <ActionButton type="button" emphasis="next" onClick={submit}>비교 확인</ActionButton>
+      )}
+    </section>
+  );
+};
+
 export const ComparisonPanel = (props: ComparisonPanelProps) => {
   if (props.dataset.kind === 'outlier') {
+    const comparison = props.artifacts.comparison;
+    const verified = comparison?.verified === true
+      && evaluateComparison(props.dataset, comparison.selectedIds).isCorrect;
+    const outlierProps: OutlierDeltaPanelProps = {
+      dataset: props.dataset,
+      prediction: props.artifacts.prediction,
+      verified,
+      onConfirm: () => props.dispatch({
+        type: 'SET_COMPARISON',
+        selectedIds: ['sum-changed-first', 'mean-changed-after'],
+      }),
+      ...(props.onAdvance ? { onAdvance: props.onAdvance } : {}),
+    };
     return (
       <OutlierDeltaPanel
-        dataset={props.dataset}
-        prediction={props.artifacts.prediction}
-        onConfirm={() => props.dispatch({
-          type: 'SET_COMPARISON',
-          selectedIds: ['sum-changed-first', 'mean-changed-after'],
-        })}
+        {...outlierProps}
       />
     );
+  }
+  if (props.dataset.kind === 'representativeness') {
+    const representativeProps: RepresentativeComparisonPanelProps = {
+      dataset: props.dataset,
+      artifacts: props.artifacts,
+      dispatch: props.dispatch,
+      ...(props.feedback !== undefined ? { feedback: props.feedback } : {}),
+      ...(props.onAdvance !== undefined ? { onAdvance: props.onAdvance } : {}),
+    };
+    return <RepresentativeComparisonPanel {...representativeProps} />;
   }
   const twinProps: TwinComparisonPanelProps = {
     dataset: props.dataset,
     artifacts: props.artifacts,
     dispatch: props.dispatch,
     ...(props.feedback !== undefined ? { feedback: props.feedback } : {}),
+    ...(props.onAdvance !== undefined ? { onAdvance: props.onAdvance } : {}),
   };
   return <TwinsComparisonPanel {...twinProps} />;
 };

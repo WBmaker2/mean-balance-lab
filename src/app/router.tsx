@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { getMission, isDatasetId, isLearningStage, isMissionId, MISSIONS } from '../content/missions';
 import { isBalanced, sum } from '../domain/math';
+import { evaluateComparison } from '../domain/evaluation';
 import { canAdvance, type LabSessionState } from '../domain/session';
 import { useLabSession } from '../state/LabSessionContext';
 import type { DatasetId, LearningStage, MissionDataset, MissionDefinition, MissionId } from '../domain/types';
@@ -10,16 +11,21 @@ import { ResultScreen } from '../components/result/ResultScreen';
 import { StartScreen } from '../components/start/StartScreen';
 
 export const RECOVERY_MESSAGE = '자료를 찾지 못해 시작 화면으로 돌아왔어요.';
-const IMPLEMENTED_STAGES: readonly LearningStage[] = ['situation', 'predict', 'redistribute', 'calculate', 'compare'];
+const IMPLEMENTED_STAGES: readonly LearningStage[] = [
+  'situation', 'predict', 'redistribute', 'calculate', 'compare', 'explain',
+];
 const isImplementedStage = (
   stage: LearningStage,
   dataset: MissionDataset,
-): stage is Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare'> =>
+): stage is Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare' | 'explain'> =>
   stage === 'situation'
   || stage === 'predict'
   || (stage === 'redistribute' && dataset.kind === 'balance')
   || (stage === 'calculate' && dataset.stages.includes('calculate'))
-  || (stage === 'compare' && (dataset.kind === 'twins' || dataset.kind === 'outlier'));
+  || (stage === 'compare' && (
+    dataset.kind === 'twins' || dataset.kind === 'outlier' || dataset.kind === 'representativeness'
+  ))
+  || (stage === 'explain' && dataset.stages.includes('explain'));
 
 export const routeFor = (missionId: MissionId, datasetId: DatasetId, stage: LearningStage): string =>
   `#/mission/${missionId}/${datasetId}/${stage}`;
@@ -59,7 +65,8 @@ const hasRequiredArtifact = (
       return targets.every((target) => run.artifacts.calculations?.[target]?.verified === true);
     }
     case 'compare':
-      return run.artifacts.comparison?.verified === true;
+      return run.artifacts.comparison?.verified === true
+        && evaluateComparison(dataset, run.artifacts.comparison.selectedIds).isCorrect;
     case 'explain':
       return run.artifacts.evidence !== undefined;
     case 'mission-result':
@@ -123,7 +130,7 @@ const MissionRoute = () => {
   if (matching && allowedStage !== stage) {
     return <Navigate to={pathFor(mission.id, dataset.id, allowedStage)} replace />;
   }
-  let visibleStage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare'>;
+  let visibleStage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute' | 'calculate' | 'compare' | 'explain'>;
   if (matching) {
     if (!isImplementedStage(allowedStage, dataset)) {
       const fallbackStage = dataset.kind === 'balance' ? 'redistribute' : 'predict';

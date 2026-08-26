@@ -7,6 +7,8 @@ export interface OutlierDeltaPanelProps {
   dataset: OutlierDataset;
   prediction?: PredictionValue | { value: PredictionValue } | undefined;
   onConfirm: () => void;
+  onAdvance?: () => void;
+  verified?: boolean;
 }
 
 const predictionLabel = (prediction: OutlierDeltaPanelProps['prediction']): string => {
@@ -23,7 +25,9 @@ const deltaText = (delta: number): string => {
   return '변화 없음';
 };
 
-export const OutlierDeltaPanel = ({ dataset, prediction, onConfirm }: OutlierDeltaPanelProps) => {
+export const OutlierDeltaPanel = ({
+  dataset, prediction, onConfirm, onAdvance, verified = false,
+}: OutlierDeltaPanelProps) => {
   const delta = useMemo(
     () => describeDelta(dataset.beforeValues, dataset.afterValues),
     [dataset.beforeValues, dataset.afterValues],
@@ -48,7 +52,11 @@ export const OutlierDeltaPanel = ({ dataset, prediction, onConfirm }: OutlierDel
         <p aria-label="합계 변화와 평균 변화의 관계">{delta.sumDelta} ÷ {count} = {delta.meanDelta}</p>
       </section>
 
-      <ActionButton type="button" emphasis="next" onClick={onConfirm}>변화 확인</ActionButton>
+      {verified ? (
+        <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음 단계</ActionButton>
+      ) : (
+        <ActionButton type="button" emphasis="next" onClick={onConfirm}>변화 확인</ActionButton>
+      )}
     </section>
   );
 };

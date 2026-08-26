@@ -179,7 +179,7 @@ describe('learning router', () => {
     await user.type(inputs[2]!, '5');
     await user.click(screen.getByRole('button', { name: '계산 확인' }));
     expect(screen.getAllByText('20 ÷ 4 = 5')).toHaveLength(2);
-    expect(screen.queryByRole('button', { name: '다음 단계' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '다음 단계' })).toBeVisible();
   });
 
   it('routes an unconfirmed balanced run back to redistribution', async () => {
@@ -323,7 +323,7 @@ describe('learning router', () => {
     expect(await screen.findByRole('heading', { name: '합계 변화와 평균 변화를 살펴볼까요?' })).toBeVisible();
   });
 
-  it('keeps a representative calculation on its screen without an unimplemented next CTA', async () => {
+  it('offers the representative comparison handoff after a verified calculation', async () => {
     const initialState = {
       ...createInitialSession(),
       activeRun: {
@@ -340,6 +340,81 @@ describe('learning router', () => {
     };
     renderAppAt('#/mission/representative-review/review-cards-a/calculate', initialState);
     expect(await screen.findByLabelText('평균 계산 방정식')).toHaveTextContent('20 ÷ 5 = 4');
-    expect(screen.queryByRole('button', { name: '다음 단계' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '다음 단계' })).toBeVisible();
+  });
+
+  it('hands representative review from calculation to compare and then explain', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'representative-review' as const,
+        datasetId: 'review-cards-a' as const,
+        stage: 'calculate' as const,
+        artifacts: {
+          prediction: { value: 4 as const },
+          calculations: { current: { target: 'current' as const, total: 20, count: 5, average: 4, verified: true } },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/representative-review/review-cards-a/calculate', initialState);
+    await user.click(screen.getByRole('button', { name: '다음 단계' }));
+    expect(window.location.hash).toContain('/compare');
+    expect(await screen.findByRole('heading', { name: '평균과 자료의 모습을 비교해 볼까요?' })).toBeVisible();
+
+    await user.click(screen.getByRole('radio', { name: '범위나 각 값을 함께 살펴봐야 합니다.' }));
+    await user.click(screen.getByRole('button', { name: '비교 확인' }));
+    await user.click(screen.getByRole('button', { name: '다음 단계' }));
+    expect(window.location.hash).toContain('/explain');
+    expect(await screen.findByRole('heading', { name: '근거 문장을 완성해 볼까요?' })).toBeVisible();
+  });
+
+  it('hands a verified balance calculation directly to explain', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'calculate' as const,
+        artifacts: {
+          prediction: { value: 5 as const },
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [], confirmed: true,
+          },
+          calculations: { current: { target: 'current' as const, total: 20, count: 4, average: 5, verified: true } },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/balance-delivery/balance-20-a/calculate', initialState);
+    await user.click(screen.getByRole('button', { name: '다음 단계' }));
+    expect(window.location.hash).toContain('/explain');
+    expect(await screen.findByRole('heading', { name: '근거 문장을 완성해 볼까요?' })).toBeVisible();
+  });
+
+  it('does not let an explain deep link bypass the current calculation or comparison stage', async () => {
+    const calculationState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'calculate' as const,
+        artifacts: {
+          prediction: { value: 5 as const },
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [], confirmed: true,
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    renderAppAt('#/mission/balance-delivery/balance-20-a/explain', calculationState);
+    expect(await screen.findByRole('heading', { name: '평균을 계산해 볼까요?' })).toBeVisible();
+    expect(window.location.hash).toContain('/calculate');
   });
 });

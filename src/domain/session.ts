@@ -142,9 +142,7 @@ export const canAdvance = (state: LabSessionState): AdvanceGate => {
     case 'calculate': {
       const missing = requiredTargets(run).filter((target) => run.artifacts.calculations?.[target]?.verified !== true);
       if (missing.length === 0) {
-        return getDataset(run.datasetId).kind === 'twins' || getDataset(run.datasetId).kind === 'outlier'
-          ? { allowed: true }
-          : { allowed: false, reason: '다음 비교 단계는 아직 준비 중이에요.' };
+        return { allowed: true };
       }
       if (missing.length > 1) {
         const kind = getDataset(run.datasetId).kind;
@@ -154,7 +152,8 @@ export const canAdvance = (state: LabSessionState): AdvanceGate => {
       return { allowed: false, reason: '평균 계산을 확인해 보세요.' };
     }
     case 'compare':
-      return run.artifacts.comparison?.verified
+      return run.artifacts.comparison?.verified === true
+        && evaluateComparison(getDataset(run.datasetId), run.artifacts.comparison.selectedIds).isCorrect
         ? { allowed: true }
         : { allowed: false, reason: '비교할 근거를 선택해 보세요.' };
     case 'explain':
@@ -184,6 +183,7 @@ const evidenceChoicesByMission: Readonly<Record<MissionId, readonly EvidenceChoi
 
 const isEvidenceSubmission = (run: ActiveRun, record: EvidenceRecord): boolean => {
   if (record.missionId !== run.missionId || record.datasetId !== run.datasetId) return false;
+  if (record.revisions !== run.revisions) return false;
   if (record.selectedIds.length === 0 || new Set(record.selectedIds).size !== record.selectedIds.length) return false;
   if (!record.selectedIds.every((id) => evidenceChoicesByMission[run.missionId].includes(id))) return false;
   const expectedSentence = buildEvidenceSentence(run.missionId, run.datasetId, record.selectedIds);
@@ -315,9 +315,6 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
       const index = stages.indexOf(run.stage);
       const nextStage = stages[index + 1];
       if (!nextStage) return state;
-      if (nextStage === 'compare'
-        && getDataset(run.datasetId).kind !== 'twins'
-        && getDataset(run.datasetId).kind !== 'outlier') return state;
       const nextRun = { ...run, stage: nextStage, transientFeedback: null };
       return nextStage === 'mission-result' ? markRequiredMission(withRun(state, nextRun), nextRun) : withRun(state, nextRun);
     }
