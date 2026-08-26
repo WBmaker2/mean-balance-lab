@@ -220,4 +220,16 @@ describe('EvidenceBuilder', () => {
     expect(screen.queryByText('근거 문장을 저장했어요.')).not.toBeInTheDocument();
     expect(screen.getByText('근거를 선택하면 문장이 나타나요.')).toBeVisible();
   });
+
+  it('does not throw when an in-memory forged record contains a cyclic selectedIds value', () => {
+    const cyclic = [] as unknown as EvidenceRecord['selectedIds'];
+    (cyclic as unknown as unknown[]).push(cyclic);
+    const forged = {
+      missionId: 'representative-review', datasetId: 'review-cards-a',
+      selectedIds: cyclic, sentence: '임의 문장', level: 3, revisions: 0,
+    } as EvidenceRecord;
+    expect(() => renderEvidenceBuilder('representative-review', 'review-cards-a', 0, forged)).not.toThrow();
+    expect(screen.getByText('근거를 선택하면 문장이 나타나요.')).toBeVisible();
+    expect(screen.queryByText('근거 문장을 저장했어요.')).not.toBeInTheDocument();
+  });
 });

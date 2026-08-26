@@ -82,7 +82,7 @@ export const EvidenceBuilder = ({
   mission, dataset, revisions, onSubmit, existingRecord,
 }: EvidenceBuilderProps) => {
   const restored = validExistingRecord(mission, dataset, revisions, existingRecord) ? existingRecord : undefined;
-  const signature = evidenceSignature(mission, dataset, revisions, existingRecord);
+  const signature = evidenceSignature(mission, dataset, revisions, restored);
   const [selectedIds, setSelectedIds] = useState<readonly EvidenceChoiceId[]>(restored?.selectedIds ?? []);
   const [submitted, setSubmitted] = useState<EvidenceRecord | undefined>(restored);
   const [feedback, setFeedback] = useState<ReturnType<typeof emptyFeedback> | null>(null);

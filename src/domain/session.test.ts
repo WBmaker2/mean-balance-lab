@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getDataset } from '../content/missions';
 import { createInitialSession, canAdvance, sessionReducer } from './session';
 import { buildEvidenceSentence, deriveEvidenceLevel } from './evaluation';
+import { isLabSessionState, loadSession, saveSession } from '../state/persistence';
 
 describe('recoverable lab session reducer', () => {
   it('supports one-item movement and undo without losing total', () => {
@@ -203,6 +204,9 @@ describe('recoverable lab session reducer', () => {
         datasetId: 'balance-20-a' as const,
         stage: 'explain' as const,
         artifacts: {
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [], confirmed: true,
+          },
           calculations: {
             current: { target: 'current' as const, total: 20, count: 4, average: 5, verified: true },
           },
@@ -231,6 +235,58 @@ describe('recoverable lab session reducer', () => {
     });
     expect(forged.activeRun?.artifacts.evidence).toBeUndefined();
     expect(forged.activeRun?.revisions).toBe(3);
+  });
+
+  it('removes stale active evidence after a rejected update but preserves the historical attempt', () => {
+    const historical = {
+      missionId: 'balance-delivery' as const,
+      datasetId: 'balance-20-a' as const,
+      selectedIds: ['redistribution-and-division'] as const,
+      sentence: buildEvidenceSentence('balance-delivery', 'balance-20-a', ['redistribution-and-division']),
+      level: 3 as const,
+      revisions: 0,
+    };
+    const state = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'explain' as const,
+        artifacts: {
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [], confirmed: true,
+          },
+          calculations: {
+            current: { target: 'current' as const, total: 20, count: 4, average: 5, verified: true },
+          },
+          evidence: { ...historical, revisions: 1 },
+        },
+        revisions: 1,
+        transientFeedback: null,
+      },
+      attempts: { 'balance-20-a': historical },
+    };
+    const rejected = sessionReducer(state, {
+      type: 'SUBMIT_EVIDENCE',
+      record: { ...historical, sentence: '임의 문장', revisions: 1 },
+    });
+    expect(rejected.activeRun?.artifacts.evidence).toBeUndefined();
+    expect(rejected.activeRun?.revisions).toBe(2);
+    expect(rejected.activeRun?.transientFeedback).toEqual({
+      isCorrect: false,
+      message: '근거 문장을 다시 살펴보세요.',
+      nextAction: '선택한 근거로 문장을 완성해 보세요.',
+    });
+    expect(rejected.attempts['balance-20-a']).toEqual(historical);
+    expect(isLabSessionState(rejected)).toBe(true);
+    const storage = new Map<string, string>();
+    const webStorage = {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => { storage.set(key, value); },
+      removeItem: (key: string) => { storage.delete(key); },
+    };
+    saveSession(webStorage, 'mean-balance-lab:test', rejected);
+    expect(loadSession(webStorage, 'mean-balance-lab:test')).not.toBeNull();
   });
 
   it('allows balance and representative calculation handoffs without opening mission result', () => {

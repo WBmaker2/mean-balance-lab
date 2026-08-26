@@ -181,6 +181,12 @@ const isEvidenceSubmission = (run: ActiveRun, record: EvidenceRecord): boolean =
   return isCanonicalEvidenceRecord(record, run.missionId, run.datasetId, run.revisions);
 };
 
+const clearActiveEvidence = (run: ActiveRun): ActiveRun => {
+  if (!run.artifacts.evidence) return run;
+  const { evidence: _evidence, ...artifacts } = run.artifacts;
+  return { ...run, artifacts };
+};
+
 export const sessionReducer = (state: LabSessionState, action: LabAction): LabSessionState => {
   switch (action.type) {
     case 'START_DATASET': {
@@ -294,7 +300,8 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
         return withRun(state, incrementRevision(run, failure('아직 설명 단계가 아니에요.', '설명 단계에서 근거 문장을 완성해 보세요.')));
       }
       if (!isEvidenceSubmission(run, action.record)) {
-        return withRun(state, incrementRevision(run, failure('근거 문장을 다시 살펴보세요.', '선택한 근거로 문장을 완성해 보세요.')));
+        const rejectedRun = clearActiveEvidence(run);
+        return withRun(state, incrementRevision(rejectedRun, failure('근거 문장을 다시 살펴보세요.', '선택한 근거로 문장을 완성해 보세요.')));
       }
       const attempts = { ...state.attempts, [run.datasetId]: action.record };
       return withRun({ ...state, attempts }, { ...run, artifacts: { ...run.artifacts, evidence: action.record }, transientFeedback: null });
