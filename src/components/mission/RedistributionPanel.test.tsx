@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useReducer } from 'react';
@@ -25,7 +25,7 @@ const renderBalancePanel = (values = dataset.values) => {
       ...createInitialSession(), activeRun: makeRun(values),
     });
     if (!state.activeRun) return null;
-    return <RedistributionPanel dataset={dataset} run={state.activeRun} dispatch={dispatch} />;
+    return <RedistributionPanel dataset={dataset} run={state.activeRun} dispatch={dispatch} onAdvance={vi.fn()} />;
   }
   return render(<Harness />);
 };

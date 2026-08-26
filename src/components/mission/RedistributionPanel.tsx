@@ -11,11 +11,12 @@ export interface RedistributionPanelProps {
   dataset: BalanceDataset;
   run: ActiveRun;
   dispatch: Dispatch<LabAction>;
+  onAdvance: () => void;
 }
 
 const PATTERNS = ['dots', 'stripes', 'grid', 'waves'] as const;
 
-export const RedistributionPanel = ({ dataset, run, dispatch }: RedistributionPanelProps) => {
+export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: RedistributionPanelProps) => {
   const redistribution = run.artifacts.redistribution;
   const currentValues = redistribution?.currentValues ?? dataset.values;
   const initialTotal = sum(dataset.values);
@@ -97,6 +98,7 @@ export const RedistributionPanel = ({ dataset, run, dispatch }: RedistributionPa
     dispatch({ type: 'CONFIRM_REDISTRIBUTION' });
     announce(`고르게 나눴어요. 전체는 ${initialTotal}개로 같아요.`);
     setFeedback(null);
+    onAdvance();
   };
 
   return (

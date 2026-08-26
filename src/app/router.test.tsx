@@ -21,7 +21,7 @@ describe('learning router', () => {
     expect(window.location.hash).toBe('#/');
   });
 
-  it('keeps the prediction stage active while later stages are locked', async () => {
+  it('opens calculation after a twin prediction while later stages stay locked', async () => {
     const initialState = {
       ...createInitialSession(),
       activeRun: {
@@ -38,11 +38,9 @@ describe('learning router', () => {
 
     await user.click(screen.getByRole('button', { name: '평균이 같습니다' }));
     await user.click(screen.getByRole('button', { name: '다음 단계' }));
-    expect(window.location.hash).toContain('/predict');
-    expect(screen.getByRole('heading', { name: '평균을 먼저 예측해 볼까요?' })).toBeVisible();
-
-    await user.click(screen.getByRole('button', { name: '평균이 커집니다' }));
-    expect(screen.getByRole('button', { name: '평균이 커집니다' })).toHaveAttribute('aria-pressed', 'true');
+    expect(window.location.hash).toContain('/calculate');
+    expect(screen.getByRole('heading', { name: '두 자료의 평균을 계산해 볼까요?' })).toBeVisible();
+    expect(screen.getAllByLabelText('합계')).toHaveLength(2);
   });
 
   it('opens redistribution after a balance prediction while later stages stay locked', async () => {
@@ -70,6 +68,61 @@ describe('learning router', () => {
       .toHaveLength(1);
   });
 
+  it('hands a balanced redistribution off to calculation after confirmation', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'redistribute' as const,
+        artifacts: {
+          prediction: { value: 5 as const },
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [],
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/balance-delivery/balance-20-a/redistribute', initialState);
+
+    await user.click(screen.getByRole('button', { name: '고르게 나누기 확인' }));
+    expect(window.location.hash).toContain('/calculate');
+    expect(await screen.findByRole('heading', { name: '평균을 계산해 볼까요?' })).toBeVisible();
+    expect(screen.getByLabelText('합계')).toBeVisible();
+  });
+
+  it('maps both twin datasets to separate calculation targets in sequence', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'mean-twins' as const,
+        datasetId: 'twins-4-a' as const,
+        stage: 'calculate' as const,
+        artifacts: { prediction: { value: 'same' as const } },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/mean-twins/twins-4-a/calculate', initialState);
+    const inputs = () => screen.getAllByRole('spinbutton') as HTMLInputElement[];
+
+    expect(screen.getAllByLabelText('합계')).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: '계산 확인' })).toHaveLength(2);
+    expect(screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true')).toHaveLength(1);
+    await user.type(inputs()[0]!, '16');
+    await user.type(inputs()[1]!, '4');
+    await user.type(inputs()[2]!, '4');
+    await user.click(screen.getAllByRole('button', { name: '계산 확인' })[0]!);
+    expect(screen.getAllByText('16 ÷ 4 = 4')).toHaveLength(2);
+    expect(screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true')).toHaveLength(1);
+    expect(inputs()).toHaveLength(3);
+    expect(inputs()[0]).toBeEnabled();
+  });
+
   it('does not render an empty redistribution screen for a fresh deep link', async () => {
     renderAppAt('#/mission/balance-delivery/balance-20-a/redistribute', createInitialSession());
 
@@ -77,7 +130,7 @@ describe('learning router', () => {
     expect(window.location.hash).toContain('/situation');
   });
 
-  it('returns a completed balance run from calculation to the usable redistribution stage', async () => {
+  it('renders the calculation stage for a completed balance redistribution', async () => {
     const initialState = {
       ...createInitialSession(),
       activeRun: {
@@ -94,12 +147,10 @@ describe('learning router', () => {
         transientFeedback: null,
       },
     };
-    const user = userEvent.setup();
     renderAppAt('#/mission/balance-delivery/balance-20-a/calculate', initialState);
 
-    expect(await screen.findByRole('heading', { name: '구슬을 고르게 옮겨 볼까요?' })).toBeVisible();
-    expect(window.location.hash).toContain('/redistribute');
-    await user.click(screen.getByRole('button', { name: '고르게 나누기 확인' }));
-    expect(screen.getByRole('status')).toHaveTextContent('고르게 나눴어요. 전체는 20개로 같아요.');
+    expect(await screen.findByRole('heading', { name: '평균을 계산해 볼까요?' })).toBeVisible();
+    expect(window.location.hash).toContain('/calculate');
+    expect(screen.getByLabelText('합계')).toBeVisible();
   });
 });
