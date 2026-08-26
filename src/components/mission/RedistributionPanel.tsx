@@ -24,7 +24,7 @@ export const RedistributionPanel = ({ dataset, run, dispatch }: RedistributionPa
   const { message, announce } = useLiveAnnouncement();
   const balanced = isBalanced(currentValues);
   const recommendedMove = useMemo(() => nextBalancingMove(currentValues), [currentValues]);
-  const destinationRecommendation = selectedSource === null
+  const destinationRecommendation = selectedSource === null || balanced
     ? null
     : (() => {
       const belowMean = currentValues.findIndex(

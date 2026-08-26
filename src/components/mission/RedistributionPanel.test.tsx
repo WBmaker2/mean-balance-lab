@@ -76,6 +76,16 @@ describe('RedistributionPanel', () => {
     expect(currentActions[0]).toHaveAccessibleName(/고르게 나누기 확인/);
   });
 
+  it('keeps confirmation as the sole current action after selecting a source while balanced', async () => {
+    const user = userEvent.setup();
+    renderBalancePanel([5, 5, 5, 5]);
+    await user.click(screen.getByRole('button', { name: '1번 상자에서 1개 꺼내기' }));
+    const currentActions = screen.getAllByRole('button')
+      .filter((button) => button.dataset.currentAction === 'true' && !(button as HTMLButtonElement).disabled);
+    expect(currentActions).toHaveLength(1);
+    expect(currentActions[0]).toHaveAccessibleName(/고르게 나누기 확인/);
+  });
+
   it('keeps exactly one enabled recommendation through every source-selection state', async () => {
     const user = userEvent.setup();
     const currentActionCount = () => screen.getAllByRole('button')
