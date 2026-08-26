@@ -1,10 +1,19 @@
 # 평균 균형 조정실 MVP 검증 체크리스트
 
-검증일: 2026-08-26 (Asia/Seoul)
-검증 기준 소스 커밋: `e7da7cd`
-검증 범위: 로컬 소스, `dist/` preview, Vitest, Playwright Chromium. 원격 저장소·push·배포·HVC 등록은 확인 범위가 아닙니다.
+검증일: 2026-08-27 (Asia/Seoul)
+검증 기준 소스 커밋: `f2b769f fix: publish favicon and release metadata`
+검증 범위: 로컬 소스, `dist/` preview, Vitest, Playwright Chromium, 공개 GitHub Pages. HVC 등록은 확인 범위가 아닙니다.
 
-기능 구현은 `8e79875`에서 완료했고, `e7da7cd`는 테스트 EOF whitespace-only 정리 커밋입니다. `e7da7cd` 이후의 문서 전용 커밋은 검증된 소스를 변경하지 않고 검증 증거와 provenance만 갱신합니다.
+기능 구현은 `8e79875`에서 완료했고, `e7da7cd`는 테스트 EOF whitespace-only 정리 커밋, `f2b769f`는 공개 배포를 위한 favicon·운영 메타데이터·업데이트 내역 커밋입니다. 이후 문서 전용 커밋은 검증된 소스를 변경하지 않고 검증 증거와 provenance만 갱신합니다.
+
+## Public release evidence
+
+| 항목 | 증거 |
+|---|---|
+| 공개 저장소 | [`WBmaker2/mean-balance-lab`](https://github.com/WBmaker2/mean-balance-lab), `main` at `f2b769f` |
+| GitHub Actions | [Deploy to GitHub Pages run 33020893410](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33020893410) — success; checkout, `npm ci`, build, Pages configure/upload/deploy 모두 통과 |
+| 공개 앱 | [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/) — HTTP 200, title `평균 균형 조정실`, favicon·hashed JS/CSS assets 200 |
+| 공개 학습자 smoke | 상태 주입 없이 네 A 미션을 실제 버튼으로 완료해 `#/results`에 도달, `내가 사용한 근거` 4개 확인; console errors 0, failed requests 0, unexpected external requests 0 |
 
 ## Specification and Traceability
 
@@ -22,7 +31,7 @@
 | 개인정보·안전·교육적 한계 | `src/content/documentation.test.ts`, `src/components/result/ResultScreen.test.tsx`, personal-data/network scans | `node /private/tmp/mean-preview-check.mjs`, Chromium 1280×800 preview에서 교육용 이산 모형 문구와 외부 요청 0개 관찰 | 통과 — 문서 계약 1 passed, 결과 안전 문구 표시, 개인정보 scan 5개 match/4개 파일은 production input/storage가 아니라 `src/domain/evaluation.ts:63` 주석 부분문자열 오탐 1건, `src/content/documentation.test.ts:15`의 `키보드` 부분문자열 오탐 1건, `src/content/documentation.test.ts:29`의 README 안전문구 양성 계약 테스트 1건, `src/components/result/TeacherSummary.test.tsx:19`·`src/components/mission/EvidenceBuilder.test.tsx:120`의 금지 label 부재 부정 테스트 2건입니다. |
 | MVP 4개 미션×2세트 | `src/content/missions.test.ts`, `tests/e2e/learner-flow.spec.ts`의 4 optional challenge tests | 별도 수동 8세트 탐색은 수행하지 않음. Chromium E2E가 A 필수 경로와 B 도전값 4개를 확인 | 통과 — 고정 콘텐츠 스키마 테스트 통과, `CI=1 npm run test:e2e` 19 passed |
 | 새로 고침·뒤로 가기 안전 | `src/state/persistence.test.ts`, `src/app/router.route-guards.test.tsx`, `src/app/router.learner-handoff.test.tsx`, `tests/e2e/history-and-restore.spec.ts` | 별도 수동 브라우저 기록 조작은 수행하지 않음. Chromium E2E가 wrong feedback/calculation reset과 guarded deep link를 확인 | 통과 — `CI=1 npm run test:e2e` 19 passed |
-| 업데이트 내역 | `src/components/update/UpdateHistoryDialog.test.tsx`, `tests/e2e/accessibility.spec.ts`의 focus test | 별도 수동 대화상자 조작은 수행하지 않음. Chromium E2E가 닫기 초점·Escape 복귀를 확인 | 통과 — `CI=1 npm run test:e2e` 19 passed, 두 literal 날짜는 `src/content/updateHistory.ts`에 존재 |
+| 업데이트 내역 | `src/components/update/UpdateHistoryDialog.test.tsx`, `tests/e2e/accessibility.spec.ts`의 focus test | 별도 수동 대화상자 조작은 수행하지 않음. Chromium E2E가 닫기 초점·Escape 복귀를 확인 | 통과 — `CI=1 npm run test:e2e` 19 passed, 세 literal 날짜는 `src/content/updateHistory.ts`에 존재 |
 
 ## Completion Gate
 
@@ -41,9 +50,9 @@
 | 11 | Reduced motion removes animation and shows a 4px border plus visible `다음 행동` text. | `tests/e2e/accessibility.spec.ts` reduced-motion test, Chromium `reducedMotion: reduce`, animation `none`, visible `.reduced-motion-next`, outline 4px; E2E 19 passed. | 통과 |
 | 12 | 375×812 and 32px root-font flows have no horizontal overflow. | `tests/e2e/accessibility.spec.ts` 375×812 overflow test와 `tests/e2e/responsive-motion.spec.ts` large-text test; Chromium E2E 19 passed. | 통과 |
 | 13 | Keyboard-only flow, live-region announcements, dialog focus handling, and zero serious/critical axe violations pass. | `tests/e2e/accessibility.spec.ts` keyboard/live update/dialog focus tests와 AxeBuilder test; Chromium E2E 19 passed, serious/critical 0. 실제 스크린리더·기기 수동 검사는 수행하지 않았습니다. | 통과 |
-| 14 | Update history contains two literal dated entries and its trigger remains keyboard accessible at the bottom-right. | `src/content/updateHistory.ts`에 `2026-08-26` 설계·개발 두 항목, `src/components/update/UpdateHistoryDialog.test.tsx`, accessibility E2E focus test; E2E 19 passed. | 통과 |
+| 14 | Update history contains literal dated entries and its trigger remains keyboard accessible at the bottom-right. | `src/content/updateHistory.ts`에 `2026-08-27` 배포와 `2026-08-26` 설계·개발 세 항목, `src/components/update/UpdateHistoryDialog.test.tsx`, accessibility E2E focus test; E2E 19 passed. | 통과 |
 | 15 | Production source contains no personal-data input, external network API, analytics SDK, account, leaderboard, or graph-editing control. | `rg -n "이름|학번|성적|키|몸무게|학생.*순위" src`는 4개 파일 5줄입니다: `src/domain/evaluation.ts:63`의 `시키는` 중 `키` 부분 문자열 주석 오탐 1건, `src/content/documentation.test.ts:15`의 `키보드` heading 부분 문자열 오탐 1건, `src/content/documentation.test.ts:29`의 README 안전 문구 검증 1건, `src/components/result/TeacherSummary.test.tsx:19`와 `src/components/mission/EvidenceBuilder.test.tsx:120`의 금지 label 부재 부정 테스트 각 1건. 실제 개인정보 입력·저장·real-person fixture는 없음. `rg -n "fetch\(|axios|analytics|gtag|firebase|openai|gemini" src` 무출력. E2E 외부 요청 0개. | 통과 |
-| 16 | Every source file is under 500 lines, all tests pass, the static build succeeds, and the worktree is clean. | `find src -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.css' \) -print0 \| xargs -0 wc -l`: 최대 447줄(`src/domain/session.test.ts`); `npm test` 239 passed; `npm run build` 성공, `dist/index.html` 및 hashed `index-B9QVr0ob.js`·`index-aUwCFU65.css` 생성. 문서 커밋 후 `git status --short` 무출력으로 확인. | 통과 |
+| 16 | Every source file is under 500 lines, all tests pass, the static build succeeds, and the worktree is clean. | `find src -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.css' \) -print0 \| xargs -0 wc -l`: 최대 447줄(`src/domain/session.test.ts`); `npm test` 239 passed; `npm run build` 성공, `dist/index.html` 및 hashed `index-t-SGDbd_.js`·`index-aUwCFU65.css` 생성. 문서 커밋 후 `git status --short` 무출력으로 확인. | 통과 |
 
 ## Reproducibility evidence
 
@@ -55,4 +64,4 @@
 | 타입·단위 | `npm run typecheck` 성공; `npm test` 25 files/239 tests passed |
 | 브라우저 | 샌드박스 첫 시도는 Chromium macOS 권한 오류였고, 승인된 권한으로 `CI=1 npm run test:e2e -- --workers=1` 재실행 후 19 passed |
 | 빌드 | `npm run build` 성공; `dist/index.html`, hashed local JS/CSS 생성 |
-| preview | `npm run preview -- --host 127.0.0.1 --port 4187` 후 built preview Chromium check, viewport 1280×800. 제목 `평균 균형 조정실`, valid situation route, guarded `/predict`, console/page errors 0, non-loopback requests `[]`, assets `index-B9QVr0ob.js`·`index-aUwCFU65.css`를 관찰하고 preview를 종료 |
+| preview | `npm run preview -- --host 127.0.0.1 --port 4187` 후 built preview Chromium check, viewport 1280×800. 제목 `평균 균형 조정실`, valid situation route, guarded `/predict`, console/page errors 0, non-loopback requests `[]`, assets `index-t-SGDbd_.js`·`index-aUwCFU65.css`를 관찰하고 preview를 종료 |
