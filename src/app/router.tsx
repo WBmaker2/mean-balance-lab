@@ -104,14 +104,17 @@ const MissionRoute = () => {
     const firstInteractiveStage = dataset.stages.includes('predict') ? 'predict' : dataset.stages[0] ?? 'situation';
     return <Navigate to={pathFor(mission.id, dataset.id, firstInteractiveStage)} replace />;
   }
-  if (matching && state.activeRun && stage !== state.activeRun.stage) {
-    const canSynchronizeSituationToPrediction = state.activeRun.stage === 'situation'
+  if (matching && state.activeRun) {
+    const runStage = state.activeRun.stage;
+    const internallyAllowedStage = resolveAllowedStage(state, mission, dataset, runStage);
+    if (internallyAllowedStage !== runStage) return <InvalidRoute />;
+    if (runStage === 'mission-result') return <Navigate to="/results" replace />;
+    if (!isImplementedStage(runStage, dataset)) return <InvalidRoute />;
+
+    const canSynchronizeSituationToPrediction = runStage === 'situation'
       && stage === 'predict'
       && canAdvance({ ...state, activeRun: state.activeRun }).allowed;
-    if (!canSynchronizeSituationToPrediction) {
-      const runStage = isImplementedStage(state.activeRun.stage, dataset)
-        ? state.activeRun.stage
-        : dataset.kind === 'balance' ? 'redistribute' : 'predict';
+    if (stage !== runStage && !canSynchronizeSituationToPrediction) {
       return <Navigate to={pathFor(mission.id, dataset.id, runStage)} replace />;
     }
   }

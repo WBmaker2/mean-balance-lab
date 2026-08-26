@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createInitialSession } from '../domain/session';
-import { renderAppAt } from '../test/fixtures';
+import { completedBalanceStateWithTwoRetries, renderAppAt } from '../test/fixtures';
 
 describe('learning router', () => {
   afterEach(cleanup);
@@ -200,5 +200,64 @@ describe('learning router', () => {
     renderAppAt('#/mission/balance-delivery/balance-20-a/calculate', initialState);
     expect(await screen.findByRole('heading', { name: '구슬을 고르게 옮겨 볼까요?' })).toBeVisible();
     expect(window.location.hash).toContain('/redistribute');
+  });
+
+  it.each([
+    '#/mission/balance-delivery/balance-20-a/calculate',
+    '#/mission/balance-delivery/balance-20-a/redistribute',
+  ])('recovers an internally inconsistent calculate run without a redirect loop (%s)', async (hash) => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'calculate' as const,
+        artifacts: {
+          prediction: { value: 5 as const },
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [],
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    renderAppAt(hash, initialState);
+    expect(await screen.findByText('자료를 찾지 못해 시작 화면으로 돌아왔어요.')).toBeVisible();
+    expect(window.location.hash).toBe('#/');
+    expect(screen.queryByRole('heading', { name: '평균을 계산해 볼까요?' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '구슬을 고르게 옮겨 볼까요?' })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    '#/mission/balance-delivery/balance-20-a/mission-result',
+    '#/mission/balance-delivery/balance-20-a/redistribute',
+  ])('settles a complete mission-result run on the results screen (%s)', async (hash) => {
+    renderAppAt(hash, completedBalanceStateWithTwoRetries());
+    expect(await screen.findByRole('heading', { name: '전체 결과' })).toBeVisible();
+    expect(window.location.hash).toBe('#/results');
+  });
+
+  it('recovers a consistent but not-yet-implemented compare run to the start screen', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'mean-twins' as const,
+        datasetId: 'twins-4-a' as const,
+        stage: 'compare' as const,
+        artifacts: {
+          prediction: { value: 'same' as const },
+          calculations: {
+            left: { target: 'left' as const, total: 16, count: 4, average: 4, verified: true },
+            right: { target: 'right' as const, total: 16, count: 4, average: 4, verified: true },
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    renderAppAt('#/mission/mean-twins/twins-4-a/compare', initialState);
+    expect(await screen.findByText('자료를 찾지 못해 시작 화면으로 돌아왔어요.')).toBeVisible();
+    expect(window.location.hash).toBe('#/');
   });
 });
