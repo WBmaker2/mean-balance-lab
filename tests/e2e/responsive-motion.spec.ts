@@ -69,7 +69,26 @@ test('keeps teacher summary as the only visible print content', async ({ page })
   await expect(page.getByRole('heading', { name: '교사용 활동 요약' })).toBeVisible();
   await page.emulateMedia({ media: 'print' });
   await expect(page.locator('.teacher-summary')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '교사용 활동 요약' })).toBeVisible();
+  await expect(page.getByRole('region', { name: '교사용 요약 표' })).toBeVisible();
   await expect(page.getByRole('button', { name: '교사용 요약 인쇄' })).not.toBeVisible();
   await expect(page.getByRole('button', { name: '처음부터 다시' })).not.toBeVisible();
   await expect(page.locator('header')).not.toBeVisible();
+
+  const studentResultRemoved = await page.locator('.full-result > :not(.teacher-summary)').evaluateAll((elements) =>
+    elements.length > 0 && elements.every((element) => getComputedStyle(element).display === 'none'));
+  expect(studentResultRemoved).toBe(true);
+
+  const printExtent = await page.evaluate(() => {
+    const root = document.querySelector('#root');
+    const summary = document.querySelector('.teacher-summary');
+    return {
+      bodyHeight: document.body.scrollHeight,
+      rootHeight: root?.scrollHeight ?? 0,
+      summaryHeight: summary?.getBoundingClientRect().height ?? 0,
+    };
+  });
+  const allowedShellSpace = printExtent.summaryHeight + 256;
+  expect(printExtent.bodyHeight).toBeLessThanOrEqual(allowedShellSpace);
+  expect(printExtent.rootHeight).toBeLessThanOrEqual(allowedShellSpace);
 });

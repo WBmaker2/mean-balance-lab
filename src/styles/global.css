@@ -102,9 +102,9 @@ label { display: flex; align-items: center; gap: 0.5rem; min-height: var(--contr
   body { background: #fff; color: #000; }
   body * { visibility: hidden !important; }
   .teacher-summary, .teacher-summary * { visibility: visible !important; }
+  .full-result > :not(.teacher-summary) { display: none !important; }
   .teacher-summary {
-    position: absolute;
-    inset: 0;
+    position: static;
     width: 100%;
     max-width: none;
     color: #000;
