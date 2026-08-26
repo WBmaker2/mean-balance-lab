@@ -82,10 +82,10 @@ npm run preview -- --host 127.0.0.1
 
 ## 업데이트 내역 정책
 
-화면 오른쪽 아래의 `업데이트 내역` 버튼에서 날짜·구분·변경 요약을 확인할 수 있습니다. 현재 기록은 `2026-08-26 / 설계 / 최초 설계 문서 작성`과 `2026-08-26 / 개발 / 평균 균형 조정실 MVP 구현`입니다. 앱을 수정할 때마다 `src/content/updateHistory.ts`에 실제 Asia/Seoul 날짜와 짧은 변경 요약을 추가하고, 버튼 대화상자에서 확인되는 기록과 함께 검증합니다.
+화면 오른쪽 아래의 `업데이트 내역` 버튼에서 날짜·구분·변경 요약을 확인할 수 있습니다. 현재 기록에는 `2026-08-27 / 배포 / GitHub Pages 공개 배포 경로 정리`가 포함되어 있습니다. 앱을 수정할 때마다 `src/content/updateHistory.ts`에 실제 Asia/Seoul 날짜와 짧은 변경 요약을 추가하고, 버튼 대화상자에서 확인되는 기록과 함께 검증합니다.
 
 ## 현재 운영 범위
 
-이 작업의 검증 범위는 로컬 개발 서버와 빌드 산출물의 실행·접근성·학습 경로 확인입니다. 원격 저장소 생성, push, 배포, 도메인 연결, 외부 서비스 등록은 현재 범위에 포함하지 않습니다.
+공개 저장소는 [`WBmaker2/mean-balance-lab`](https://github.com/WBmaker2/mean-balance-lab)이며, 공개 앱은 [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/)입니다. `main`에 반영된 변경은 [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml)에 정의된 GitHub Pages workflow를 통해 배포됩니다. 현재 검증 범위는 로컬 개발 서버와 빌드 산출물의 실행·접근성·학습 경로 확인 및 공개 Pages 경로 확인입니다.
 
 구현 구조와 세부 검증 기록은 [`2026-08-26-mean-balance-lab-implementation-plan.md`](./2026-08-26-mean-balance-lab-implementation-plan.md)와 [`docs/qa/mvp-checklist.md`](./docs/qa/mvp-checklist.md)에서 확인할 수 있습니다.

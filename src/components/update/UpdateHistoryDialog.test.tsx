@@ -12,8 +12,9 @@ describe('UpdateHistoryDialog', () => {
     window.location.hash = '#/';
   });
 
-  it('keeps two literal dated entries for the initial design and MVP', () => {
+  it('keeps literal dated entries for deployment, design, and MVP', () => {
     expect(UPDATE_HISTORY).toEqual([
+      { date: '2026-08-27', category: '배포', summary: 'GitHub Pages 공개 배포 경로 정리' },
       { date: '2026-08-26', category: '개발', summary: '평균 균형 조정실 MVP 구현' },
       { date: '2026-08-26', category: '설계', summary: '최초 설계 문서 작성' },
     ]);
@@ -32,7 +33,9 @@ describe('UpdateHistoryDialog', () => {
     const title = screen.getByRole('heading', { name: '업데이트 내역' });
     expect(title.tagName).toBe('H2');
     expect(dialog).toHaveAttribute('aria-labelledby', title.id);
+    expect(screen.getByText('2026-08-27')).toBeVisible();
     expect(screen.getAllByText('2026-08-26')).toHaveLength(2);
+    expect(screen.getByText('GitHub Pages 공개 배포 경로 정리')).toBeVisible();
     expect(screen.getByText('평균 균형 조정실 MVP 구현')).toBeVisible();
     expect(screen.getByText('최초 설계 문서 작성')).toBeVisible();
     expect(screen.getByRole('list')).toBeVisible();
