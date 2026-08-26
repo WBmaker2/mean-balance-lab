@@ -130,7 +130,7 @@ describe('learning router', () => {
     expect(window.location.hash).toContain('/situation');
   });
 
-  it('renders the calculation stage for a completed balance redistribution', async () => {
+  it('aligns an ahead calculation URL with a restored redistribution run', async () => {
     const initialState = {
       ...createInitialSession(),
       activeRun: {
@@ -149,8 +149,56 @@ describe('learning router', () => {
     };
     renderAppAt('#/mission/balance-delivery/balance-20-a/calculate', initialState);
 
-    expect(await screen.findByRole('heading', { name: '평균을 계산해 볼까요?' })).toBeVisible();
-    expect(window.location.hash).toContain('/calculate');
-    expect(screen.getByLabelText('합계')).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '구슬을 고르게 옮겨 볼까요?' })).toBeVisible();
+    expect(window.location.hash).toContain('/redistribute');
+    expect(screen.getByRole('button', { name: '고르게 나누기 확인' })).toBeVisible();
+  });
+
+  it('keeps a restored calculate run on the calculation screen and accepts the answer', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'calculate' as const,
+        artifacts: {
+          prediction: { value: 5 as const },
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [], confirmed: true,
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/balance-delivery/balance-20-a/calculate', initialState);
+    const inputs = screen.getAllByRole('spinbutton');
+    await user.type(inputs[0]!, '20');
+    await user.type(inputs[1]!, '4');
+    await user.type(inputs[2]!, '5');
+    await user.click(screen.getByRole('button', { name: '계산 확인' }));
+    expect(screen.getAllByText('20 ÷ 4 = 5')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: '다음 단계' })).toHaveAttribute('data-current-action', 'true');
+  });
+
+  it('routes an unconfirmed balanced run back to redistribution', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'redistribute' as const,
+        artifacts: {
+          prediction: { value: 5 as const },
+          redistribution: { initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [] },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    renderAppAt('#/mission/balance-delivery/balance-20-a/calculate', initialState);
+    expect(await screen.findByRole('heading', { name: '구슬을 고르게 옮겨 볼까요?' })).toBeVisible();
+    expect(window.location.hash).toContain('/redistribute');
   });
 });

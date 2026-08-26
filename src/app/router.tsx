@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { getMission, isDatasetId, isLearningStage, isMissionId, MISSIONS } from '../content/missions';
 import { isBalanced, sum } from '../domain/math';
-import type { LabSessionState } from '../domain/session';
+import { canAdvance, type LabSessionState } from '../domain/session';
 import { useLabSession } from '../state/LabSessionContext';
 import type { DatasetId, LearningStage, MissionDataset, MissionDefinition, MissionId } from '../domain/types';
 import { AppShell } from './AppShell';
@@ -46,7 +46,8 @@ const hasRequiredArtifact = (
       const redistribution = run.artifacts.redistribution;
       return redistribution !== undefined
         && sum(redistribution.initialValues) === sum(redistribution.currentValues)
-        && isBalanced(redistribution.currentValues);
+        && isBalanced(redistribution.currentValues)
+        && redistribution.confirmed === true;
     }
     case 'calculate': {
       const targets = dataset.kind === 'twins'
@@ -98,6 +99,21 @@ const MissionRoute = () => {
   // the situation screen so the normal situation → prediction gate runs.
   if (!matching && stage === 'redistribute') {
     return <Navigate to={pathFor(mission.id, dataset.id, 'situation')} replace />;
+  }
+  if (!matching && stage !== 'situation' && stage !== 'predict') {
+    const firstInteractiveStage = dataset.stages.includes('predict') ? 'predict' : dataset.stages[0] ?? 'situation';
+    return <Navigate to={pathFor(mission.id, dataset.id, firstInteractiveStage)} replace />;
+  }
+  if (matching && state.activeRun && stage !== state.activeRun.stage) {
+    const canSynchronizeSituationToPrediction = state.activeRun.stage === 'situation'
+      && stage === 'predict'
+      && canAdvance({ ...state, activeRun: state.activeRun }).allowed;
+    if (!canSynchronizeSituationToPrediction) {
+      const runStage = isImplementedStage(state.activeRun.stage, dataset)
+        ? state.activeRun.stage
+        : dataset.kind === 'balance' ? 'redistribute' : 'predict';
+      return <Navigate to={pathFor(mission.id, dataset.id, runStage)} replace />;
+    }
   }
   const allowedStage = resolveAllowedStage(state, mission, dataset, stage);
   if (matching && allowedStage !== stage) {

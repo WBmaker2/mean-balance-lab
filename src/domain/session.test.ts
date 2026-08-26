@@ -13,6 +13,32 @@ describe('recoverable lab session reducer', () => {
     expect(undone.activeRun?.artifacts.redistribution?.undoStack).toEqual([]);
   });
 
+  it('requires redistribution confirmation before advancing to calculation', () => {
+    let state = sessionReducer(createInitialSession(), {
+      type: 'START_DATASET', missionId: 'balance-delivery', datasetId: 'balance-20-a',
+    });
+    state = sessionReducer(state, { type: 'ADVANCE_STAGE' });
+    state = sessionReducer(state, { type: 'SET_PREDICTION', value: 5 });
+    state = sessionReducer(state, { type: 'ADVANCE_STAGE' });
+    state = {
+      ...state,
+      activeRun: state.activeRun ? {
+        ...state.activeRun,
+        artifacts: {
+          ...state.activeRun.artifacts,
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [],
+          },
+        },
+      } : null,
+    };
+    expect(canAdvance(state)).toEqual({ allowed: false, reason: '자료를 고르게 옮겨 보세요.' });
+    const confirmed = sessionReducer(state, { type: 'CONFIRM_REDISTRIBUTION' });
+    expect(confirmed.activeRun?.artifacts.redistribution?.confirmed).toBe(true);
+    const advanced = sessionReducer(confirmed, { type: 'ADVANCE_STAGE' });
+    expect(advanced.activeRun?.stage).toBe('calculate');
+  });
+
   it('does not advance until the current artifact is verified', () => {
     const started = sessionReducer(createInitialSession(), {
       type: 'START_DATASET', missionId: 'mean-twins', datasetId: 'twins-4-a',
@@ -81,6 +107,7 @@ describe('recoverable lab session reducer', () => {
       { fromIndex: 3, toIndex: 0 }, { fromIndex: 3, toIndex: 0 },
       { fromIndex: 2, toIndex: 0 }, { fromIndex: 3, toIndex: 1 },
     ]) state = sessionReducer(state, { type: 'MOVE_ONE', move });
+    state = sessionReducer(state, { type: 'CONFIRM_REDISTRIBUTION' });
     state = sessionReducer(state, { type: 'ADVANCE_STAGE' });
     const beforeUndo = state.activeRun?.artifacts.redistribution;
     const rejected = sessionReducer(state, { type: 'UNDO_MOVE' });

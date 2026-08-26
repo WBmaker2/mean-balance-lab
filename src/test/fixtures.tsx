@@ -18,7 +18,9 @@ const balanceEvidence = (): EvidenceRecord => ({
 
 export const verifiedBalanceArtifacts = (): StageArtifacts => ({
   prediction: { value: 5 },
-  redistribution: { initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [] },
+  redistribution: {
+    initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [], confirmed: true,
+  },
   calculations: { current: { target: 'current', total: 20, count: 4, average: 5, verified: true } },
   evidence: balanceEvidence(),
 });

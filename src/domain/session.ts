@@ -132,6 +132,7 @@ export const canAdvance = (state: LabSessionState): AdvanceGate => {
         return { allowed: false, reason: '전체 양을 그대로 보존해 보세요.' };
       }
       return isBalanced(redistribution.currentValues)
+        && redistribution.confirmed === true
         ? { allowed: true }
         : { allowed: false, reason: '자료를 고르게 옮겨 보세요.' };
     }
