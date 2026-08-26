@@ -1,0 +1,124 @@
+import { describe, expect, it } from 'vitest';
+import { getDataset } from '../content/missions';
+import {
+  buildEvidenceSentence,
+  deriveEvidenceLevel,
+  evaluateCalculation,
+  evaluateComparison,
+} from './evaluation';
+
+describe('calculation feedback', () => {
+  it('guides the next check instead of ending with a wrong label', () => {
+    const result = evaluateCalculation({
+      values: [2, 4, 6, 8],
+      enteredTotal: 19,
+      enteredCount: 4,
+      enteredMean: 5,
+    });
+    expect(result).toEqual({
+      isCorrect: false,
+      message: '상자 속 수를 다시 모두 더해 보세요.',
+      nextAction: '전체 양은 그대로인지 확인해 보세요.',
+    });
+    expect(`${result.message} ${result.nextAction}`).not.toContain('틀렸습니다');
+  });
+
+  it('checks total, then count, then mean in that order', () => {
+    expect(evaluateCalculation({ values: [2, 4, 6, 8], enteredTotal: 19, enteredCount: 3, enteredMean: 4 })).toEqual({
+      isCorrect: false,
+      message: '상자 속 수를 다시 모두 더해 보세요.',
+      nextAction: '전체 양은 그대로인지 확인해 보세요.',
+    });
+    expect(evaluateCalculation({ values: [2, 4, 6, 8], enteredTotal: 20, enteredCount: 3, enteredMean: 4 })).toEqual({
+      isCorrect: false,
+      message: '자료 칸의 개수를 다시 세어 보세요.',
+      nextAction: '자료는 몇 개인가요?',
+    });
+    expect(evaluateCalculation({ values: [2, 4, 6, 8], enteredTotal: 20, enteredCount: 4, enteredMean: 4 })).toEqual({
+      isCorrect: false,
+      message: '합계를 자료 개수로 나누어 보세요.',
+      nextAction: '20 ÷ 4를 계산해 보세요.',
+    });
+    expect(evaluateCalculation({ values: [2, 4, 6, 8], enteredTotal: 20, enteredCount: 4, enteredMean: 5 })).toEqual({
+      isCorrect: true,
+      message: '재배분한 값과 계산한 평균이 같아요.',
+      nextAction: '근거를 남기고 다음 단계로 가세요.',
+    });
+  });
+});
+
+describe('comparison feedback', () => {
+  it('requires same mean and different spread for twins', () => {
+    const dataset = getDataset('twins-4-a');
+    expect(evaluateComparison(dataset, ['same-mean'])).toEqual({
+      isCorrect: false,
+      message: '점들이 얼마나 퍼져 있는지도 살펴보세요.',
+      nextAction: '두 자료의 범위나 각 값을 비교해 보세요.',
+    });
+    expect(evaluateComparison(dataset, ['same-mean', 'different-spread'])).toEqual({
+      isCorrect: true,
+      message: '평균은 같지만 자료의 모양은 다를 수 있어요.',
+      nextAction: '근거 문장을 완성해 보세요.',
+    });
+  });
+
+  it('requires sum change before mean change for outliers', () => {
+    const dataset = getDataset('outlier-5-a');
+    expect(evaluateComparison(dataset, ['mean-changed-after'])).toEqual({
+      isCorrect: false,
+      message: '합계 변화를 먼저 살펴보세요.',
+      nextAction: '변경 전후의 전체 양을 비교해 보세요.',
+    });
+    expect(evaluateComparison(dataset, ['sum-changed-first'])).toEqual({
+      isCorrect: false,
+      message: '이제 평균 변화도 연결해 보세요.',
+      nextAction: '합계 변화가 평균에 어떻게 이어지는지 확인해 보세요.',
+    });
+    expect(evaluateComparison(dataset, ['sum-changed-first', 'mean-changed-after'])).toEqual({
+      isCorrect: true,
+      message: '합계가 먼저 변하고 평균도 변했어요.',
+      nextAction: '근거 문장을 완성해 보세요.',
+    });
+  });
+
+  it('requires a range or individual-value reason for representative review', () => {
+    const dataset = getDataset('review-cards-a');
+    expect(evaluateComparison(dataset, ['mean-always-enough'])).toEqual({
+      isCorrect: false,
+      message: '평균만으로 모든 자료를 판단할 수는 없어요.',
+      nextAction: '범위나 각 값을 함께 살펴보세요.',
+    });
+    expect(evaluateComparison(dataset, ['range-or-individual-values'])).toEqual({
+      isCorrect: true,
+      message: '평균과 범위 또는 각 값을 함께 살펴보았어요.',
+      nextAction: '근거 문장을 완성해 보세요.',
+    });
+  });
+});
+
+describe('evidence levels', () => {
+  it.each([
+    ['balance-delivery', ['redistribution-and-division'], 3],
+    ['balance-delivery', ['redistribution-only'], 2],
+    ['balance-delivery', ['calculation-only'], 1],
+    ['mean-twins', ['same-mean-and-different-spread'], 3],
+    ['mean-twins', ['same-mean-only'], 2],
+    ['mean-twins', ['same-shape'], 1],
+    ['outlier-alert', ['sum-change-and-mean-change'], 3],
+    ['outlier-alert', ['direction-only'], 2],
+    ['outlier-alert', ['guess-only'], 1],
+    ['representative-review', ['mean-use-and-limit', 'range-or-individual-values'], 3],
+    ['representative-review', ['range-or-individual-values'], 2],
+    ['representative-review', ['mean-always-enough'], 1],
+  ] as const)('maps %s evidence to level %i', (missionId, ids, expected) => {
+    expect(deriveEvidenceLevel(missionId, ids)).toBe(expected);
+  });
+
+  it('builds representative sentences from fixed reviewed fragments', () => {
+    expect(buildEvidenceSentence(
+      'representative-review',
+      'review-cards-a',
+      ['mean-use-and-limit', 'range-or-individual-values'],
+    )).toBe('평균은 4장이지만 한 선반에 12장이 몰려 있어 범위와 각 값을 함께 봐야 합니다.');
+  });
+});
