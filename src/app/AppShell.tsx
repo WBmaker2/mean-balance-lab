@@ -1,5 +1,6 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { StoragePreference } from '../components/settings/StoragePreference';
+import { UpdateHistoryDialog } from '../components/update/UpdateHistoryDialog';
 import { useLabSession } from '../state/LabSessionContext';
 
 export const AppShell = () => {
@@ -32,6 +33,7 @@ export const AppShell = () => {
         />
       </details>
       <footer>가상 자료로 평균의 뜻과 한계를 살펴봅니다.</footer>
+      <UpdateHistoryDialog />
     </>
   );
 };
