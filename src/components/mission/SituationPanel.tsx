@@ -1,5 +1,6 @@
 import { SAFETY_COPY } from '../../content/copy';
 import type { MissionDataset } from '../../domain/types';
+import { ActionButton } from '../shared/ActionButton';
 
 interface SituationPanelProps {
   dataset: MissionDataset;
@@ -22,6 +23,6 @@ export const SituationPanel = ({ dataset, onAdvance }: SituationPanelProps) => (
     <p>{dataset.context}</p>
     <p>{values(dataset)}</p>
     <p>{SAFETY_COPY.modelBoundary}</p>
-    <button type="button" data-current-action="true" onClick={onAdvance}>다음: 평균 예측</button>
+    <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음: 평균 예측</ActionButton>
   </section>
 );

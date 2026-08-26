@@ -44,4 +44,36 @@ describe('learning router', () => {
     await user.click(screen.getByRole('button', { name: '평균이 커집니다' }));
     expect(screen.getByRole('button', { name: '평균이 커집니다' })).toHaveAttribute('aria-pressed', 'true');
   });
+
+  it('opens redistribution after a balance prediction while later stages stay locked', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'predict' as const,
+        artifacts: {
+          prediction: { value: 5 as const },
+          redistribution: { initialValues: [2, 4, 6, 8], currentValues: [2, 4, 6, 8], undoStack: [] },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/balance-delivery/balance-20-a/predict', initialState);
+
+    await user.click(screen.getByRole('button', { name: '다음 단계' }));
+    expect(window.location.hash).toContain('/redistribute');
+    expect(screen.getByRole('heading', { name: '구슬을 고르게 옮겨 볼까요?' })).toBeVisible();
+    expect(screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true'))
+      .toHaveLength(1);
+  });
+
+  it('does not render an empty redistribution screen for a fresh deep link', async () => {
+    renderAppAt('#/mission/balance-delivery/balance-20-a/redistribute', createInitialSession());
+
+    expect(await screen.findByRole('heading', { name: '상황을 살펴볼까요?' })).toBeVisible();
+    expect(window.location.hash).toContain('/situation');
+  });
 });

@@ -21,6 +21,7 @@ export interface StageArtifacts {
     initialValues: readonly number[];
     currentValues: readonly number[];
     undoStack: readonly (readonly number[])[];
+    confirmed?: boolean;
   };
   calculations?: Partial<Record<CalculationTarget, CalculationArtifact>>;
   comparison?: { selectedIds: readonly ComparisonChoiceId[]; verified: boolean };
@@ -51,6 +52,7 @@ export type LabAction =
   | { type: 'SET_PREDICTION'; value: PredictionValue }
   | { type: 'MOVE_ONE'; move: QuantityMove }
   | { type: 'UNDO_MOVE' }
+  | { type: 'CONFIRM_REDISTRIBUTION' }
   | { type: 'SUBMIT_CALCULATION'; target: CalculationTarget; input: CalculationInput }
   | { type: 'SET_COMPARISON'; selectedIds: readonly ComparisonChoiceId[] }
   | { type: 'SUBMIT_EVIDENCE'; record: EvidenceRecord }
@@ -233,6 +235,21 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
           ...run.artifacts,
           redistribution: { ...redistribution, currentValues: previous, undoStack: stack },
         },
+      });
+    }
+    case 'CONFIRM_REDISTRIBUTION': {
+      const run = state.activeRun;
+      const redistribution = run?.artifacts.redistribution;
+      if (!run || run.stage !== 'redistribute' || !redistribution) return state;
+      if (sum(redistribution.currentValues) !== sum(redistribution.initialValues)
+        || !isBalanced(redistribution.currentValues)) return state;
+      return withRun(state, {
+        ...run,
+        artifacts: {
+          ...run.artifacts,
+          redistribution: { ...redistribution, confirmed: true },
+        },
+        transientFeedback: null,
       });
     }
     case 'SUBMIT_CALCULATION': {

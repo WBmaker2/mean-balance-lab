@@ -120,7 +120,12 @@ const isArtifacts = (value: unknown, run: { datasetId: DatasetId; stage: import(
   }
   if ('redistribution' in value) {
     const redistribution = value.redistribution;
-    if (!isRecord(redistribution) || !hasExactKeys(redistribution, ['initialValues', 'currentValues', 'undoStack'])) return false;
+    if (!isRecord(redistribution)) return false;
+    const redistributionKeys = ['initialValues', 'currentValues', 'undoStack'];
+    const hasConfirmed = Object.keys(redistribution).includes('confirmed');
+    if (!(hasExactKeys(redistribution, redistributionKeys)
+      || (hasConfirmed && hasExactKeys(redistribution, [...redistributionKeys, 'confirmed'])))) return false;
+    if (hasConfirmed && typeof redistribution.confirmed !== 'boolean') return false;
     const initial = redistribution.initialValues;
     const current = redistribution.currentValues;
     const undo = redistribution.undoStack;
@@ -210,10 +215,12 @@ export const sanitizeRestoredSession = (state: LabSessionState): LabSessionState
   const artifacts: StageArtifacts = { ...run.artifacts };
   if (run.artifacts.prediction) artifacts.prediction = { value: run.artifacts.prediction.value };
   if (run.artifacts.redistribution) {
+    const confirmed = run.artifacts.redistribution.confirmed;
     artifacts.redistribution = {
       initialValues: [...run.artifacts.redistribution.initialValues],
       currentValues: [...run.artifacts.redistribution.currentValues],
       undoStack: run.artifacts.redistribution.undoStack.map((snapshot) => [...snapshot]),
+      ...(confirmed !== undefined ? { confirmed } : {}),
     };
   }
   if (run.artifacts.calculations) {

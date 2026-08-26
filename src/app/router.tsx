@@ -10,9 +10,12 @@ import { ResultScreen } from '../components/result/ResultScreen';
 import { StartScreen } from '../components/start/StartScreen';
 
 export const RECOVERY_MESSAGE = '자료를 찾지 못해 시작 화면으로 돌아왔어요.';
-const IMPLEMENTED_STAGES: readonly LearningStage[] = ['situation', 'predict'];
-const isImplementedStage = (stage: LearningStage): stage is Extract<LearningStage, 'situation' | 'predict'> =>
-  IMPLEMENTED_STAGES.includes(stage);
+const IMPLEMENTED_STAGES: readonly LearningStage[] = ['situation', 'predict', 'redistribute'];
+const isImplementedStage = (
+  stage: LearningStage,
+  dataset: MissionDataset,
+): stage is Extract<LearningStage, 'situation' | 'predict' | 'redistribute'> =>
+  stage === 'situation' || stage === 'predict' || (stage === 'redistribute' && dataset.kind === 'balance');
 
 export const routeFor = (missionId: MissionId, datasetId: DatasetId, stage: LearningStage): string =>
   `#/mission/${missionId}/${datasetId}/${stage}`;
@@ -88,18 +91,23 @@ const MissionRoute = () => {
   if (!dataset) return <InvalidRoute />;
 
   const matching = hasMatchingRun(state, mission, dataset);
+  // A redistribution URL cannot bootstrap its own run: start the learner at
+  // the situation screen so the normal situation → prediction gate runs.
+  if (!matching && stage === 'redistribute') {
+    return <Navigate to={pathFor(mission.id, dataset.id, 'situation')} replace />;
+  }
   const allowedStage = resolveAllowedStage(state, mission, dataset, stage);
   if (matching && allowedStage !== stage) {
     return <Navigate to={pathFor(mission.id, dataset.id, allowedStage)} replace />;
   }
-  let visibleStage: Extract<LearningStage, 'situation' | 'predict'>;
+  let visibleStage: Extract<LearningStage, 'situation' | 'predict' | 'redistribute'>;
   if (matching) {
-    if (!isImplementedStage(allowedStage)) {
+    if (!isImplementedStage(allowedStage, dataset)) {
       return <Navigate to={pathFor(mission.id, dataset.id, 'predict')} replace />;
     }
     visibleStage = allowedStage;
   } else {
-    visibleStage = isImplementedStage(stage) ? stage : 'situation';
+    visibleStage = isImplementedStage(stage, dataset) ? stage : 'situation';
   }
   return <MissionScreen mission={mission} dataset={dataset} stage={visibleStage} />;
 };

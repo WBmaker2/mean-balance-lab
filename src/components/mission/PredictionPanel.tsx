@@ -1,6 +1,7 @@
 import type { Dispatch } from 'react';
 import type { LabAction } from '../../domain/session';
 import type { MissionDataset, PredictionValue } from '../../domain/types';
+import { ActionButton } from '../shared/ActionButton';
 
 interface PredictionPanelProps {
   dataset: MissionDataset;
@@ -21,17 +22,18 @@ export const PredictionPanel = ({ prediction, dispatch, onAdvance }: PredictionP
       <p>계산하기 전에 평균이 어떻게 될지 골라 보세요.</p>
       <div role="group" aria-label="평균 변화 예측">
         {choices.map(([value, label]) => (
-          <button
+          <ActionButton
+            emphasis="normal"
             key={value}
             type="button"
             aria-pressed={prediction === value}
             onClick={() => dispatch({ type: 'SET_PREDICTION', value })}
           >
             {label}
-          </button>
+          </ActionButton>
         ))}
       </div>
-      <button type="button" data-current-action="true" disabled={prediction === undefined} onClick={onAdvance}>다음 단계</button>
+      <ActionButton type="button" emphasis="next" disabled={prediction === undefined} onClick={onAdvance}>다음 단계</ActionButton>
     </section>
   );
 };

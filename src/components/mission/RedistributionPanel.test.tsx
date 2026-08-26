@@ -1,0 +1,72 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { useReducer } from 'react';
+import { RedistributionPanel } from './RedistributionPanel';
+import { sessionReducer, type ActiveRun, createInitialSession } from '../../domain/session';
+import type { BalanceDataset } from '../../domain/types';
+
+const dataset: BalanceDataset = {
+  kind: 'balance', id: 'balance-20-a', label: '기본 구슬 상자',
+  context: '가상 포장 상자 네 개의 구슬을 고르게 나눕니다.',
+  stages: ['situation', 'predict', 'redistribute', 'calculate', 'explain', 'mission-result'],
+  expectedMean: 5, values: [2, 4, 6, 8], targetValues: [5, 5, 5, 5],
+};
+
+const makeRun = (values: readonly number[] = dataset.values): ActiveRun => ({
+  missionId: 'balance-delivery', datasetId: dataset.id, stage: 'redistribute', revisions: 0,
+  transientFeedback: null,
+  artifacts: { redistribution: { initialValues: dataset.values, currentValues: values, undoStack: [] } },
+});
+
+const renderBalancePanel = (values = dataset.values) => {
+  function Harness() {
+    const [state, dispatch] = useReducer(sessionReducer, {
+      ...createInitialSession(), activeRun: makeRun(values),
+    });
+    if (!state.activeRun) return null;
+    return <RedistributionPanel dataset={dataset} run={state.activeRun} dispatch={dispatch} />;
+  }
+  return render(<Harness />);
+};
+
+describe('RedistributionPanel', () => {
+  afterEach(cleanup);
+
+  it('moves one item using source and destination buttons and announces it', async () => {
+    const user = userEvent.setup();
+    renderBalancePanel();
+    await user.click(screen.getByRole('button', { name: '4번 상자에서 1개 꺼내기' }));
+    await user.click(screen.getByRole('button', { name: '1번 상자에 1개 넣기' }));
+    expect(screen.getByText('현재 수량 3, 4, 6, 7')).toBeVisible();
+    expect(screen.getByRole('status')).toHaveTextContent('4번 상자에서 1개를 1번 상자로 옮겼어요. 전체는 20개로 같아요.');
+  });
+
+  it('undoes the latest successful move', async () => {
+    const user = userEvent.setup();
+    renderBalancePanel();
+    await user.click(screen.getByRole('button', { name: '4번 상자에서 1개 꺼내기' }));
+    await user.click(screen.getByRole('button', { name: '1번 상자에 1개 넣기' }));
+    await user.click(screen.getByRole('button', { name: '마지막 이동 취소' }));
+    expect(screen.getByText('현재 수량 2, 4, 6, 8')).toBeVisible();
+    expect(screen.getByRole('status')).toHaveTextContent('마지막 이동을 취소했어요. 전체는 20개로 같아요.');
+  });
+
+  it('disables empty sources and gives an actionable same-box prompt', async () => {
+    const user = userEvent.setup();
+    renderBalancePanel([0, 4, 6, 10]);
+    expect(screen.getByRole('button', { name: '1번 상자에서 1개 꺼내기' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: '2번 상자에서 1개 꺼내기' }));
+    await user.click(screen.getByRole('button', { name: '2번 상자에 1개 넣기' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('같은 상자에서는 옮길 수 없어요.');
+    expect(screen.getByRole('alert')).toHaveTextContent('다른 상자의 +1 버튼을 눌러 보세요.');
+  });
+
+  it('marks exactly one enabled next action', () => {
+    renderBalancePanel([5, 5, 5, 5]);
+    const currentActions = screen.getAllByRole('button')
+      .filter((button) => button.dataset.currentAction === 'true' && !(button as HTMLButtonElement).disabled);
+    expect(currentActions).toHaveLength(1);
+    expect(currentActions[0]).toHaveAccessibleName(/고르게 나누기 확인/);
+  });
+});

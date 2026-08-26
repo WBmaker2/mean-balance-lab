@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useLabSession } from '../../state/LabSessionContext';
 import type { DatasetId } from '../../domain/types';
 import { routeFor } from '../../app/router';
+import { ActionButton } from '../shared/ActionButton';
 
 type Difficulty = 'a' | 'b';
 
@@ -51,7 +52,7 @@ export const StartScreen = () => {
         </label>
       </fieldset>
       <p>{difficulty === 'a' ? '기본 자료로 시작' : '도전 자료로 시작'}</p>
-      <button type="button" data-current-action="true" onClick={start}>미션 시작</button>
+      <ActionButton type="button" emphasis="next" onClick={start}>미션 시작</ActionButton>
     </section>
   );
 };
