@@ -119,6 +119,93 @@ describe('UpdateHistoryDialog', () => {
     expect(screen.getByRole('button', { name: '업데이트 내역' })).toBeVisible();
   });
 
+  it('isolates the AppShell background with native inert while open', async () => {
+    renderAppAt('#/');
+    const user = userEvent.setup();
+    const trigger = screen.getByRole('button', { name: '업데이트 내역' });
+    const background = document.getElementById('app-shell-content');
+
+    expect(background).not.toBeNull();
+    expect(background).not.toHaveAttribute('inert');
+    expect((background as HTMLElement & { inert?: boolean }).inert).not.toBe(true);
+
+    await user.click(trigger);
+
+    expect(background).toHaveAttribute('inert');
+    expect((background as HTMLElement & { inert?: boolean }).inert).toBe(true);
+    expect(background).toHaveAttribute('aria-hidden', 'true');
+    expect(trigger).toHaveAttribute('inert');
+    expect((trigger as HTMLElement & { inert?: boolean }).inert).toBe(true);
+  });
+
+  it('recaptures forced programmatic focus from the background', async () => {
+    renderAppAt('#/');
+    const user = userEvent.setup();
+    const trigger = screen.getByRole('button', { name: '업데이트 내역' });
+    const backgroundLink = screen.getByRole('link', { name: '처음으로' });
+
+    await user.click(trigger);
+    backgroundLink.focus();
+
+    expect(screen.getByRole('dialog')).toContainElement(document.activeElement as HTMLElement);
+    expect(screen.getByRole('button', { name: '닫기' })).toHaveFocus();
+  });
+
+  it('restores inert and aria-hidden values after close and reopen', async () => {
+    const rendered = renderAppAt('#/');
+    const user = userEvent.setup();
+    const trigger = screen.getByRole('button', { name: '업데이트 내역' });
+    const background = document.getElementById('app-shell-content') as HTMLElement;
+    background.setAttribute('aria-hidden', 'false');
+    trigger.setAttribute('aria-hidden', 'false');
+
+    await user.click(trigger);
+    expect(background).toHaveAttribute('aria-hidden', 'true');
+    expect(trigger).toHaveAttribute('inert');
+    await user.keyboard('{Escape}');
+
+    expect(background).not.toHaveAttribute('inert');
+    expect((background as HTMLElement & { inert?: boolean }).inert).toBe(false);
+    expect(background).toHaveAttribute('aria-hidden', 'false');
+    expect(trigger).not.toHaveAttribute('inert');
+    expect((trigger as HTMLElement & { inert?: boolean }).inert).toBe(false);
+    expect(trigger).toHaveAttribute('aria-hidden', 'false');
+    expect(trigger).toHaveFocus();
+
+    await user.click(trigger);
+    expect(background).toHaveAttribute('inert');
+    await user.keyboard('{Escape}');
+    expect(background).not.toHaveAttribute('inert');
+    expect(background).toHaveAttribute('aria-hidden', 'false');
+    expect(trigger).toHaveFocus();
+    rendered.unmount();
+  });
+
+  it('restores the external background when the dialog unmounts while open', async () => {
+    const background = document.createElement('div');
+    background.id = 'app-shell-content';
+    background.setAttribute('aria-hidden', 'false');
+    document.body.append(background);
+    const host = document.createElement('div');
+    document.body.append(host);
+    const rendered = render(<UpdateHistoryDialog />, { container: host });
+    const user = userEvent.setup();
+    const trigger = screen.getByRole('button', { name: '업데이트 내역' });
+
+    await user.click(trigger);
+    expect(background).toHaveAttribute('inert');
+    expect(background).toHaveAttribute('aria-hidden', 'true');
+    rendered.unmount();
+
+    expect(background).not.toHaveAttribute('inert');
+    expect((background as HTMLElement & { inert?: boolean }).inert).toBe(false);
+    expect(background).toHaveAttribute('aria-hidden', 'false');
+    expect(document.querySelector('[inert]')).toBeNull();
+
+    host.remove();
+    background.remove();
+  });
+
   it('renders through the full App entry point without requiring network data', () => {
     render(<App />);
 

@@ -10,6 +10,36 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
+type InertElement = HTMLElement & { inert: boolean };
+
+interface SavedElementState {
+  element: InertElement;
+  hadInertAttribute: boolean;
+  inert: boolean;
+  ariaHidden: string | null;
+}
+
+const saveElementState = (element: HTMLElement): SavedElementState => {
+  const inertElement = element as InertElement;
+  return {
+    element: inertElement,
+    hadInertAttribute: element.hasAttribute('inert'),
+    // jsdom does not expose the native boolean property, while browsers do.
+    // Normalize the fallback to the native default so cleanup restores a
+    // stable false value without leaving an expando set to undefined.
+    inert: inertElement.inert === true,
+    ariaHidden: element.getAttribute('aria-hidden'),
+  };
+};
+
+const restoreElementState = ({ element, hadInertAttribute, inert, ariaHidden }: SavedElementState) => {
+  element.inert = inert;
+  if (hadInertAttribute) element.setAttribute('inert', '');
+  else element.removeAttribute('inert');
+  if (ariaHidden === null) element.removeAttribute('aria-hidden');
+  else element.setAttribute('aria-hidden', ariaHidden);
+};
+
 export const UpdateHistoryDialog = () => {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -26,9 +56,21 @@ export const UpdateHistoryDialog = () => {
     }
 
     wasOpenRef.current = true;
-    closeRef.current?.focus();
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
+    const background = document.getElementById('app-shell-content');
+    const trigger = triggerRef.current;
+    const savedStates = [background, trigger]
+      .filter((element): element is HTMLElement => element !== null)
+      .map(saveElementState);
+
+    for (const savedState of savedStates) {
+      savedState.element.inert = true;
+      savedState.element.setAttribute('inert', '');
+    }
+    if (background) background.setAttribute('aria-hidden', 'true');
+
+    closeRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -57,8 +99,21 @@ export const UpdateHistoryDialog = () => {
       }
     };
 
+    const handleFocusIn = (event: FocusEvent) => {
+      const target = event.target;
+      if (target instanceof Node && !dialog.contains(target)) {
+        event.preventDefault();
+        closeRef.current?.focus();
+      }
+    };
+
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('focusin', handleFocusIn, true);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('focusin', handleFocusIn, true);
+      savedStates.forEach(restoreElementState);
+    };
   }, [isOpen]);
 
   return (
