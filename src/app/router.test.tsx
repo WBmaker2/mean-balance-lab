@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createInitialSession } from '../domain/session';
-import { completedBalanceStateWithTwoRetries, renderAppAt } from '../test/fixtures';
+import { completedBalanceStateWithTwoRetries, completedSession, renderAppAt, sessionWithThreeRequiredMissions } from '../test/fixtures';
 
 describe('learning router', () => {
   afterEach(cleanup);
@@ -369,6 +369,36 @@ describe('learning router', () => {
     await user.click(screen.getByRole('button', { name: '다음 단계' }));
     expect(window.location.hash).toContain('/explain');
     expect(await screen.findByRole('heading', { name: '근거 문장을 완성해 볼까요?' })).toBeVisible();
+  });
+
+  it('connects saved evidence to the mission result and then starts the next required mission', async () => {
+    const state = completedBalanceStateWithTwoRetries();
+    const explainState = {
+      ...state,
+      activeRun: { ...state.activeRun!, stage: 'explain' as const },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/balance-delivery/balance-20-a/explain', explainState);
+
+    await user.click(screen.getByRole('button', { name: '미션 결과 보기' }));
+    expect(window.location.hash).toBe('#/mission/balance-delivery/balance-20-a/mission-result');
+    expect(await screen.findByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: '활동 마치기' }));
+    expect(window.location.hash).toBe('#/');
+    expect(await screen.findByText('다음 미션: 2. 평균 쌍둥이')).toBeVisible();
+  });
+
+  it('returns to the missing mission when completion IDs lack its canonical attempt', async () => {
+    const completeIdsButMissingAttempt = {
+      ...completedSession(),
+      attempts: sessionWithThreeRequiredMissions().attempts,
+    };
+    renderAppAt('#/', completeIdsButMissingAttempt);
+
+    expect(await screen.findByText('다음 미션: 4. 대표값 심의')).toBeVisible();
+    expect(screen.queryByRole('button', { name: '전체 결과 보기' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '미션 시작' })).toBeVisible();
   });
 
   it('hands a verified balance calculation directly to explain', async () => {

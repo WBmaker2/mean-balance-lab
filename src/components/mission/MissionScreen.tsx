@@ -43,7 +43,7 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
     const next = dataset.stages[index + 1];
     if (!next) return;
     if (next !== 'situation' && next !== 'predict' && next !== 'redistribute'
-      && next !== 'calculate' && next !== 'compare' && next !== 'explain') return;
+      && next !== 'calculate' && next !== 'compare' && next !== 'explain' && next !== 'mission-result') return;
     dispatch({ type: 'ADVANCE_STAGE' });
     navigate(`/mission/${mission.id}/${dataset.id}/${next}`);
   };

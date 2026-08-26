@@ -27,14 +27,28 @@ describe('ResultScreen', () => {
     const cards = screen.getAllByRole('region').filter((region) => region.classList.contains('mission-summary'));
     expect(cards).toHaveLength(4);
     cards.forEach((card) => {
+      const cardHeading = card.querySelector('h3');
+      expect(cardHeading).not.toBeNull();
+      expect(card.getAttribute('aria-labelledby')).toBe(cardHeading?.id);
+      expect(cardHeading?.id).toBeTruthy();
       const evidence = within(card).getByRole('heading', { name: '내가 사용한 근거' });
       const revisions = within(card).getByRole('heading', { name: '고쳐 생각한 과정' });
       const level = within(card).getByRole('heading', { name: '근거 단계' });
+      expect(evidence.tagName).toBe('H4');
+      expect(revisions.tagName).toBe('H4');
+      expect(level.tagName).toBe('H4');
+      [evidence, revisions, level].forEach((heading) => {
+        expect(heading.id).toBeTruthy();
+        expect(card.querySelector(`#${heading.id}`)).toBe(heading);
+        expect(new Set([evidence.id, revisions.id, level.id]).size).toBe(3);
+      });
       const actions = within(card).getByRole('navigation');
       expect(evidence.compareDocumentPosition(revisions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(revisions.compareDocumentPosition(level) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(level.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
+    const allIds = Array.from(document.querySelectorAll('[id]'), (element) => element.id);
+    expect(new Set(allIds).size).toBe(allIds.length);
     expect(screen.queryByText(/총점|순위|백분율|학급 비교/)).not.toBeInTheDocument();
   });
 

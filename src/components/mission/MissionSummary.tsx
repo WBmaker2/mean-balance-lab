@@ -32,6 +32,9 @@ export const MissionSummary = ({
   const canonicalAttempt = isCanonicalEvidenceRecord(attempt, mission.id, dataset.id, attempt.revisions)
     ? attempt : null;
   if (!canonicalAttempt) return null;
+  const evidenceHeadingId = `${headingId}-evidence`;
+  const revisionsHeadingId = `${headingId}-revisions`;
+  const levelHeadingId = `${headingId}-level`;
 
   const saveEdit = (record: EvidenceRecord) => {
     dispatch?.({ type: 'UPDATE_EVIDENCE_ATTEMPT', record });
@@ -39,7 +42,7 @@ export const MissionSummary = ({
   };
 
   return (
-    <section className="mission-summary" aria-labelledby="mission-summary-heading">
+    <section className="mission-summary" aria-labelledby={headingId}>
       {headingLevel === 'h1'
         ? <h1 id={headingId}>{mission.title} 결과</h1>
         : headingLevel === 'h2'
@@ -55,16 +58,16 @@ export const MissionSummary = ({
         />
       ) : (
         <>
-          <section className="summary-evidence" aria-labelledby="summary-evidence-heading">
-            <h2 id="summary-evidence-heading">내가 사용한 근거</h2>
+          <section className="summary-evidence" aria-labelledby={evidenceHeadingId}>
+            {headingLevel === 'h1' ? <h2 id={evidenceHeadingId}>내가 사용한 근거</h2> : <h4 id={evidenceHeadingId}>내가 사용한 근거</h4>}
             <p>{canonicalAttempt.sentence}</p>
           </section>
-          <section className="summary-revisions" aria-labelledby="summary-revisions-heading">
-            <h2 id="summary-revisions-heading">고쳐 생각한 과정</h2>
+          <section className="summary-revisions" aria-labelledby={revisionsHeadingId}>
+            {headingLevel === 'h1' ? <h2 id={revisionsHeadingId}>고쳐 생각한 과정</h2> : <h4 id={revisionsHeadingId}>고쳐 생각한 과정</h4>}
             <p>수정 기록 {canonicalAttempt.revisions}회</p>
           </section>
-          <section className="summary-level" aria-labelledby="summary-level-heading">
-            <h2 id="summary-level-heading">근거 단계</h2>
+          <section className="summary-level" aria-labelledby={levelHeadingId}>
+            {headingLevel === 'h1' ? <h2 id={levelHeadingId}>근거 단계</h2> : <h4 id={levelHeadingId}>근거 단계</h4>}
             <p>단계 {canonicalAttempt.level}: {levelDescription[canonicalAttempt.level]}</p>
           </section>
           <nav className="summary-actions" aria-label={`${mission.title} 결과 행동`}>

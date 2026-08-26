@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLabSession } from '../../state/LabSessionContext';
 import { MISSIONS } from '../../content/missions';
+import { isCanonicalEvidenceRecord } from '../../domain/evaluation';
 import { routeFor } from '../../app/router';
 import { ActionButton } from '../shared/ActionButton';
 
@@ -26,7 +27,12 @@ export const StartScreen = () => {
     && typeof locationState.recoveryMessage === 'string'
     ? locationState.recoveryMessage
     : undefined;
-  const nextMission = MISSIONS.find((mission) => !state.completedRequiredMissions.includes(mission.id));
+  const nextMission = MISSIONS.find((mission) => {
+    const attempt = state.attempts[mission.requiredDatasetId];
+    const hasCanonicalRequiredAttempt = attempt !== undefined
+      && isCanonicalEvidenceRecord(attempt, mission.id, mission.requiredDatasetId, attempt.revisions);
+    return !(state.completedRequiredMissions.includes(mission.id) && hasCanonicalRequiredAttempt);
+  });
   const dataset = nextMission?.datasets.find((candidate) => candidate.id.endsWith(difficulty)) ?? nextMission?.datasets[0];
 
   const start = () => {
