@@ -116,3 +116,34 @@
 ### 미해결
 
 - 없음. 실제 `@media print` 규칙과 reduced-motion/global stylesheet 결합은 계획대로 Task 14의 범위입니다.
+
+## Fix Round 3 — Chromium programmatic inert activation guard
+
+### RED 증거
+
+- `src/components/update/UpdateHistoryDialog.test.tsx`에 모달을 연 뒤 `skipLink.click()`과 inert 배경 버튼의 cancelable `click` 이벤트를 직접 실행하는 회귀 테스트를 먼저 추가했습니다.
+- 구현 전 `npm test -- --run src/components/update/UpdateHistoryDialog.test.tsx`를 실행했고, 배경 버튼의 click handler가 1회 실행되어 `backgroundActivations`가 0이 아니므로 실패했습니다. Chromium의 native inert가 사용자 입력은 막아도 script-triggered `element.click()`을 막지 않는 경계를 재현한 것입니다.
+
+### 최소 수정
+
+- `src/components/update/UpdateHistoryDialog.tsx`의 열린 dialog effect에 capture-phase `click` listener를 추가했습니다.
+- 이벤트 target이 `#app-shell-content` 배경 또는 `[inert]` 조상 안에 있으면 `preventDefault()`, `stopPropagation()`, `stopImmediatePropagation()`으로 배경의 사용자·프로그램 활성화를 모두 차단합니다.
+- dialog 내부 닫기 버튼은 배경 경계 밖이므로 차단하지 않으며, effect cleanup에서 동일 listener와 capture 옵션으로 정확히 제거합니다. 기존 `focusin`, `keydown`, inert/aria 복원 동작은 그대로 유지했습니다.
+
+### 검증
+
+- Focused: `npm test -- --run src/components/update/UpdateHistoryDialog.test.tsx` → 1 file, 16 tests passed.
+- Full: `npm test -- --run` → 19 files, 200 tests passed.
+- Typecheck: `npm run typecheck` passed.
+- Build: `npm run build` passed; Vite production bundle generated successfully.
+- Diff: `git diff --check` passed.
+- Source line count: production/test TS·TSX 파일 중 최댓값은 `src/app/router.test.tsx` 480줄이며 500줄 미만입니다.
+- package install, push, deploy는 실행하지 않았습니다.
+
+### Fix Round 3 Commit
+
+- `6d2c787 fix: block inert background activation`
+
+### Fix Round 3 상태
+
+- re-review finding 해결: dialog open 중 skip link의 `click()`과 inert 배경 control의 dispatched click이 URL·handler·dialog 상태를 변경하지 않으며, close 후에는 skip navigation과 배경 버튼 활성화가 복구됩니다.
