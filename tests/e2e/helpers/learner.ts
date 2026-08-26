@@ -164,10 +164,8 @@ const reachChallenge = async (page: Page, datasetId: DatasetId) => {
   for (let prior = 0; prior < index; prior += 1) {
     const priorMission = missions[prior]!;
     await page.goto('/#/');
-    const nextPrior = page.getByText(`다음 미션: ${missionTitles[priorMission]}`, { exact: true });
-    if (await nextPrior.count() > 0) {
-      await completeRequiredDataset(page, priorMission, requiredDatasets[priorMission]);
-    }
+    await expect(page.getByText(`다음 미션: ${missionTitles[priorMission]}`, { exact: true })).toBeVisible();
+    await completeRequiredDataset(page, priorMission, requiredDatasets[priorMission]);
   }
   await startNextDataset(page, missionId, datasetId);
 };
@@ -199,4 +197,17 @@ export const reachCalculationAndSubmitWrongCount = async (page: Page): Promise<v
   await section.getByRole('spinbutton', { name: '평균', exact: true }).fill('5');
   await section.getByRole('button', { name: '계산 확인', exact: true }).click();
   await expect(page.getByText('자료는 몇 개인가요?', { exact: false })).toBeVisible();
+};
+
+export const reachCalculationAndSubmitCorrect = async (page: Page): Promise<void> => {
+  await startBalanceMission(page);
+  await completeBalanceWithButtons(page);
+  await expect(page.getByRole('heading', { name: '평균을 계산해 볼까요?', exact: true })).toBeVisible();
+  const section = calculationSection(page, '현재 자료의 평균을 계산해 볼까요?');
+  await section.getByRole('spinbutton', { name: '합계', exact: true }).fill('20');
+  await section.getByRole('spinbutton', { name: '자료 개수', exact: true }).fill('4');
+  await section.getByRole('spinbutton', { name: '평균', exact: true }).fill('5');
+  await section.getByRole('button', { name: '계산 확인', exact: true }).click();
+  await expect(section.getByRole('status').getByText('재배분한 값과 계산한 평균이 같아요.', { exact: true })).toBeVisible();
+  await expect(section.getByLabel('평균 계산 방정식')).toBeVisible();
 };

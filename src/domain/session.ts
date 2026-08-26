@@ -3,6 +3,7 @@ import {
   evaluateCalculation, evaluateComparison, isAllowedComparisonSelection, isCanonicalEvidenceRecord,
 } from './evaluation';
 import { isBalanced, moveOne, sum, type QuantityMove } from './math';
+import { isAllowedPrediction } from './prediction';
 import type {
   CalculationTarget, ComparisonChoiceId, DatasetId, EvidenceRecord,
   EvaluationResult, LearningStage, MissionId, PredictionValue, SaveMode,
@@ -198,6 +199,7 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
     }
     case 'SET_PREDICTION': {
       if (!state.activeRun || state.activeRun.stage !== 'predict') return state;
+      if (!isAllowedPrediction(getDataset(state.activeRun.datasetId), action.value)) return state;
       return withRun(state, {
         ...state.activeRun,
         artifacts: { ...state.activeRun.artifacts, prediction: { value: action.value } },

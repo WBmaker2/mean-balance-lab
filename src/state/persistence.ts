@@ -3,9 +3,10 @@ import {
 } from '../domain/evaluation';
 import { getDataset, getMission, isDatasetId, isLearningStage, isMissionId } from '../content/missions';
 import { mean, sum } from '../domain/math';
+import { isAllowedPrediction } from '../domain/prediction';
 import type {
   CalculationTarget, ComparisonChoiceId, DatasetId,
-  EvaluationResult, MissionId, PredictionValue, SaveMode,
+  EvaluationResult, MissionId, SaveMode,
 } from '../domain/types';
 import type { ActiveRun, CalculationArtifact, LabSessionState, StageArtifacts } from '../domain/session';
 
@@ -31,9 +32,6 @@ const isString = (value: unknown): value is string => typeof value === 'string';
 const isSaveMode = (value: unknown): value is SaveMode => value === 'tab' || value === 'device';
 
 const calculationTargets = new Set<CalculationTarget>(['current', 'left', 'right', 'before', 'after']);
-
-const isPrediction = (value: unknown): value is PredictionValue =>
-  (isNatural(value) || value === 'increase' || value === 'decrease' || value === 'same');
 
 const isEvaluationResult = (value: unknown): value is EvaluationResult => {
   if (!isRecord(value) || !hasExactKeys(value, ['isCorrect', 'message', 'nextAction'])) return false;
@@ -84,7 +82,8 @@ const isArtifacts = (value: unknown, run: {
   const allowed = ['prediction', 'redistribution', 'calculations', 'comparison', 'evidence'];
   if (!Object.keys(value).every((key) => allowed.includes(key))) return false;
   if ('prediction' in value) {
-    if (!isRecord(value.prediction) || !hasExactKeys(value.prediction, ['value']) || !isPrediction(value.prediction.value)) return false;
+    if (!isRecord(value.prediction) || !hasExactKeys(value.prediction, ['value'])
+      || !isAllowedPrediction(getDataset(run.datasetId), value.prediction.value)) return false;
   }
   if ('redistribution' in value) {
     const redistribution = value.redistribution;
