@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { render, type RenderResult } from '@testing-library/react';
-import { LabSessionProvider } from '../state/LabSessionContext';
+import App from '../app/App';
 import {
   createInitialSession, type LabSessionState, type StageArtifacts,
 } from '../domain/session';
@@ -17,6 +17,7 @@ const balanceEvidence = (): EvidenceRecord => ({
 });
 
 export const verifiedBalanceArtifacts = (): StageArtifacts => ({
+  prediction: { value: 5 },
   redistribution: { initialValues: [2, 4, 6, 8], currentValues: [5, 5, 5, 5], undoStack: [] },
   calculations: { current: { target: 'current', total: 20, count: 4, average: 5, verified: true } },
   evidence: balanceEvidence(),
@@ -69,10 +70,9 @@ export const invalidShapeSession = (): unknown => ({
   },
 });
 
-export const renderAppAt = (hash: string, initialState?: LabSessionState): RenderResult => render(
-  initialState === undefined
-    ? <LabSessionProvider><div data-testid="fixture-route">{hash}</div></LabSessionProvider>
-    : <LabSessionProvider initialState={initialState}><div data-testid="fixture-route">{hash}</div></LabSessionProvider>,
-);
+export const renderAppAt = (hash: string, initialState?: LabSessionState): RenderResult => {
+  window.location.hash = hash;
+  return render(<App {...(initialState ? { initialState } : {})} />);
+};
 
 export type { LabSessionState, MissionId, ReactNode };
