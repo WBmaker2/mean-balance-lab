@@ -35,6 +35,13 @@ describe('mean balance rules', () => {
     });
   });
 
+  it.each([
+    [[], [1], 'Delta requires equal non-empty datasets'],
+    [[1], [1, 2], 'Delta requires equal non-empty datasets'],
+  ] as const)('rejects invalid delta datasets', (before, after, message) => {
+    expect(() => describeDelta(before, after)).toThrow(message);
+  });
+
   it('chooses one deterministic recommended move toward the mean', () => {
     expect(nextBalancingMove([2, 4, 6, 8])).toEqual({ fromIndex: 2, toIndex: 0 });
     expect(nextBalancingMove([5, 5, 5, 5])).toBeNull();
@@ -47,8 +54,10 @@ describe('mean balance rules', () => {
   });
 
   it('builds sorted read-only dot frequencies', () => {
-    expect(dotFrequencies([4, 1, 4, 3])).toEqual([
+    const values = [4, 1, 4, 3];
+    expect(dotFrequencies(values)).toEqual([
       { value: 1, count: 1 }, { value: 3, count: 1 }, { value: 4, count: 2 },
     ]);
+    expect(values).toEqual([4, 1, 4, 3]);
   });
 });

@@ -293,7 +293,7 @@ describe('learning router', () => {
     expect(await screen.findByRole('heading', { name: '평균 쌍둥이 자료를 비교해 볼까요?' })).toBeVisible();
   });
 
-  it('keeps an outlier calculation on its screen without an unimplemented next CTA', async () => {
+  it('opens outlier comparison only after before and after calculations are verified', async () => {
     const initialState = {
       ...createInitialSession(),
       activeRun: {
@@ -317,7 +317,10 @@ describe('learning router', () => {
     await fill('20', '5');
     await fill('24', '6');
     expect(window.location.hash).toContain('/calculate');
-    expect(screen.queryByRole('button', { name: '다음 단계' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '다음 단계' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '다음 단계' }));
+    expect(window.location.hash).toContain('/compare');
+    expect(await screen.findByRole('heading', { name: '합계 변화와 평균 변화를 살펴볼까요?' })).toBeVisible();
   });
 
   it('keeps a representative calculation on its screen without an unimplemented next CTA', async () => {

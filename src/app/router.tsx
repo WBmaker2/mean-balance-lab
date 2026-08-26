@@ -19,7 +19,7 @@ const isImplementedStage = (
   || stage === 'predict'
   || (stage === 'redistribute' && dataset.kind === 'balance')
   || (stage === 'calculate' && dataset.stages.includes('calculate'))
-  || (stage === 'compare' && dataset.kind === 'twins');
+  || (stage === 'compare' && (dataset.kind === 'twins' || dataset.kind === 'outlier'));
 
 export const routeFor = (missionId: MissionId, datasetId: DatasetId, stage: LearningStage): string =>
   `#/mission/${missionId}/${datasetId}/${stage}`;

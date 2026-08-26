@@ -22,4 +22,13 @@ describe('ArtifactTrail', () => {
     expect(screen.queryByText(/재배분:/)).not.toBeInTheDocument();
     expect(screen.queryByText(/÷/)).not.toBeInTheDocument();
   });
+
+  it.each([
+    ['increase', '평균이 커집니다'],
+    ['decrease', '평균이 작아집니다'],
+    ['same', '평균이 같습니다'],
+  ] as const)('keeps the stored prediction label after moving stages (%s)', (value, label) => {
+    render(<ArtifactTrail artifacts={{ prediction: { value } }} />);
+    expect(screen.getByText(`예측: ${label}`)).toBeVisible();
+  });
 });

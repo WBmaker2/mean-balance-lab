@@ -4,21 +4,32 @@ import { evaluateComparison, isAllowedComparisonSelection } from '../../domain/e
 import { mean, range } from '../../domain/math';
 import type { StageArtifacts } from '../../domain/session';
 import type { EvaluationResult, TwinDataset } from '../../domain/types';
+import type { OutlierDataset } from '../../domain/types';
 import type { LabAction } from '../../domain/session';
 import { ActionButton } from '../shared/ActionButton';
 import { DotPlot } from '../shared/DotPlot';
 import { FeedbackPrompt } from '../shared/FeedbackPrompt';
+import { OutlierDeltaPanel } from './OutlierDeltaPanel';
 
-export interface ComparisonPanelProps {
+interface TwinComparisonPanelProps {
   dataset: TwinDataset;
   artifacts: StageArtifacts;
   dispatch: Dispatch<LabAction>;
   feedback?: EvaluationResult | null;
 }
 
+interface OutlierComparisonPanelProps {
+  dataset: OutlierDataset;
+  artifacts: StageArtifacts;
+  dispatch: Dispatch<LabAction>;
+  feedback?: EvaluationResult | null;
+}
+
+export type ComparisonPanelProps = TwinComparisonPanelProps | OutlierComparisonPanelProps;
+
 const unique = (ids: readonly ('same-mean' | 'different-spread' | 'same-shape')[]) => [...new Set(ids)];
 
-export const ComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null }: ComparisonPanelProps) => {
+const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null }: TwinComparisonPanelProps) => {
   const rawSavedIds = artifacts.comparison?.selectedIds ?? [];
   const savedIds = isAllowedComparisonSelection(dataset, rawSavedIds) ? rawSavedIds.filter(
     (id): id is 'same-mean' | 'different-spread' | 'same-shape' =>
@@ -131,4 +142,26 @@ export const ComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null 
       )}
     </section>
   );
+};
+
+export const ComparisonPanel = (props: ComparisonPanelProps) => {
+  if (props.dataset.kind === 'outlier') {
+    return (
+      <OutlierDeltaPanel
+        dataset={props.dataset}
+        prediction={props.artifacts.prediction}
+        onConfirm={() => props.dispatch({
+          type: 'SET_COMPARISON',
+          selectedIds: ['sum-changed-first', 'mean-changed-after'],
+        })}
+      />
+    );
+  }
+  const twinProps: TwinComparisonPanelProps = {
+    dataset: props.dataset,
+    artifacts: props.artifacts,
+    dispatch: props.dispatch,
+    ...(props.feedback !== undefined ? { feedback: props.feedback } : {}),
+  };
+  return <TwinsComparisonPanel {...twinProps} />;
 };

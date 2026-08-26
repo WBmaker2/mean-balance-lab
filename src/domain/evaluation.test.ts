@@ -97,6 +97,11 @@ describe('comparison feedback', () => {
       message: '합계가 먼저 변하고 평균도 변했어요.',
       nextAction: '근거 문장을 완성해 보세요.',
     });
+    expect(evaluateComparison(dataset, ['mean-changed-after', 'sum-changed-first'])).toEqual({
+      isCorrect: false,
+      message: '합계 변화를 먼저 살펴보세요.',
+      nextAction: '변경 전후의 전체 양을 비교해 보세요.',
+    });
   });
 
   it('requires a range or individual-value reason for representative review', () => {

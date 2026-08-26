@@ -10,7 +10,7 @@ interface PredictionPanelProps {
   onAdvance: () => void;
 }
 
-export const PredictionPanel = ({ prediction, dispatch, onAdvance }: PredictionPanelProps) => {
+export const PredictionPanel = ({ dataset, prediction, dispatch, onAdvance }: PredictionPanelProps) => {
   const choices = [
     ['increase', '평균이 커집니다'],
     ['decrease', '평균이 작아집니다'],
@@ -33,6 +33,9 @@ export const PredictionPanel = ({ prediction, dispatch, onAdvance }: PredictionP
           </ActionButton>
         ))}
       </div>
+      {dataset.kind === 'outlier' && prediction !== undefined ? (
+        <p role="status">가상 자료에서 바꾼 값이 커졌는지 작아졌는지를 다시 살펴보세요. 합계와 평균의 숫자는 계산 단계에서 확인해요.</p>
+      ) : null}
       <ActionButton type="button" emphasis="next" disabled={prediction === undefined} onClick={onAdvance}>다음 단계</ActionButton>
     </section>
   );

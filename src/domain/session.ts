@@ -142,7 +142,7 @@ export const canAdvance = (state: LabSessionState): AdvanceGate => {
     case 'calculate': {
       const missing = requiredTargets(run).filter((target) => run.artifacts.calculations?.[target]?.verified !== true);
       if (missing.length === 0) {
-        return getDataset(run.datasetId).kind === 'twins'
+        return getDataset(run.datasetId).kind === 'twins' || getDataset(run.datasetId).kind === 'outlier'
           ? { allowed: true }
           : { allowed: false, reason: '다음 비교 단계는 아직 준비 중이에요.' };
       }
@@ -315,7 +315,9 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
       const index = stages.indexOf(run.stage);
       const nextStage = stages[index + 1];
       if (!nextStage) return state;
-      if (nextStage === 'compare' && getDataset(run.datasetId).kind !== 'twins') return state;
+      if (nextStage === 'compare'
+        && getDataset(run.datasetId).kind !== 'twins'
+        && getDataset(run.datasetId).kind !== 'outlier') return state;
       const nextRun = { ...run, stage: nextStage, transientFeedback: null };
       return nextStage === 'mission-result' ? markRequiredMission(withRun(state, nextRun), nextRun) : withRun(state, nextRun);
     }

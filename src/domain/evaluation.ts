@@ -118,10 +118,10 @@ const evaluateOutlierComparison = (
 ): EvaluationResult => {
   const sumChanged = sum(dataset.beforeValues) !== sum(dataset.afterValues);
   const meanChanged = mean(dataset.beforeValues) !== mean(dataset.afterValues);
-  if (!hasChoice(selectedIds, 'sum-changed-first') || !sumChanged) {
+  if (selectedIds[0] !== 'sum-changed-first' || !sumChanged) {
     return result(false, COMPARISON_COPY.outlierSumMessage, COMPARISON_COPY.outlierSumNextAction);
   }
-  if (!hasChoice(selectedIds, 'mean-changed-after') || !meanChanged) {
+  if (selectedIds[1] !== 'mean-changed-after' || !meanChanged) {
     return result(false, COMPARISON_COPY.outlierMeanMessage, COMPARISON_COPY.outlierMeanNextAction);
   }
   return result(true, COMPARISON_COPY.outlierSuccessMessage, COMPARISON_COPY.evidenceNextAction);
