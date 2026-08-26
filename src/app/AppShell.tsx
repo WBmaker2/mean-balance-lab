@@ -1,9 +1,17 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { StoragePreference } from '../components/settings/StoragePreference';
 import { useLabSession } from '../state/LabSessionContext';
 
 export const AppShell = () => {
   const { state, dispatch } = useLabSession();
+  const navigate = useNavigate();
+
+  const clearProgress = () => {
+    // Let the mission route unmount before RESET_ALL so its bootstrap effect
+    // cannot interpret the cleared state as a request to start a new run.
+    navigate('/');
+    window.setTimeout(() => dispatch({ type: 'RESET_ALL' }), 0);
+  };
 
   return (
     <>
@@ -20,7 +28,7 @@ export const AppShell = () => {
         <StoragePreference
           mode={state.saveMode}
           onChange={(mode) => dispatch({ type: 'SET_SAVE_MODE', mode })}
-          onClear={() => dispatch({ type: 'RESET_ALL' })}
+          onClear={clearProgress}
         />
       </details>
       <footer>가상 자료로 평균의 뜻과 한계를 살펴봅니다.</footer>

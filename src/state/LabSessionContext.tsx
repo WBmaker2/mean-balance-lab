@@ -44,13 +44,17 @@ export interface LabSessionProviderProps extends PropsWithChildren {
 export const LabSessionProvider = ({ children, initialState }: LabSessionProviderProps) => {
   const [state, reduce] = useReducer(sessionReducer, initialState, (provided) => provided ?? loadInitialState());
   const previousMode = useRef(state.saveMode);
-  const skipNextPersist = useRef(false);
+  // Keep RESET_ALL suppression sticky across React StrictMode effect replay.
+  // The next explicit non-reset action is the only event that may resume saves.
+  const resetPersistenceSuppressed = useRef(false);
 
   const dispatch = useCallback((action: LabAction) => {
     if (action.type === 'RESET_ALL') {
-      skipNextPersist.current = true;
+      resetPersistenceSuppressed.current = true;
       safeRemove(browserStorage('sessionStorage'), TAB_STORAGE_KEY);
       safeRemove(browserStorage('localStorage'), DEVICE_STORAGE_KEY);
+    } else {
+      resetPersistenceSuppressed.current = false;
     }
     if (action.type === 'SET_SAVE_MODE' && action.mode === 'tab') {
       safeRemove(browserStorage('localStorage'), DEVICE_STORAGE_KEY);
@@ -59,8 +63,7 @@ export const LabSessionProvider = ({ children, initialState }: LabSessionProvide
   }, []);
 
   useEffect(() => {
-    if (skipNextPersist.current) {
-      skipNextPersist.current = false;
+    if (resetPersistenceSuppressed.current) {
       previousMode.current = state.saveMode;
       return;
     }

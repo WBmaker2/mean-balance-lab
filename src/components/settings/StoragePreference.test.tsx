@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { StrictMode } from 'react';
+import App from '../../app/App';
 import { createInitialSession } from '../../domain/session';
-import { renderAppAt } from '../../test/fixtures';
+import { completedBalanceStateWithTwoRetries, completedSession, renderAppAt } from '../../test/fixtures';
 import { DEVICE_STORAGE_KEY, TAB_STORAGE_KEY, loadSession } from '../../state/persistence';
 import { StoragePreference } from './StoragePreference';
 
@@ -112,5 +114,118 @@ describe('StoragePreference', () => {
     expect(confirm).toHaveBeenCalledTimes(1);
     expect(sessionStorage.getItem(TAB_STORAGE_KEY)).not.toBeNull();
     expect(localStorage.getItem(DEVICE_STORAGE_KEY)).not.toBeNull();
+  });
+
+  it('keeps confirmed mission-route deletion empty after StrictMode effects settle', async () => {
+    const seeded = { ...completedBalanceStateWithTwoRetries(), saveMode: 'device' as const };
+    sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(seeded));
+    localStorage.setItem(DEVICE_STORAGE_KEY, JSON.stringify(seeded));
+    window.location.hash = '#/mission/balance-delivery/balance-20-a/mission-result';
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const user = userEvent.setup();
+    render(<StrictMode><App /></StrictMode>);
+
+    expect(await screen.findByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+    await user.click(screen.getByText('설정'));
+    await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
+
+    await waitFor(() => expect(window.location.hash).toBe('#/'));
+    await new Promise((resolve) => window.setTimeout(resolve, 100));
+    expect(sessionStorage.getItem(TAB_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(DEVICE_STORAGE_KEY)).toBeNull();
+    expect(screen.queryByRole('heading', { name: '1. 균형 배송 결과' })).not.toBeInTheDocument();
+    expect(screen.getByText('다음 미션: 1. 균형 배송')).toBeVisible();
+
+    cleanup();
+    window.location.hash = '#/';
+    render(<StrictMode><App /></StrictMode>);
+    await waitFor(() => expect(loadSession(sessionStorage, TAB_STORAGE_KEY)).not.toBeNull());
+    const blankTabState = loadSession(sessionStorage, TAB_STORAGE_KEY);
+    expect(blankTabState?.activeRun).toBeNull();
+    expect(blankTabState?.attempts).toEqual({});
+    expect(blankTabState?.completedRequiredMissions).toEqual([]);
+    expect(localStorage.getItem(DEVICE_STORAGE_KEY)).toBeNull();
+  });
+
+  it('keeps confirmed results-route deletion empty after StrictMode effects settle', async () => {
+    const seeded = { ...completedSession(), saveMode: 'device' as const };
+    sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(seeded));
+    localStorage.setItem(DEVICE_STORAGE_KEY, JSON.stringify(seeded));
+    window.location.hash = '#/results';
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const user = userEvent.setup();
+    render(<StrictMode><App /></StrictMode>);
+
+    expect(await screen.findByRole('heading', { name: '전체 결과' })).toBeVisible();
+    await user.click(screen.getByText('설정'));
+    await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
+
+    await waitFor(() => expect(window.location.hash).toBe('#/'));
+    await new Promise((resolve) => window.setTimeout(resolve, 100));
+    expect(sessionStorage.getItem(TAB_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(DEVICE_STORAGE_KEY)).toBeNull();
+    expect(screen.queryByRole('heading', { name: '전체 결과' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '평균은 여러 값을 어떻게 대표하며, 한 값이 달라지면 평균은 왜 움직일까요?' })).toBeVisible();
+  });
+
+  it('preserves both keys and the current route when clearing is cancelled', async () => {
+    const seeded = { ...completedBalanceStateWithTwoRetries(), saveMode: 'device' as const };
+    sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(seeded));
+    localStorage.setItem(DEVICE_STORAGE_KEY, JSON.stringify(seeded));
+    window.location.hash = '#/mission/balance-delivery/balance-20-a/mission-result';
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const user = userEvent.setup();
+    render(<StrictMode><App /></StrictMode>);
+
+    expect(await screen.findByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+    await user.click(screen.getByText('설정'));
+    await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
+    await new Promise((resolve) => window.setTimeout(resolve, 100));
+
+    expect(window.location.hash).toBe('#/mission/balance-delivery/balance-20-a/mission-result');
+    expect(sessionStorage.getItem(TAB_STORAGE_KEY)).not.toBeNull();
+    expect(localStorage.getItem(DEVICE_STORAGE_KEY)).not.toBeNull();
+    expect(screen.getByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+  });
+
+  it('preserves the results route, state, and both keys when clearing is cancelled', async () => {
+    const seeded = { ...completedSession(), saveMode: 'device' as const };
+    sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(seeded));
+    localStorage.setItem(DEVICE_STORAGE_KEY, JSON.stringify(seeded));
+    window.location.hash = '#/results';
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const user = userEvent.setup();
+    render(<StrictMode><App /></StrictMode>);
+
+    expect(await screen.findByRole('heading', { name: '전체 결과' })).toBeVisible();
+    await user.click(screen.getByText('설정'));
+    await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
+    await new Promise((resolve) => window.setTimeout(resolve, 100));
+
+    expect(window.location.hash).toBe('#/results');
+    expect(sessionStorage.getItem(TAB_STORAGE_KEY)).not.toBeNull();
+    expect(localStorage.getItem(DEVICE_STORAGE_KEY)).not.toBeNull();
+    expect(screen.getByRole('heading', { name: '전체 결과' })).toBeVisible();
+  });
+
+  it('resumes persistence when a new mission is explicitly started after clearing', async () => {
+    const seeded = { ...completedBalanceStateWithTwoRetries(), saveMode: 'device' as const };
+    sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(seeded));
+    localStorage.setItem(DEVICE_STORAGE_KEY, JSON.stringify(seeded));
+    window.location.hash = '#/mission/balance-delivery/balance-20-a/mission-result';
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const user = userEvent.setup();
+    render(<StrictMode><App /></StrictMode>);
+
+    await screen.findByRole('heading', { name: '1. 균형 배송 결과' });
+    await user.click(screen.getByText('설정'));
+    await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
+    await waitFor(() => expect(window.location.hash).toBe('#/'));
+    await user.click(screen.getByRole('button', { name: '미션 시작' }));
+    await waitFor(() => {
+      expect(loadSession(sessionStorage, TAB_STORAGE_KEY)?.activeRun?.missionId).toBe('balance-delivery');
+      expect(loadSession(localStorage, DEVICE_STORAGE_KEY)).toBeNull();
+    });
+    expect(loadSession(sessionStorage, TAB_STORAGE_KEY)?.activeRun?.datasetId).toBe('balance-20-a');
   });
 });
