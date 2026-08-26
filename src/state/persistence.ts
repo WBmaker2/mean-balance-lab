@@ -1,4 +1,6 @@
-import { buildEvidenceSentence, deriveEvidenceLevel } from '../domain/evaluation';
+import {
+  buildEvidenceSentence, deriveEvidenceLevel, evaluateComparison, isAllowedComparisonSelection,
+} from '../domain/evaluation';
 import { getDataset, getMission, isDatasetId, isLearningStage, isMissionId } from '../content/missions';
 import { mean, sum } from '../domain/math';
 import type {
@@ -28,10 +30,6 @@ const isNatural = (value: unknown): value is number => Number.isInteger(value) &
 const isString = (value: unknown): value is string => typeof value === 'string';
 const isSaveMode = (value: unknown): value is SaveMode => value === 'tab' || value === 'device';
 
-const comparisonChoices = new Set<ComparisonChoiceId>([
-  'same-mean', 'different-spread', 'same-shape', 'sum-changed-first', 'mean-changed-after',
-  'range-or-individual-values', 'mean-always-enough',
-]);
 const evidenceChoices = new Set<EvidenceChoiceId>([
   'redistribution-and-division', 'redistribution-only', 'calculation-only',
   'same-mean-and-different-spread', 'same-mean-only', 'same-shape',
@@ -167,8 +165,11 @@ const isArtifacts = (value: unknown, run: { datasetId: DatasetId; stage: import(
     const comparison = value.comparison;
     if (!isRecord(comparison) || !hasExactKeys(comparison, ['selectedIds', 'verified'])
       || !Array.isArray(comparison.selectedIds) || new Set(comparison.selectedIds).size !== comparison.selectedIds.length
-      || !comparison.selectedIds.every((id) => comparisonChoices.has(id as ComparisonChoiceId))
       || typeof comparison.verified !== 'boolean') return false;
+    const dataset = getDataset(run.datasetId);
+    const selectedIds = comparison.selectedIds as ComparisonChoiceId[];
+    if (!isAllowedComparisonSelection(dataset, selectedIds)) return false;
+    if (comparison.verified && !evaluateComparison(dataset, selectedIds).isCorrect) return false;
   }
   if ('evidence' in value && !isEvidenceRecord(value.evidence, getMissionForDataset(run.datasetId), run.datasetId)) return false;
   return true;

@@ -1,5 +1,8 @@
 import { getDataset, getMission, isDatasetId, isMissionId } from '../content/missions';
-import { buildEvidenceSentence, deriveEvidenceLevel, evaluateCalculation, evaluateComparison } from './evaluation';
+import {
+  buildEvidenceSentence, deriveEvidenceLevel, evaluateCalculation, evaluateComparison,
+  isAllowedComparisonSelection,
+} from './evaluation';
 import { isBalanced, moveOne, sum, type QuantityMove } from './math';
 import type {
   CalculationTarget, ComparisonChoiceId, DatasetId, EvidenceChoiceId, EvidenceRecord,
@@ -138,7 +141,11 @@ export const canAdvance = (state: LabSessionState): AdvanceGate => {
     }
     case 'calculate': {
       const missing = requiredTargets(run).filter((target) => run.artifacts.calculations?.[target]?.verified !== true);
-      if (missing.length === 0) return { allowed: true };
+      if (missing.length === 0) {
+        return getDataset(run.datasetId).kind === 'twins'
+          ? { allowed: true }
+          : { allowed: false, reason: '다음 비교 단계는 아직 준비 중이에요.' };
+      }
       if (missing.length > 1) {
         const kind = getDataset(run.datasetId).kind;
         if (kind === 'twins') return { allowed: false, reason: '자료 A와 자료 B의 평균을 각각 계산해 보세요.' };
@@ -167,11 +174,6 @@ const markRequiredMission = (state: LabSessionState, run: ActiveRun): LabSession
 
 const resetActive = (state: LabSessionState): LabSessionState =>
   state.activeRun ? { ...state, activeRun: makeActiveRun(state.activeRun.missionId, state.activeRun.datasetId) } : state;
-
-const comparisonChoices = new Set<ComparisonChoiceId>([
-  'same-mean', 'different-spread', 'same-shape', 'sum-changed-first', 'mean-changed-after',
-  'range-or-individual-values', 'mean-always-enough',
-]);
 
 const evidenceChoicesByMission: Readonly<Record<MissionId, readonly EvidenceChoiceId[]>> = {
   'balance-delivery': ['redistribution-and-division', 'redistribution-only', 'calculation-only'],
@@ -281,11 +283,12 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
       if (run.stage !== 'compare') {
         return withRun(state, incrementRevision(run, failure('아직 비교 단계가 아니에요.', '비교 단계에서 자료를 살펴보세요.')));
       }
-      if (!action.selectedIds.every((id) => comparisonChoices.has(id))) {
+      const selectedIds = [...new Set(action.selectedIds)];
+      const dataset = getDataset(run.datasetId);
+      if (!isAllowedComparisonSelection(dataset, selectedIds)) {
         return withRun(state, incrementRevision(run, failure('비교 선택을 다시 살펴보세요.', '자료를 비교할 근거를 선택해 보세요.')));
       }
-      const selectedIds = [...new Set(action.selectedIds)];
-      const result = evaluateComparison(getDataset(run.datasetId), selectedIds);
+      const result = evaluateComparison(dataset, selectedIds);
       const nextRun = {
         ...run,
         artifacts: { ...run.artifacts, comparison: { selectedIds, verified: result.isCorrect } },
@@ -312,6 +315,7 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
       const index = stages.indexOf(run.stage);
       const nextStage = stages[index + 1];
       if (!nextStage) return state;
+      if (nextStage === 'compare' && getDataset(run.datasetId).kind !== 'twins') return state;
       const nextRun = { ...run, stage: nextStage, transientFeedback: null };
       return nextStage === 'mission-result' ? markRequiredMission(withRun(state, nextRun), nextRun) : withRun(state, nextRun);
     }

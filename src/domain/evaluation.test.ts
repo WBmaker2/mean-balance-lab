@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { getDataset } from '../content/missions';
 import {
+  COMPARISON_CHOICE_IDS_BY_KIND,
   buildEvidenceSentence,
+  isAllowedComparisonSelection,
   deriveEvidenceLevel,
   evaluateCalculation,
   evaluateComparison,
@@ -48,6 +50,22 @@ describe('calculation feedback', () => {
 });
 
 describe('comparison feedback', () => {
+  it('keeps comparison choice IDs scoped to each dataset kind', () => {
+    expect(COMPARISON_CHOICE_IDS_BY_KIND.twins).toEqual(['same-mean', 'different-spread', 'same-shape']);
+    expect(isAllowedComparisonSelection(getDataset('twins-4-a'), ['same-mean', 'different-spread'])).toBe(true);
+    expect(isAllowedComparisonSelection(getDataset('twins-4-a'), ['sum-changed-first'])).toBe(false);
+    expect(isAllowedComparisonSelection(getDataset('outlier-5-a'), ['same-mean'])).toBe(false);
+    expect(isAllowedComparisonSelection(getDataset('balance-20-a'), [])).toBe(false);
+  });
+
+  it('treats same-shape as an incorrect twins explanation even with the correct pair', () => {
+    expect(evaluateComparison(getDataset('twins-4-a'), ['same-mean', 'different-spread', 'same-shape'])).toEqual({
+      isCorrect: false,
+      message: '평균이 같아도 각 값과 퍼짐은 다를 수 있어요.',
+      nextAction: '점도표에서 각 값과 퍼짐을 다시 살펴보세요.',
+    });
+  });
+
   it('requires same mean and different spread for twins', () => {
     const dataset = getDataset('twins-4-a');
     expect(evaluateComparison(dataset, ['same-mean'])).toEqual({

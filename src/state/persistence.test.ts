@@ -82,4 +82,23 @@ describe('session persistence guards', () => {
     sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(value));
     expect(loadSession(sessionStorage, TAB_STORAGE_KEY)).toBeNull();
   });
+
+  it('rejects a verified twin comparison with filtered-empty or cross-kind choices', () => {
+    const value = stateWithCompletedEvidenceAndWrongFeedback() as any;
+    value.activeRun.missionId = 'mean-twins';
+    value.activeRun.datasetId = 'twins-4-a';
+    value.activeRun.stage = 'compare';
+    value.activeRun.artifacts = {
+      calculations: {
+        left: { target: 'left', total: 16, count: 4, average: 4, verified: true },
+        right: { target: 'right', total: 16, count: 4, average: 4, verified: true },
+      },
+      comparison: { selectedIds: [], verified: true },
+    };
+    expect(isLabSessionState(value)).toBe(false);
+    value.activeRun.artifacts.comparison = { selectedIds: ['sum-changed-first'], verified: true };
+    expect(isLabSessionState(value)).toBe(false);
+    value.activeRun.artifacts.comparison = { selectedIds: ['same-mean'], verified: true };
+    expect(isLabSessionState(value)).toBe(false);
+  });
 });

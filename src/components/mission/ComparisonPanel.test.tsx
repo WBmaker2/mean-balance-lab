@@ -111,4 +111,22 @@ describe('ComparisonPanel', () => {
     expect(screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true'))
       .toHaveLength(1);
   });
+
+  it('does not turn filtered-empty forged IDs into a verified comparison', () => {
+    render(
+      <ComparisonPanel
+        dataset={dataset}
+        artifacts={{
+          calculations: {
+            left: { target: 'left', total: 16, count: 4, average: 4, verified: true },
+            right: { target: 'right', total: 16, count: 4, average: 4, verified: true },
+          },
+          comparison: { selectedIds: ['sum-changed-first'], verified: true },
+        }}
+        dispatch={() => undefined}
+      />,
+    );
+    expect(screen.queryByText('평균은 같지만 자료의 모양은 다를 수 있어요.')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '비교 확인' })).toBeVisible();
+  });
 });

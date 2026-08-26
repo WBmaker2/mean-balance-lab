@@ -116,12 +116,12 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
         <section aria-labelledby="calculation-heading">
           <h1 id="calculation-heading">변경 전과 후의 평균을 계산해 볼까요?</h1>
           {renderCalculation('before', run?.artifacts.calculations?.before?.verified !== true, false)}
-          {renderCalculation('after', run?.artifacts.calculations?.before?.verified === true, true)}
+          {renderCalculation('after', run?.artifacts.calculations?.before?.verified === true, false)}
         </section>
       ) : stage === 'calculate' ? (
         <section aria-labelledby="calculation-heading">
           <h1 id="calculation-heading">평균을 계산해 볼까요?</h1>
-          {renderCalculation('current')}
+          {renderCalculation('current', true, false)}
         </section>
       ) : stage === 'compare' && dataset.kind === 'twins' && run ? (
         <ComparisonPanel

@@ -179,7 +179,7 @@ describe('learning router', () => {
     await user.type(inputs[2]!, '5');
     await user.click(screen.getByRole('button', { name: '계산 확인' }));
     expect(screen.getAllByText('20 ÷ 4 = 5')).toHaveLength(2);
-    expect(screen.getByRole('button', { name: '다음 단계' })).toHaveAttribute('data-current-action', 'true');
+    expect(screen.queryByRole('button', { name: '다음 단계' })).not.toBeInTheDocument();
   });
 
   it('routes an unconfirmed balanced run back to redistribution', async () => {
@@ -291,5 +291,52 @@ describe('learning router', () => {
 
     expect(window.location.hash).toContain('/compare');
     expect(await screen.findByRole('heading', { name: '평균 쌍둥이 자료를 비교해 볼까요?' })).toBeVisible();
+  });
+
+  it('keeps an outlier calculation on its screen without an unimplemented next CTA', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'outlier-alert' as const,
+        datasetId: 'outlier-5-a' as const,
+        stage: 'calculate' as const,
+        artifacts: { prediction: { value: 'increase' as const } },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/outlier-alert/outlier-5-a/calculate', initialState);
+    const fill = async (total: string, average: string) => {
+      const inputs = screen.getAllByRole('spinbutton');
+      await user.type(inputs[0]!, total);
+      await user.type(inputs[1]!, '4');
+      await user.type(inputs[2]!, average);
+      await user.click(screen.getAllByRole('button', { name: '계산 확인' })[0]!);
+    };
+    await fill('20', '5');
+    await fill('24', '6');
+    expect(window.location.hash).toContain('/calculate');
+    expect(screen.queryByRole('button', { name: '다음 단계' })).not.toBeInTheDocument();
+  });
+
+  it('keeps a representative calculation on its screen without an unimplemented next CTA', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'representative-review' as const,
+        datasetId: 'review-cards-a' as const,
+        stage: 'calculate' as const,
+        artifacts: {
+          prediction: { value: 4 as const },
+          calculations: { current: { target: 'current' as const, total: 20, count: 5, average: 4, verified: true } },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    renderAppAt('#/mission/representative-review/review-cards-a/calculate', initialState);
+    expect(await screen.findByLabelText('평균 계산 방정식')).toHaveTextContent('20 ÷ 5 = 4');
+    expect(screen.queryByRole('button', { name: '다음 단계' })).not.toBeInTheDocument();
   });
 });

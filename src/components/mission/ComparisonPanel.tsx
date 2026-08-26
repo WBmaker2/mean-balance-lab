@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type Dispatch } from 'react';
 import { COMPARISON_COPY } from '../../content/copy';
-import { evaluateComparison } from '../../domain/evaluation';
+import { evaluateComparison, isAllowedComparisonSelection } from '../../domain/evaluation';
 import { mean, range } from '../../domain/math';
 import type { StageArtifacts } from '../../domain/session';
 import type { EvaluationResult, TwinDataset } from '../../domain/types';
@@ -19,10 +19,11 @@ export interface ComparisonPanelProps {
 const unique = (ids: readonly ('same-mean' | 'different-spread' | 'same-shape')[]) => [...new Set(ids)];
 
 export const ComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null }: ComparisonPanelProps) => {
-  const savedIds = artifacts.comparison?.selectedIds.filter(
+  const rawSavedIds = artifacts.comparison?.selectedIds ?? [];
+  const savedIds = isAllowedComparisonSelection(dataset, rawSavedIds) ? rawSavedIds.filter(
     (id): id is 'same-mean' | 'different-spread' | 'same-shape' =>
       id === 'same-mean' || id === 'different-spread' || id === 'same-shape',
-  ) ?? [];
+  ) : [];
   const [selectedIds, setSelectedIds] = useState<readonly ('same-mean' | 'different-spread' | 'same-shape')[]>(
     unique(savedIds),
   );
@@ -34,6 +35,7 @@ export const ComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null 
   const rightRange = range(dataset.rightValues);
   const savedComparisonIds = unique(savedIds);
   const verified = artifacts.comparison?.verified === true
+    && savedComparisonIds.length > 0
     && selectedIds.length === savedComparisonIds.length
     && selectedIds.every((id) => savedComparisonIds.includes(id));
   const shownFeedback = verified

@@ -116,4 +116,50 @@ describe('recoverable lab session reducer', () => {
     expect(rejected.activeRun?.revisions).toBe(state.activeRun?.revisions);
     expect(rejected.activeRun?.transientFeedback).toBe(state.activeRun?.transientFeedback);
   });
+
+  it('does not advance non-twins calculation into an unimplemented compare stage', () => {
+    const state = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'outlier-alert' as const,
+        datasetId: 'outlier-5-a' as const,
+        stage: 'calculate' as const,
+        artifacts: {
+          calculations: {
+            before: { target: 'before' as const, total: 20, count: 4, average: 5, verified: true },
+            after: { target: 'after' as const, total: 24, count: 4, average: 6, verified: true },
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    expect(canAdvance(state)).toEqual({ allowed: false, reason: '다음 비교 단계는 아직 준비 중이에요.' });
+    expect(sessionReducer(state, { type: 'ADVANCE_STAGE' }).activeRun?.stage).toBe('calculate');
+  });
+
+  it('rejects cross-kind comparison choices without creating a comparison artifact', () => {
+    const state = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'outlier-alert' as const,
+        datasetId: 'outlier-5-a' as const,
+        stage: 'compare' as const,
+        artifacts: {
+          calculations: {
+            before: { target: 'before' as const, total: 20, count: 4, average: 5, verified: true },
+            after: { target: 'after' as const, total: 24, count: 4, average: 6, verified: true },
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const rejected = sessionReducer(state, {
+      type: 'SET_COMPARISON', selectedIds: ['same-mean'],
+    });
+    expect(rejected.activeRun?.artifacts.comparison).toBeUndefined();
+    expect(rejected.activeRun?.revisions).toBe(1);
+    expect(rejected.activeRun?.transientFeedback?.isCorrect).toBe(false);
+  });
 });

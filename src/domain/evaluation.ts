@@ -21,6 +21,20 @@ import type {
   MissionId,
 } from './types';
 
+export const COMPARISON_CHOICE_IDS_BY_KIND: Readonly<Record<MissionDataset['kind'], readonly ComparisonChoiceId[]>> = {
+  balance: [],
+  twins: ['same-mean', 'different-spread', 'same-shape'],
+  outlier: ['sum-changed-first', 'mean-changed-after'],
+  representativeness: ['range-or-individual-values', 'mean-always-enough'],
+};
+
+export const isAllowedComparisonSelection = (
+  dataset: MissionDataset,
+  selectedIds: readonly ComparisonChoiceId[],
+): boolean => selectedIds.length > 0
+  && new Set(selectedIds).size === selectedIds.length
+  && selectedIds.every((id) => COMPARISON_CHOICE_IDS_BY_KIND[dataset.kind].includes(id));
+
 export interface CalculationInput {
   values: readonly number[];
   enteredTotal: number;
@@ -130,6 +144,9 @@ export const evaluateComparison = (
   dataset: MissionDataset,
   selectedIds: readonly ComparisonChoiceId[],
 ): EvaluationResult => {
+  if (!isAllowedComparisonSelection(dataset, selectedIds)) {
+    return result(false, '비교 선택을 다시 살펴보세요.', '자료를 비교할 근거를 선택해 보세요.');
+  }
   switch (dataset.kind) {
     case 'balance':
       return evaluateBalanceComparison();
