@@ -64,6 +64,29 @@ describe('ResultScreen', () => {
     expect(within(card).getByText('수정 기록 0회')).toBeVisible();
   });
 
+  it('keeps editor headings nested under the result card with unique labelled regions', async () => {
+    renderAppAt('#/results', completedSession());
+    const user = userEvent.setup();
+    const cards = screen.getAllByRole('region').filter((region) => region.classList.contains('mission-summary'));
+    const card = cards[0]!;
+    const cardHeading = within(card).getByRole('heading', { name: '1. 균형 배송 결과' });
+
+    await user.click(within(card).getByRole('button', { name: '근거 수정' }));
+
+    const editorHeading = within(card).getByRole('heading', { name: '근거 문장을 완성해 볼까요?' });
+    const sentenceHeading = within(card).getByRole('heading', { name: '완성된 근거 문장' });
+    const editor = editorHeading.closest('section');
+    const sentenceRegion = sentenceHeading.closest('section');
+
+    expect(editorHeading.tagName).toBe('H4');
+    expect(sentenceHeading.tagName).toBe('H5');
+    expect(editorHeading.id).toBeTruthy();
+    expect(sentenceHeading.id).toBeTruthy();
+    expect(new Set([cardHeading.id, editorHeading.id, sentenceHeading.id]).size).toBe(3);
+    expect(editor?.getAttribute('aria-labelledby')).toBe(editorHeading.id);
+    expect(sentenceRegion?.getAttribute('aria-labelledby')).toBe(sentenceHeading.id);
+  });
+
   it('calls print from the teacher summary', async () => {
     const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
     renderAppAt('#/results', completedSession());

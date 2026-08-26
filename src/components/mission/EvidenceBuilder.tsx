@@ -16,7 +16,20 @@ export interface EvidenceBuilderProps {
   onSubmit: (record: EvidenceRecord) => void;
   existingRecord?: EvidenceRecord;
   onAdvance?: () => void;
+  headingLevel?: EvidenceHeadingLevel;
+  headingId?: string;
 }
+
+export type EvidenceHeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5';
+
+const HEADING_TAGS: Record<EvidenceHeadingLevel, EvidenceHeadingLevel> = {
+  h1: 'h1', h2: 'h2', h3: 'h3', h4: 'h4', h5: 'h5',
+};
+
+const nextHeadingTag = (level: EvidenceHeadingLevel): 'h2' | 'h3' | 'h4' | 'h5' | 'h6' => {
+  const next = Number(level.slice(1)) + 1;
+  return `h${next}` as 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+};
 
 type ChoiceOption = { id: EvidenceChoiceId; label: string };
 
@@ -81,6 +94,7 @@ const evidenceSignature = (
 
 export const EvidenceBuilder = ({
   mission, dataset, revisions, onSubmit, existingRecord, onAdvance,
+  headingLevel = 'h1', headingId = 'evidence-heading',
 }: EvidenceBuilderProps) => {
   const restored = validExistingRecord(mission, dataset, revisions, existingRecord) ? existingRecord : undefined;
   const signature = evidenceSignature(mission, dataset, revisions, restored);
@@ -97,6 +111,12 @@ export const EvidenceBuilder = ({
     ? OPTIONS[mission].map(({ id }) => id).filter((id) => selectedIds.includes(id))
     : [...selectedIds];
   const sentence = buildEvidenceSentence(mission, dataset.id, orderedSelectedIds);
+  const HeadingTag = HEADING_TAGS[headingLevel];
+  const sentenceHeadingTag = nextHeadingTag(headingLevel);
+  const SentenceHeadingTag = sentenceHeadingTag;
+  const sentenceHeadingId = headingId === 'evidence-heading'
+    ? 'evidence-sentence-heading'
+    : `${headingId}-sentence-heading`;
 
   const selectRadio = (id: EvidenceChoiceId) => {
     setSelectedIds([id]);
@@ -142,8 +162,8 @@ export const EvidenceBuilder = ({
   };
 
   return (
-    <section aria-labelledby="evidence-heading">
-      <h1 id="evidence-heading">근거 문장을 완성해 볼까요?</h1>
+    <section aria-labelledby={headingId}>
+      <HeadingTag id={headingId}>근거 문장을 완성해 볼까요?</HeadingTag>
       <p>검토한 근거를 골라 고정된 문장을 완성해 보세요.</p>
 
       {isRepresentative(mission) ? (
@@ -182,8 +202,8 @@ export const EvidenceBuilder = ({
           )}
         </fieldset>
 
-        <section aria-label="완성된 근거 문장">
-          <h2>완성된 근거 문장</h2>
+        <section aria-labelledby={sentenceHeadingId}>
+          <SentenceHeadingTag id={sentenceHeadingId}>완성된 근거 문장</SentenceHeadingTag>
           {submitted ? <p role="status">근거 문장을 저장했어요.</p> : null}
           <p>{submitted?.sentence ?? (selectedIds.length > 0 ? sentence : '근거를 선택하면 문장이 나타나요.')}</p>
         </section>

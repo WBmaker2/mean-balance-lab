@@ -28,6 +28,19 @@ const renderEvidenceBuilder = (
 describe('EvidenceBuilder', () => {
   afterEach(cleanup);
 
+  it('keeps the default mission explain heading hierarchy and IDs', () => {
+    renderEvidenceBuilder('balance-delivery', 'balance-20-a');
+    const builderHeading = screen.getByRole('heading', { name: '근거 문장을 완성해 볼까요?' });
+    const sentenceHeading = screen.getByRole('heading', { name: '완성된 근거 문장' });
+    const sentenceRegion = sentenceHeading.closest('section');
+
+    expect(builderHeading.tagName).toBe('H1');
+    expect(sentenceHeading.tagName).toBe('H2');
+    expect(builderHeading.id).toBe('evidence-heading');
+    expect(sentenceHeading.id).toBe('evidence-sentence-heading');
+    expect(sentenceRegion?.getAttribute('aria-labelledby')).toBe(sentenceHeading.id);
+  });
+
   it.each([
     ['review-cards-a', '평균은 4장이지만 한 선반에 12장이 몰려 있어 범위와 각 값을 함께 봐야 합니다.'],
     ['review-baskets-b', '평균은 3개이지만 세 보급 상자는 1개뿐이므로 평균만으로 모든 보급 상자의 상태를 말할 수 없습니다.'],

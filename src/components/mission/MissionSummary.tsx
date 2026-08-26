@@ -3,7 +3,7 @@ import type { Dispatch } from 'react';
 import { isCanonicalEvidenceRecord } from '../../domain/evaluation';
 import type { LabAction } from '../../domain/session';
 import type { EvidenceRecord, MissionDataset, MissionDefinition } from '../../domain/types';
-import { EvidenceBuilder } from './EvidenceBuilder';
+import { EvidenceBuilder, type EvidenceHeadingLevel } from './EvidenceBuilder';
 import { ActionButton } from '../shared/ActionButton';
 
 export interface MissionSummaryProps {
@@ -23,6 +23,12 @@ const levelDescription: Record<1 | 2 | 3, string> = {
   1: '계산이나 생각을 한 부분만 근거로 남겼어요.',
   2: '평균의 의미나 변화의 한 부분을 근거로 남겼어요.',
   3: '평균의 의미와 자료의 특징을 연결해 근거를 남겼어요.',
+};
+
+const editorHeadingLevel = (level: 'h1' | 'h2' | 'h3'): EvidenceHeadingLevel => {
+  if (level === 'h1') return 'h2';
+  if (level === 'h2') return 'h3';
+  return 'h4';
 };
 
 export const MissionSummary = ({
@@ -55,6 +61,8 @@ export const MissionSummary = ({
           revisions={canonicalAttempt.revisions}
           existingRecord={canonicalAttempt}
           onSubmit={saveEdit}
+          headingLevel={editorHeadingLevel(headingLevel)}
+          headingId={`${headingId}-editor-heading`}
         />
       ) : (
         <>
