@@ -1,47 +1,54 @@
 import { describe, expect, it } from 'vitest';
+import { PREDICTION_CASES } from '../test/predictionCases';
 import { createInitialSession, sessionReducer } from './session';
 import { isLabSessionState, loadSession } from '../state/persistence';
 
-const predictionState = (missionId: 'balance-delivery' | 'outlier-alert', datasetId: 'balance-20-a' | 'outlier-5-a') => {
-  const started = sessionReducer(createInitialSession(), { type: 'START_DATASET', missionId, datasetId });
+const predictionState = (testCase: (typeof PREDICTION_CASES)[number]) => {
+  const started = sessionReducer(createInitialSession(), {
+    type: 'START_DATASET', missionId: testCase.missionId, datasetId: testCase.datasetId,
+  });
   return sessionReducer(started, { type: 'ADVANCE_STAGE' });
 };
 
-describe('prediction boundaries', () => {
-  it('ignores a directional value for balance and an arbitrary number for outlier', () => {
-    const balance = predictionState('balance-delivery', 'balance-20-a');
-    const balanceRejected = sessionReducer(balance, { type: 'SET_PREDICTION', value: 'increase' });
-    expect(balanceRejected).toBe(balance);
+const predictionPayload = (testCase: (typeof PREDICTION_CASES)[number], value: unknown) => ({
+  schemaVersion: 1,
+  saveMode: 'tab',
+  activeRun: {
+    missionId: testCase.missionId,
+    datasetId: testCase.datasetId,
+    stage: 'predict',
+    artifacts: { prediction: { value } },
+    revisions: 0,
+    transientFeedback: null,
+  },
+  attempts: {},
+  completedRequiredMissions: [],
+});
 
-    const outlier = predictionState('outlier-alert', 'outlier-5-a');
-    const outlierRejected = sessionReducer(outlier, { type: 'SET_PREDICTION', value: 5 });
-    expect(outlierRejected).toBe(outlier);
+describe('prediction boundaries', () => {
+  it.each(PREDICTION_CASES)('$datasetId stores its canonical prediction and rejects invalid values', (testCase) => {
+    const canonicalState = predictionState(testCase);
+    const accepted = sessionReducer(canonicalState, { type: 'SET_PREDICTION', value: testCase.canonical });
+    expect(accepted.activeRun?.artifacts.prediction).toEqual({ value: testCase.canonical });
+
+    for (const value of [testCase.crossKindValue, ...testCase.arbitraryValues]) {
+      const state = predictionState(testCase);
+      const rejected = sessionReducer(state, { type: 'SET_PREDICTION', value });
+      expect(rejected).toBe(state);
+    }
   });
 
-  it('rejects cross-kind predictions at the persisted-state boundary', () => {
-    const balance = predictionState('balance-delivery', 'balance-20-a');
-    const balancePayload = structuredClone({
-      schemaVersion: 1, saveMode: 'tab', activeRun: {
-        missionId: 'balance-delivery', datasetId: 'balance-20-a', stage: 'predict',
-        artifacts: { prediction: { value: 'increase' } }, revisions: 0, transientFeedback: null,
-      }, attempts: {}, completedRequiredMissions: [],
-    });
-    expect(balance.activeRun?.artifacts.prediction).toBeUndefined();
-    expect(isLabSessionState(balancePayload)).toBe(false);
-
-    const outlierPayload = {
-      schemaVersion: 1, saveMode: 'tab', activeRun: {
-        missionId: 'outlier-alert', datasetId: 'outlier-5-a', stage: 'predict',
-        artifacts: { prediction: { value: 5 } }, revisions: 0, transientFeedback: null,
-      }, attempts: {}, completedRequiredMissions: [],
-    };
-    expect(isLabSessionState(outlierPayload)).toBe(false);
-
-    const storage = new Map<string, string>([['prediction', JSON.stringify(outlierPayload)]]);
-    expect(loadSession({
-      getItem: (key) => storage.get(key) ?? null,
-      setItem: () => undefined,
-      removeItem: () => undefined,
-    }, 'prediction')).toBeNull();
+  it.each(PREDICTION_CASES)('$datasetId rejects cross-kind and arbitrary forged predictions on restore', (testCase) => {
+    expect(isLabSessionState(predictionPayload(testCase, testCase.canonical))).toBe(true);
+    for (const value of [testCase.crossKindValue, ...testCase.arbitraryValues]) {
+      const forged = predictionPayload(testCase, value);
+      expect(isLabSessionState(forged)).toBe(false);
+      const storage = new Map<string, string>([['prediction', JSON.stringify(forged)]]);
+      expect(loadSession({
+        getItem: (key) => storage.get(key) ?? null,
+        setItem: () => undefined,
+        removeItem: () => undefined,
+      }, 'prediction')).toBeNull();
+    }
   });
 });
