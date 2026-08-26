@@ -52,6 +52,39 @@
 
 - 없음. 실제 `@media print` 규칙과 reduced-motion/global stylesheet 결합은 계획대로 Task 14의 범위입니다.
 
+## Fix Round 2 — skip link inert 경계
+
+### RED 증거
+
+- 구현 전에 `npm test -- --run src/components/update/UpdateHistoryDialog.test.tsx`를 실행했습니다.
+- 새 회귀 테스트가 기존 구조에서 실패했습니다. `#app-shell-content`가 바깥에 있던 `본문으로 건너뛰기` 링크를 포함하지 않아 `toContainElement` 검증이 실패했습니다.
+
+### 최소 수정
+
+- `src/app/AppShell.tsx`에서 `본문으로 건너뛰기` 링크를 `#app-shell-content` wrapper의 첫 자식으로 이동했습니다.
+- dialog와 업데이트 내역 trigger는 wrapper 밖에 유지했습니다. 따라서 dialog가 열리면 skip link를 포함한 모든 일반 shell 컨트롤이 동일한 `inert`·`aria-hidden="true"` 경계에 들어가고, trigger/dialog 분리가 보존됩니다.
+- 기존 `inert` property/attribute 처리와 `focusin` containment는 변경하지 않았습니다. 닫힘·Escape·재개방 시 cleanup 및 focus restoration 계약도 유지됩니다.
+
+### 추가 검증
+
+- `src/components/update/UpdateHistoryDialog.test.tsx`에 skip link가 inert 경계 안에 있는지, dialog open 시 경계 속성을 받는지, close 후 focus와 `#main-content` skip navigation이 복구되는지 검증하는 테스트를 추가했습니다.
+- Focused: `npm test -- --run src/components/update/UpdateHistoryDialog.test.tsx` → 1 file, 15 tests passed.
+- Full: `npm test -- --run` → 19 files, 199 tests passed.
+- Typecheck: `npm run typecheck` passed.
+- Build: `npm run build` passed; Vite production bundle generated successfully.
+- Diff: `git diff --check` passed.
+- Source line count: production/test TS·TSX 파일 중 최댓값은 `src/app/router.test.tsx` 480줄이며 500줄 미만입니다.
+- package install, push, deploy는 실행하지 않았습니다.
+
+### Fix Round 2 Commit
+
+- `844bd80c2bd7829c3799a799aaec5bc321a3d671 fix: include skip link in modal boundary`
+
+### Fix Round 2 상태
+
+- re-review finding 해결: skip link가 modal inert boundary 안에 포함됩니다.
+- close/Escape/StrictMode/reopen/focus restoration 및 skip navigation 회귀가 통과했습니다.
+
 ## Task 13 Fix Round 1 — 배경 inert와 강제 focus 회수
 
 ### RED 증거
