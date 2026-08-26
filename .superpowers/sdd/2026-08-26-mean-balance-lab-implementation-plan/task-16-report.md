@@ -15,6 +15,7 @@
 - `docs/qa/mvp-checklist.md`: Specification and Traceability 13행을 `요구사항 | 자동 검증 | 수동 확인 | 결과` 열로 기록하고, Completion Gate 16개를 각각 실제 명령·테스트 경로·viewport·관찰 증거와 함께 기록했습니다.
 - `src/content/updateHistory.ts`: Asia/Seoul 현재 날짜의 두 literal 항목이 이미 정확하여 변경하지 않았습니다.
 - `progress.md`: 변경하지 않았습니다.
+- 문서 구조 확인: Specification and Traceability 13행과 Completion Gate 16행을 확인했으며, README·체크리스트·이 보고서의 항목에 구체적인 근거가 기재되어 있습니다.
 
 ## Full gate (계획 순서)
 
@@ -25,9 +26,14 @@
 5. `npm test`: 23 test files passed, 227 tests passed.
 6. `CI=1 npm run test:e2e`: 첫 sandbox 실행은 Chromium macOS `bootstrap_check_in ... Permission denied`로 18개 런치 실패. 승인된 권한으로 같은 명령을 재실행하여 18 passed.
 7. `npm run build`: 성공. `dist/index.html`, `dist/assets/index-qWhS_shg.js`, `dist/assets/index-CW3jMkM3.css` 생성.
-8. 개인정보 scan: `rg -n "이름|학번|성적|키|몸무게|학생.*순위" src`의 3 hit는 `src/domain/evaluation.ts`의 `시키는` 단어 일부가 걸린 주석 1건과 입력 label 부재를 확인하는 부정 테스트 2건입니다. 실제 입력·저장 필드·실존 인물 fixture는 없습니다.
+8. 개인정보 scan: `rg -n "이름|학번|성적|키|몸무게|학생.*순위" src`는 4개 파일의 5줄을 반환했습니다. `src/domain/evaluation.ts:63`은 `시키는`의 `키` 부분 문자열이 걸린 주석 오탐 1건, `src/content/documentation.test.ts:15`는 `키보드` heading의 `키` 부분 문자열 오탐 1건, `src/content/documentation.test.ts:29`는 README 안전 문구에 금지어가 포함되었는지 검증하는 테스트 1건, `src/components/result/TeacherSummary.test.tsx:19`와 `src/components/mission/EvidenceBuilder.test.tsx:120`은 각각 금지 label 부재를 확인하는 부정 테스트 1건씩입니다. 실제 개인정보 입력·저장·real-person fixture는 없습니다.
 9. production network scan: `rg -n "fetch\(|axios|analytics|gtag|firebase|openai|gemini" src` 무출력. 테스트 listener의 외부 요청 문자열도 production source에는 없습니다.
 10. line count: `find src -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.css' \) -print0 | xargs -0 wc -l` 결과 최대 480줄(`src/app/router.test.tsx`)로 모두 500줄 미만입니다.
+
+## Finding correction verification
+
+- 이번 문서 정정 후 `npm test -- src/content/documentation.test.ts`는 1 file/1 test passed, `npm test`는 23 files/227 tests passed, `npm run typecheck`와 `npm run build`는 성공했습니다.
+- `git diff --check`도 성공했습니다. 문서만 수정했고 production/test behavior는 변경하지 않았으므로 전체 E2E는 재실행하지 않았습니다. 기존 기록의 Chromium E2E 18 passed 및 preview 외부 요청 0개 증거는 그대로 유효합니다.
 
 ## Built preview Chromium evidence
 
