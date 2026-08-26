@@ -44,7 +44,7 @@ test('supports keyboard-only balance flow with live updates and mission result',
   await page.keyboard.press('Enter');
   await tabTo(page, page.getByRole('button', { name: '다음: 평균 예측' }));
   await page.keyboard.press('Space');
-  await tabTo(page, page.getByRole('button', { name: '평균이 같습니다' }));
+  await tabTo(page, page.getByRole('button', { name: '평균 5' }));
   await page.keyboard.press('Space');
   await tabTo(page, page.getByRole('button', { name: '다음 단계' }));
   await page.keyboard.press('Enter');

@@ -36,7 +36,7 @@ describe('learning router', () => {
     const user = userEvent.setup();
     renderAppAt('#/mission/mean-twins/twins-4-a/predict', initialState);
 
-    await user.click(screen.getByRole('button', { name: '평균이 같습니다' }));
+    await user.click(screen.getByRole('button', { name: '평균 4' }));
     await user.click(screen.getByRole('button', { name: '다음 단계' }));
     expect(window.location.hash).toContain('/calculate');
     expect(screen.getByRole('heading', { name: '두 자료의 평균을 계산해 볼까요?' })).toBeVisible();
