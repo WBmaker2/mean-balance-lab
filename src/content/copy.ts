@@ -46,6 +46,39 @@ export const EVIDENCE_FRAGMENTS: Readonly<Record<EvidenceChoiceId, string>> = {
   'mean-always-enough': '평균만으로 모든 자료를 판단할 수 있다고 생각했어요.',
 };
 
+/** 숫자는 도메인에서 계산하고, 학생에게 보이는 문장 틀은 이 검토된 팩토리에서만 만듭니다. */
+export const buildBalanceEvidenceSentence = (
+  total: number,
+  count: number,
+  average: number,
+): string => `고르게 옮긴 결과, 전체 양 ${total}을 자료 ${count}개로 나누어 평균 ${average}를 확인했어요.`;
+
+export const buildBalanceCalculationSentence = (
+  total: number,
+  count: number,
+  average: number,
+): string => `전체 양 ${total}을 자료 ${count}개로 나누어 평균 ${average}를 계산했어요.`;
+
+export const buildTwinsEvidenceSentence = (
+  average: number,
+  leftRange: number,
+  rightRange: number,
+): string => `두 자료의 평균은 ${average}으로 같지만, 범위는 ${leftRange}과 ${rightRange}로 달라요.`;
+
+export const buildTwinsMeanSentence = (leftMean: number, rightMean: number): string =>
+  `두 자료의 평균은 각각 ${leftMean}과 ${rightMean}으로 같아요.`;
+
+export const buildOutlierEvidenceSentence = (
+  beforeTotal: number,
+  afterTotal: number,
+  totalDelta: number,
+  beforeMean: number,
+  afterMean: number,
+  meanDelta: number,
+): string => `전체 양이 ${beforeTotal}에서 ${afterTotal}로 ${totalDelta} 늘고 평균이 ${beforeMean}에서 ${afterMean}로 ${meanDelta} 늘었어요.`;
+
+export const buildRepresentativeEvidenceSentence = (modelSentence: string): string => modelSentence;
+
 export const SAFETY_COPY = {
   modelBoundary: '이 활동은 실제 세계를 정밀하게 측정하지 않는 교육용 이산 모형입니다.',
   fairness: '평균 하나가 공정성이나 개인의 가치를 결정하지 않습니다.',

@@ -108,9 +108,23 @@ describe('evidence levels', () => {
     ['outlier-alert', ['direction-only'], 2],
     ['outlier-alert', ['guess-only'], 1],
     ['representative-review', ['mean-use-and-limit', 'range-or-individual-values'], 3],
+    ['representative-review', ['mean-use-and-limit'], 2],
     ['representative-review', ['range-or-individual-values'], 2],
     ['representative-review', ['mean-always-enough'], 1],
   ] as const)('maps %s evidence to level %i', (missionId, ids, expected) => {
+    expect(deriveEvidenceLevel(missionId, ids)).toBe(expected);
+  });
+
+  it.each([
+    ['balance-delivery', [], 1],
+    ['balance-delivery', ['same-mean-only'], 1],
+    ['mean-twins', [], 1],
+    ['mean-twins', ['redistribution-only'], 1],
+    ['outlier-alert', [], 1],
+    ['outlier-alert', ['same-shape'], 1],
+    ['representative-review', [], 1],
+    ['representative-review', ['direction-only'], 1],
+  ] as const)('keeps empty or cross-mission evidence at level 1 for %s', (missionId, ids, expected) => {
     expect(deriveEvidenceLevel(missionId, ids)).toBe(expected);
   });
 
@@ -120,5 +134,39 @@ describe('evidence levels', () => {
       'review-cards-a',
       ['mean-use-and-limit', 'range-or-individual-values'],
     )).toBe('평균은 4장이지만 한 선반에 12장이 몰려 있어 범위와 각 값을 함께 봐야 합니다.');
+  });
+
+  it.each([
+    ['balance-20-a', '고르게 옮긴 결과, 전체 양 20을 자료 4개로 나누어 평균 5를 확인했어요.'],
+    ['balance-24-b', '고르게 옮긴 결과, 전체 양 24을 자료 4개로 나누어 평균 6를 확인했어요.'],
+  ] as const)('keeps exact balance evidence sentence for %s', (datasetId, expected) => {
+    expect(buildEvidenceSentence('balance-delivery', datasetId, ['redistribution-and-division'])).toBe(expected);
+  });
+
+  it.each([
+    ['twins-4-a', '두 자료의 평균은 4으로 같지만, 범위는 0과 6로 달라요.'],
+    ['twins-6-b', '두 자료의 평균은 6으로 같지만, 범위는 0과 8로 달라요.'],
+  ] as const)('keeps exact twins evidence sentence for %s', (datasetId, expected) => {
+    expect(buildEvidenceSentence('mean-twins', datasetId, ['same-mean-and-different-spread'])).toBe(expected);
+  });
+
+  it.each([
+    ['outlier-5-a', '전체 양이 20에서 24로 4 늘고 평균이 5에서 6로 1 늘었어요.'],
+    ['outlier-6-b', '전체 양이 24에서 32로 8 늘고 평균이 6에서 8로 2 늘었어요.'],
+  ] as const)('keeps exact outlier evidence sentence for %s', (datasetId, expected) => {
+    expect(buildEvidenceSentence('outlier-alert', datasetId, ['sum-change-and-mean-change'])).toBe(expected);
+  });
+
+  it('keeps the reviewed representative sentence for both datasets', () => {
+    expect(buildEvidenceSentence(
+      'representative-review',
+      'review-cards-a',
+      ['mean-use-and-limit', 'range-or-individual-values'],
+    )).toBe('평균은 4장이지만 한 선반에 12장이 몰려 있어 범위와 각 값을 함께 봐야 합니다.');
+    expect(buildEvidenceSentence(
+      'representative-review',
+      'review-baskets-b',
+      ['mean-use-and-limit', 'range-or-individual-values'],
+    )).toBe('평균은 3개이지만 세 보급 상자는 1개뿐이므로 평균만으로 모든 보급 상자의 상태를 말할 수 없습니다.');
   });
 });

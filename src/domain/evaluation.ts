@@ -1,5 +1,11 @@
 import { getMission } from '../content/missions';
 import {
+  buildBalanceCalculationSentence,
+  buildBalanceEvidenceSentence,
+  buildOutlierEvidenceSentence,
+  buildRepresentativeEvidenceSentence,
+  buildTwinsEvidenceSentence,
+  buildTwinsMeanSentence,
   CALCULATION_COPY,
   COMPARISON_COPY,
   EVIDENCE_FRAGMENTS,
@@ -32,6 +38,27 @@ const hasChoice = (
   selectedIds: readonly ComparisonChoiceId[] | readonly EvidenceChoiceId[],
   choice: ComparisonChoiceId | EvidenceChoiceId,
 ): boolean => selectedIds.includes(choice as never);
+
+const MISSION_EVIDENCE_IDS: Readonly<Record<MissionId, readonly EvidenceChoiceId[]>> = {
+  'balance-delivery': ['redistribution-and-division', 'redistribution-only', 'calculation-only'],
+  'mean-twins': ['same-mean-and-different-spread', 'same-mean-only', 'same-shape'],
+  'outlier-alert': ['sum-change-and-mean-change', 'direction-only', 'guess-only'],
+  'representative-review': ['mean-use-and-limit', 'range-or-individual-values', 'mean-always-enough'],
+};
+
+const isMissionEvidenceSelection = (
+  missionId: MissionId,
+  selectedIds: readonly EvidenceChoiceId[],
+): boolean => selectedIds.length > 0
+  && selectedIds.every((id) => MISSION_EVIDENCE_IDS[missionId].includes(id));
+
+const isOnlyEvidence = (
+  missionId: MissionId,
+  selectedIds: readonly EvidenceChoiceId[],
+  expected: EvidenceChoiceId,
+): boolean => isMissionEvidenceSelection(missionId, selectedIds)
+  && new Set(selectedIds).size === 1
+  && selectedIds[0] === expected;
 
 export const evaluateCalculation = (input: CalculationInput): EvaluationResult => {
   const expectedTotal = sum(input.values);
@@ -118,22 +145,25 @@ export const deriveEvidenceLevel = (
 ): EvidenceLevel => {
   switch (missionId) {
     case 'balance-delivery':
-      if (hasChoice(selectedIds, 'redistribution-and-division')) return 3;
-      if (hasChoice(selectedIds, 'redistribution-only')) return 2;
+      if (isOnlyEvidence(missionId, selectedIds, 'redistribution-and-division')) return 3;
+      if (isOnlyEvidence(missionId, selectedIds, 'redistribution-only')) return 2;
       return 1;
     case 'mean-twins':
-      if (hasChoice(selectedIds, 'same-mean-and-different-spread')) return 3;
-      if (hasChoice(selectedIds, 'same-mean-only')) return 2;
+      if (isOnlyEvidence(missionId, selectedIds, 'same-mean-and-different-spread')) return 3;
+      if (isOnlyEvidence(missionId, selectedIds, 'same-mean-only')) return 2;
       return 1;
     case 'outlier-alert':
-      if (hasChoice(selectedIds, 'sum-change-and-mean-change')) return 3;
-      if (hasChoice(selectedIds, 'direction-only')) return 2;
+      if (isOnlyEvidence(missionId, selectedIds, 'sum-change-and-mean-change')) return 3;
+      if (isOnlyEvidence(missionId, selectedIds, 'direction-only')) return 2;
       return 1;
     case 'representative-review':
-      if (hasChoice(selectedIds, 'mean-use-and-limit')
-        && hasChoice(selectedIds, 'range-or-individual-values')) return 3;
-      if (hasChoice(selectedIds, 'mean-always-enough')) return 1;
-      return 2;
+      if (isMissionEvidenceSelection(missionId, selectedIds)
+        && new Set(selectedIds).size === 2
+        && selectedIds.includes('mean-use-and-limit')
+        && selectedIds.includes('range-or-individual-values')) return 3;
+      if (isOnlyEvidence(missionId, selectedIds, 'mean-use-and-limit')
+        || isOnlyEvidence(missionId, selectedIds, 'range-or-individual-values')) return 2;
+      return 1;
   }
 };
 
@@ -151,10 +181,10 @@ const buildBalanceSentence = (
   const count = dataset.values.length;
   const expected = mean(dataset.values);
   if (selected.has('redistribution-and-division')) {
-    return `고르게 옮긴 결과, 전체 양 ${total}을 자료 ${count}개로 나누어 평균 ${expected}를 확인했어요.`;
+    return buildBalanceEvidenceSentence(total, count, expected);
   }
   if (selected.has('redistribution-only')) return EVIDENCE_FRAGMENTS['redistribution-only'];
-  if (selected.has('calculation-only')) return `전체 양 ${total}을 자료 ${count}개로 나누어 평균 ${expected}를 계산했어요.`;
+  if (selected.has('calculation-only')) return buildBalanceCalculationSentence(total, count, expected);
   return sentenceFallback;
 };
 
@@ -168,9 +198,9 @@ const buildTwinsSentence = (
   const leftRange = range(dataset.leftValues);
   const rightRange = range(dataset.rightValues);
   if (selected.has('same-mean-and-different-spread')) {
-    return `두 자료의 평균은 ${leftMean}으로 같지만, 범위는 ${leftRange}과 ${rightRange}로 달라요.`;
+    return buildTwinsEvidenceSentence(leftMean, leftRange, rightRange);
   }
-  if (selected.has('same-mean-only')) return `두 자료의 평균은 각각 ${leftMean}과 ${rightMean}으로 같아요.`;
+  if (selected.has('same-mean-only')) return buildTwinsMeanSentence(leftMean, rightMean);
   if (selected.has('same-shape')) return EVIDENCE_FRAGMENTS['same-shape'];
   return sentenceFallback;
 };
@@ -185,7 +215,14 @@ const buildOutlierSentence = (
   const beforeMean = mean(dataset.beforeValues);
   const afterMean = mean(dataset.afterValues);
   if (selected.has('sum-change-and-mean-change')) {
-    return `전체 양이 ${beforeTotal}에서 ${afterTotal}로 ${afterTotal - beforeTotal} 늘고 평균이 ${beforeMean}에서 ${afterMean}로 ${afterMean - beforeMean} 늘었어요.`;
+    return buildOutlierEvidenceSentence(
+      beforeTotal,
+      afterTotal,
+      afterTotal - beforeTotal,
+      beforeMean,
+      afterMean,
+      afterMean - beforeMean,
+    );
   }
   if (selected.has('direction-only')) return EVIDENCE_FRAGMENTS['direction-only'];
   if (selected.has('guess-only')) return EVIDENCE_FRAGMENTS['guess-only'];
@@ -198,7 +235,7 @@ const buildRepresentativeSentence = (
 ): string => {
   const selected = new Set(selectedIds);
   if (selected.has('mean-use-and-limit') && selected.has('range-or-individual-values')) {
-    return dataset.modelSentence;
+    return buildRepresentativeEvidenceSentence(dataset.modelSentence);
   }
   if (selected.has('mean-use-and-limit')) return EVIDENCE_FRAGMENTS['mean-use-and-limit'];
   if (selected.has('range-or-individual-values')) return EVIDENCE_FRAGMENTS['range-or-individual-values'];
