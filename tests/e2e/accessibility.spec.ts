@@ -25,6 +25,28 @@ test('completes the balance step at 375px without horizontal overflow', async ({
   expect(overflow).toBe(false);
 });
 
+test('keeps one enabled prediction action through empty, feedback, and selected states', async ({ page }) => {
+  await page.goto('/#/');
+  await page.getByRole('button', { name: '미션 시작', exact: true }).click();
+  await page.getByRole('button', { name: '다음: 평균 예측', exact: true }).click();
+  const currentActions = () => page.locator('[data-current-action="true"]');
+  const next = page.getByRole('button', { name: '다음 단계', exact: true });
+
+  await expect(currentActions()).toHaveCount(1);
+  await expect(next).toBeEnabled();
+  await next.click();
+  await expect(page.getByRole('alert')).toHaveText('먼저 평균을 예측해 보세요.');
+  await expect(page).toHaveURL(/\/predict$/);
+  await expect(currentActions()).toHaveCount(1);
+
+  await page.getByRole('button', { name: '평균 5', exact: true }).click();
+  await expect(currentActions()).toHaveCount(1);
+  await expect(next).toBeEnabled();
+  await next.click();
+  await expect(page).toHaveURL(/\/redistribute$/);
+  await expect(currentActions()).toHaveCount(1);
+});
+
 test.use({ reducedMotion: 'reduce' });
 test('replaces pulse animation with border and next-action text', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });

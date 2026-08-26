@@ -125,6 +125,17 @@ label { display: flex; align-items: center; gap: 0.5rem; min-height: var(--contr
   select,
   textarea { display: none !important; }
   .teacher-summary-table-region { overflow: visible !important; }
-  .teacher-summary table { width: 100%; border-collapse: collapse; }
-  .teacher-summary th, .teacher-summary td { border: 1px solid #000; padding: 0.35rem; }
+  .teacher-summary table {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+  .teacher-summary th, .teacher-summary td {
+    border: 1px solid #000;
+    padding: 0.35rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 }

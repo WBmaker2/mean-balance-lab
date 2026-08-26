@@ -49,6 +49,9 @@ export const nextBalancingMove = (values: readonly number[]): QuantityMove | nul
 
 export function moveOne(values: readonly number[], move: QuantityMove): MoveResult {
   const { fromIndex, toIndex } = move;
+  if (!values.every((value) => Number.isFinite(value) && Number.isInteger(value) && value >= 0)) {
+    return { ok: false, values, reason: 'out-of-range' };
+  }
   const source = values[fromIndex];
   const destination = values[toIndex];
   if (source === undefined || destination === undefined) {

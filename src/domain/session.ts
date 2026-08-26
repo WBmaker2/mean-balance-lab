@@ -63,8 +63,7 @@ export type LabAction =
   | { type: 'ADVANCE_STAGE' }
   | { type: 'SET_SAVE_MODE'; mode: SaveMode }
   | { type: 'RESET_ACTIVE_DATASET' }
-  | { type: 'RESET_ALL' }
-  | { type: 'RESTORE'; state: LabSessionState };
+  | { type: 'RESET_ALL' };
 
 const failure = (message: string, nextAction: string): EvaluationResult => ({
   isCorrect: false, message, nextAction,
@@ -345,7 +344,7 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
       return resetActive(state);
     case 'RESET_ALL':
       return createInitialSession();
-    case 'RESTORE':
-      return action.state;
+    default:
+      return state;
   }
 };

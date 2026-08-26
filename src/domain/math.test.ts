@@ -28,6 +28,24 @@ describe('mean balance rules', () => {
     expect(moveOne([0, 5], move)).toEqual({ ok: false, values: [0, 5], reason });
   });
 
+  it.each([
+    [[-1, 5], { fromIndex: 0, toIndex: 1 }],
+    [[1.5, 5], { fromIndex: 0, toIndex: 1 }],
+    [[Number.NaN, 5], { fromIndex: 0, toIndex: 1 }],
+    [[Number.POSITIVE_INFINITY, 5], { fromIndex: 0, toIndex: 1 }],
+    [[2, -1], { fromIndex: 0, toIndex: 1 }],
+    [[2, 1.5], { fromIndex: 0, toIndex: 1 }],
+    [[2, Number.NaN], { fromIndex: 0, toIndex: 1 }],
+    [[2, Number.NEGATIVE_INFINITY], { fromIndex: 0, toIndex: 1 }],
+    [[2, 4, Number.POSITIVE_INFINITY], { fromIndex: 0, toIndex: 1 }],
+  ] as const)('rejects non-natural quantities without mutation: %o', (values, move) => {
+    const original = [...values];
+    const result = moveOne(values, move);
+    expect(result).toEqual({ ok: false, values, reason: 'out-of-range' });
+    expect(result.values).toBe(values);
+    expect(values).toEqual(original);
+  });
+
   it('summarizes sum change before mean change', () => {
     expect(describeDelta([4, 5, 5, 6], [4, 5, 5, 10])).toEqual({
       sumBefore: 20, sumAfter: 24, sumDelta: 4,

@@ -1,18 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { completeBalanceWithButtons, startBalanceMission } from './helpers/learner';
-
-const completedState = {
-  schemaVersion: 1,
-  saveMode: 'device',
-  activeRun: null,
-  attempts: {
-    'balance-20-a': { missionId: 'balance-delivery', datasetId: 'balance-20-a', selectedIds: ['redistribution-and-division'], sentence: '고르게 옮긴 결과, 전체 양 20을 자료 4개로 나누어 평균 5를 확인했어요.', level: 3, revisions: 0 },
-    'twins-4-a': { missionId: 'mean-twins', datasetId: 'twins-4-a', selectedIds: ['same-mean-and-different-spread'], sentence: '두 자료의 평균은 4으로 같지만, 범위는 0과 6로 달라요.', level: 3, revisions: 0 },
-    'outlier-5-a': { missionId: 'outlier-alert', datasetId: 'outlier-5-a', selectedIds: ['sum-change-and-mean-change'], sentence: '전체 양이 20에서 24로 4 늘고 평균이 5에서 6로 1 늘었어요.', level: 3, revisions: 0 },
-    'review-cards-a': { missionId: 'representative-review', datasetId: 'review-cards-a', selectedIds: ['mean-use-and-limit', 'range-or-individual-values'], sentence: '평균은 4장이지만 한 선반에 12장이 몰려 있어 범위와 각 값을 함께 봐야 합니다.', level: 3, revisions: 0 },
-  },
-  completedRequiredMissions: ['balance-delivery', 'mean-twins', 'outlier-alert', 'representative-review'],
-} as const;
+import { completeBalanceWithButtons, completeRequiredDataset, startBalanceMission } from './helpers/learner';
 
 test('patterns are visible and labelled for every balance box', async ({ page }) => {
   await startBalanceMission(page);
@@ -59,17 +46,22 @@ test('visible interactive controls meet the 44px touch target', async ({ page })
 });
 
 test('keeps teacher summary as the only visible print content', async ({ page }) => {
-  const printViewports = [812, 3000] as const;
+  const printViewports = [
+    { width: 375, height: 812 },
+    { width: 375, height: 3000 },
+    { width: 1440, height: 900 },
+  ] as const;
   await page.goto('/#/');
-  await page.evaluate((state) => {
-    sessionStorage.clear();
-    localStorage.setItem('mean-balance-lab:device:v1', JSON.stringify(state));
-  }, completedState);
-  const extents = [];
-  for (const height of printViewports) {
-    await page.setViewportSize({ width: 375, height });
-    await page.reload();
-    await page.goto('/#/results');
+  await completeRequiredDataset(page, 'balance-delivery', 'balance-20-a');
+  await completeRequiredDataset(page, 'mean-twins', 'twins-4-a');
+  await completeRequiredDataset(page, 'outlier-alert', 'outlier-5-a');
+  await completeRequiredDataset(page, 'representative-review', 'review-cards-a');
+  await page.getByRole('button', { name: '전체 결과 보기', exact: true }).click();
+  await expect(page).toHaveURL(/\/results$/);
+
+  const extents: Array<{ bodyHeight: number; rootHeight: number; summaryHeight: number; shellAllowance: number; width: number }> = [];
+  for (const viewport of printViewports) {
+    await page.setViewportSize(viewport);
     await page.emulateMedia({ media: 'print' });
     await expect(page.locator('.teacher-summary')).toBeVisible();
     await expect(page.getByRole('heading', { name: '교사용 활동 요약' })).toBeVisible();
@@ -80,7 +72,7 @@ test('keeps teacher summary as the only visible print content', async ({ page })
     for (const selector of ['.teacher-summary-controls', 'header', 'footer', '.app-settings', '.update-history-trigger', '.update-history-dialog']) {
       await expect(page.locator(selector)).not.toBeVisible();
     }
-    extents.push(await page.evaluate(() => {
+    extents.push({ ...await page.evaluate(() => {
       const root = document.querySelector('#root');
       const main = document.querySelector('main');
       const result = document.querySelector('.full-result');
@@ -101,7 +93,14 @@ test('keeps teacher summary as the only visible print content', async ({ page })
         summaryHeight: summary?.getBoundingClientRect().height ?? 0,
         shellAllowance,
       };
-    }));
+    }), width: viewport.width });
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+    expect(overflow).toBe(false);
+    const tableRect = await page.locator('.teacher-summary table').boundingBox();
+    const summaryRect = await page.locator('.teacher-summary').boundingBox();
+    expect(tableRect).not.toBeNull();
+    expect(summaryRect).not.toBeNull();
+    expect((tableRect?.x ?? 0) + (tableRect?.width ?? 0)).toBeLessThanOrEqual((summaryRect?.x ?? 0) + (summaryRect?.width ?? 0) + 1);
   }
   const [shortPrintExtent, tallPrintExtent] = extents;
   for (const extent of extents) {
@@ -111,4 +110,5 @@ test('keeps teacher summary as the only visible print content', async ({ page })
   }
   expect(tallPrintExtent.bodyHeight).toBe(shortPrintExtent.bodyHeight);
   expect(tallPrintExtent.rootHeight).toBe(shortPrintExtent.rootHeight);
+  expect(extents[2]?.width).toBe(1440);
 });

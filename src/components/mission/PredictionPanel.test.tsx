@@ -32,4 +32,41 @@ describe('PredictionPanel', () => {
     expect(screen.getByRole('button', { name: '평균이 같습니다' })).toBeVisible();
     expect(screen.queryByRole('button', { name: '평균 5' })).not.toBeInTheDocument();
   });
+
+  it('keeps exactly one enabled current action before and after a prediction', async () => {
+    const user = userEvent.setup();
+    const onAdvance = vi.fn();
+    const { rerender } = render(
+      <PredictionPanel dataset={getDataset('balance-20-a')} prediction={undefined} dispatch={vi.fn()} onAdvance={onAdvance} />,
+    );
+
+    const currentActions = () => screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true');
+    expect(currentActions()).toHaveLength(1);
+    expect(screen.getByRole('button', { name: '다음 단계' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: '다음 단계' })).toHaveAttribute('data-current-action', 'true');
+    expect(screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true' && button.textContent?.includes('평균')))
+      .toHaveLength(0);
+
+    await user.click(screen.getByRole('button', { name: '다음 단계' }));
+    expect(onAdvance).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('먼저 평균을 예측해 보세요.');
+    expect(currentActions()).toHaveLength(1);
+
+    rerender(
+      <PredictionPanel dataset={getDataset('balance-20-a')} prediction={5} dispatch={vi.fn()} onAdvance={onAdvance} />,
+    );
+    expect(currentActions()).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: '다음 단계' }));
+    expect(onAdvance).toHaveBeenCalledTimes(1);
+    expect(currentActions()).toHaveLength(1);
+  });
+
+  it('does not style any prediction choice as a current action', () => {
+    renderPanel('outlier-5-a');
+    expect(screen.getByRole('group')).toHaveAttribute('aria-label', '평균 변화 방향 예측');
+    expect(screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true'))
+      .toHaveLength(1);
+    expect(screen.getByRole('button', { name: '다음 단계' })).toHaveAttribute('data-current-action', 'true');
+    expect(screen.getAllByRole('button', { name: /평균/ }).every((button) => button.dataset.currentAction !== 'true')).toBe(true);
+  });
 });

@@ -443,4 +443,5 @@ describe('recoverable lab session reducer', () => {
     const resultRun = { ...oldRevision, activeRun: { ...oldRevision.activeRun, stage: 'mission-result' as const } };
     expect(canAdvance(resultRun)).toEqual({ allowed: false, reason: '근거 문장을 다시 확인해 보세요.' });
   });
+
 });

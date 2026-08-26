@@ -1,4 +1,4 @@
-import type { Dispatch } from 'react';
+import { useEffect, useState, type Dispatch } from 'react';
 import type { LabAction } from '../../domain/session';
 import type { MissionDataset, PredictionValue } from '../../domain/types';
 import { predictionOptions } from '../../domain/prediction';
@@ -13,6 +13,25 @@ interface PredictionPanelProps {
 
 export const PredictionPanel = ({ dataset, prediction, dispatch, onAdvance }: PredictionPanelProps) => {
   const choices = predictionOptions(dataset);
+  const [predictionError, setPredictionError] = useState(false);
+
+  useEffect(() => {
+    setPredictionError(false);
+  }, [dataset.id]);
+
+  const selectPrediction = (value: PredictionValue) => {
+    setPredictionError(false);
+    dispatch({ type: 'SET_PREDICTION', value });
+  };
+
+  const advance = () => {
+    if (prediction === undefined) {
+      setPredictionError(true);
+      return;
+    }
+    onAdvance();
+  };
+
   return (
     <section aria-labelledby="prediction-heading">
       <h1 id="prediction-heading">평균을 먼저 예측해 볼까요?</h1>
@@ -24,7 +43,7 @@ export const PredictionPanel = ({ dataset, prediction, dispatch, onAdvance }: Pr
             key={value}
             type="button"
             aria-pressed={prediction === value}
-            onClick={() => dispatch({ type: 'SET_PREDICTION', value })}
+            onClick={() => selectPrediction(value)}
           >
             {label}
           </ActionButton>
@@ -33,7 +52,8 @@ export const PredictionPanel = ({ dataset, prediction, dispatch, onAdvance }: Pr
       {dataset.kind === 'outlier' && prediction !== undefined ? (
         <p role="status">가상 자료에서 바꾼 값이 커졌는지 작아졌는지를 다시 살펴보세요. 합계와 평균의 숫자는 계산 단계에서 확인해요.</p>
       ) : null}
-      <ActionButton type="button" emphasis="next" disabled={prediction === undefined} onClick={onAdvance}>다음 단계</ActionButton>
+      {predictionError ? <p role="alert" aria-live="assertive">먼저 평균을 예측해 보세요.</p> : null}
+      <ActionButton type="button" emphasis="next" onClick={advance}>다음 단계</ActionButton>
     </section>
   );
 };
