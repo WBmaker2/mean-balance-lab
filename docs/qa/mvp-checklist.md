@@ -1,23 +1,23 @@
 # 평균 균형 조정실 MVP 검증 체크리스트
 
-검증일: 2026-08-28 (Asia/Seoul) — 개선 작업 로컬 검증 기록
-검증 기준 소스 커밋: `f2b769f fix: publish favicon and release metadata`
-검증 범위: 로컬 소스, `dist/` preview, Vitest, Playwright Chromium, 기존 공개 GitHub Pages 증거. HVC 등록은 확인 범위가 아닙니다.
+검증일: 2026-08-28 (Asia/Seoul) — 개선 작업 및 공개 릴리스 검증 기록
+검증 기준 소스 커밋: `08b525f fix: keep production stage focus handoff`
+검증 범위: 로컬 소스, `dist/` preview, Vitest, Playwright Chromium, 공개 GitHub Pages. HVC 등록은 확인 범위가 아닙니다.
 
-기능 구현은 `8e79875`에서 완료했고, `e7da7cd`는 테스트 EOF whitespace-only 정리 커밋, `f2b769f`는 공개 배포를 위한 favicon·운영 메타데이터·업데이트 내역 커밋입니다. 이번 개선 변경은 해당 공개 릴리스 이후의 미커밋 작업 트리에서 검증하며, 기존 공개 릴리스 증거와 분리합니다.
+기능 구현은 `8e79875`에서 완료했고, `e7da7cd`는 테스트 EOF whitespace-only 정리 커밋, `f2b769f`는 공개 배포를 위한 favicon·운영 메타데이터·업데이트 내역 커밋입니다. 이번 개선은 `55e6e48`에서 학습자 UX·접근성·모바일·검증을 반영하고, `08b525f`에서 production 단계 초점 회귀를 수정한 뒤 `main`에 푸시했습니다.
 
 ## Public release evidence
 
-이번 개선 턴은 커밋·푸시·배포를 수행하지 않았습니다. 아래 공개 릴리스 증거는 기존 배포 상태이며, 개선 결과의 로컬 검증과 분리합니다.
+이번 개선 턴은 `main`에 커밋·푸시했고 GitHub Pages 배포까지 완료했습니다. 공개 검증은 로컬 검증과 별도로 실행했습니다.
 
 이번 개선의 구현 계획은 [`2026-08-28-mean-balance-lab-improvement-plan.md`](../../2026-08-28-mean-balance-lab-improvement-plan.md)에서 확인할 수 있습니다.
 
 | 항목 | 증거 |
 |---|---|
-| 공개 저장소 | [`WBmaker2/mean-balance-lab`](https://github.com/WBmaker2/mean-balance-lab), `main` at `f2b769f` |
-| GitHub Actions | [Deploy to GitHub Pages run 33020893410](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33020893410) — success; checkout, `npm ci`, build, Pages configure/upload/deploy 모두 통과 |
-| 공개 앱 | [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/) — HTTP 200, title `평균 균형 조정실`, favicon·hashed JS/CSS assets 200 |
-| 공개 학습자 smoke | 상태 주입 없이 네 A 미션을 실제 버튼으로 완료해 `#/results`에 도달, `내가 사용한 근거` 4개 확인; console errors 0, failed requests 0, unexpected external requests 0 |
+| 공개 저장소 | [`WBmaker2/mean-balance-lab`](https://github.com/WBmaker2/mean-balance-lab), `main`에 `55e6e48`·`08b525f` 반영 |
+| GitHub Actions | [Deploy to GitHub Pages workflow](https://github.com/WBmaker2/mean-balance-lab/actions/workflows/deploy-pages.yml) — latest main deployment succeeded; checkout, `npm ci`, build, Pages configure/upload/deploy 모두 통과 |
+| 공개 앱 | [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/) — HTTP 200, title `평균 균형 조정실`, HTML 참조 JS/CSS assets 200 |
+| 공개 학습자 smoke | 공개 URL에서 단계 초점·문구 2개와 키보드·모바일·새로고침·인쇄 14개를 Chromium으로 확인; console/page errors 0, 실제 아동 참가자·VoiceOver 승인은 수행하지 않음 |
 
 ## Specification and Traceability
 
@@ -35,7 +35,7 @@
 | 개인정보·안전·교육적 한계 | `src/content/documentation.test.ts`, `src/components/result/ResultScreen.test.tsx`, personal-data/network scans | Chromium 1280×800 preview에서 교육용 이산 모형 문구와 외부 요청 0개 관찰 | 통과 — 문서 계약과 결과 안전 문구 표시, 이번 Chromium E2E 외부 요청 0개 |
 | MVP 4개 미션×2세트 | `src/content/missions.test.ts`, `tests/e2e/learner-flow.spec.ts`의 4 optional challenge tests | 별도 수동 8세트 탐색은 수행하지 않음. Chromium E2E가 A 필수 경로와 B 도전값 4개를 확인 | 통과 — 고정 콘텐츠 스키마 테스트 통과, `PLAYWRIGHT_PORT=4188 PLAYWRIGHT_REUSE_SERVER=false npm run test:e2e -- --project=chromium` 21 passed |
 | 새로 고침·뒤로 가기 안전 | `src/state/persistence.test.ts`, `src/app/router.route-guards.test.tsx`, `src/app/router.learner-handoff.test.tsx`, `tests/e2e/history-and-restore.spec.ts` | 별도 수동 브라우저 기록 조작은 수행하지 않음. Chromium E2E가 wrong feedback/calculation reset과 guarded deep link를 확인 | 통과 — `PLAYWRIGHT_PORT=4188 PLAYWRIGHT_REUSE_SERVER=false npm run test:e2e -- --project=chromium` 21 passed |
-| 업데이트 내역 | `src/components/update/UpdateHistoryDialog.test.tsx`, `tests/e2e/accessibility.spec.ts`의 focus test | 별도 수동 대화상자 조작은 수행하지 않음. Chromium E2E가 닫기 초점·Escape 복귀를 확인 | 통과 — `PLAYWRIGHT_PORT=4188 PLAYWRIGHT_REUSE_SERVER=false npm run test:e2e -- --project=chromium` 21 passed, 네 항목·세 날짜는 `src/content/updateHistory.ts`에 존재 |
+| 업데이트 내역 | `src/components/update/UpdateHistoryDialog.test.tsx`, `tests/e2e/accessibility.spec.ts`의 focus test | 별도 수동 대화상자 조작은 수행하지 않음. Chromium E2E가 닫기 초점·Escape 복귀를 확인 | 통과 — `PLAYWRIGHT_PORT=4188 PLAYWRIGHT_REUSE_SERVER=false npm run test:e2e -- --project=chromium` 21 passed, 다섯 항목·세 날짜는 `src/content/updateHistory.ts`에 존재 |
 
 ## Completion Gate
 
@@ -54,9 +54,9 @@
 | 11 | Reduced motion removes animation and shows a 4px border plus visible `다음 행동` text. | `tests/e2e/accessibility.spec.ts` reduced-motion test, Chromium `reducedMotion: reduce`, animation `none`, visible `.reduced-motion-next`, outline 4px; E2E 21 passed. | 통과 |
 | 12 | 375×812 and 32px root-font flows have no horizontal overflow. | `tests/e2e/accessibility.spec.ts` 375×812 overflow test와 `tests/e2e/responsive-motion.spec.ts` large-text test; Chromium E2E 21 passed. | 통과 |
 | 13 | Keyboard-only flow, live-region announcements, dialog focus handling, and zero serious/critical axe violations pass. | `tests/e2e/accessibility.spec.ts` keyboard/live update/dialog focus tests와 AxeBuilder test; Chromium E2E 21 passed, serious/critical 0. 실제 스크린리더·기기 수동 검사는 수행하지 않았습니다. | 통과 |
-| 14 | Update history contains literal dated entries and its trigger remains keyboard accessible at the bottom-right. | `src/content/updateHistory.ts`에 `2026-08-28` 개선, `2026-08-27` 배포, `2026-08-26` 설계·개발 네 항목, `src/components/update/UpdateHistoryDialog.test.tsx`, accessibility E2E focus test; E2E 21 passed. | 통과 |
+| 14 | Update history contains literal dated entries and its trigger remains keyboard accessible at the bottom-right. | `src/content/updateHistory.ts`에 `2026-08-28` 개선 두 항목, `2026-08-27` 배포, `2026-08-26` 설계·개발 다섯 항목, `src/components/update/UpdateHistoryDialog.test.tsx`, accessibility E2E focus test; E2E 21 passed. | 통과 |
 | 15 | Production source contains no personal-data input, external network API, analytics SDK, account, leaderboard, or graph-editing control. | `rg -n "이름|학번|성적|키|몸무게|학생.*순위" src`는 4개 파일 5줄입니다: `src/domain/evaluation.ts:63`의 `시키는` 중 `키` 부분 문자열 주석 오탐 1건, `src/content/documentation.test.ts:15`의 `키보드` heading 부분 문자열 오탐 1건, `src/content/documentation.test.ts:29`의 README 안전 문구 검증 1건, `src/components/result/TeacherSummary.test.tsx:19`와 `src/components/mission/EvidenceBuilder.test.tsx:120`의 금지 label 부재 부정 테스트 각 1건. 실제 개인정보 입력·저장·real-person fixture는 없음. `rg -n "fetch\(|axios|analytics|gtag|firebase|openai|gemini" src` 무출력. E2E 외부 요청 0개. | 통과 |
-| 16 | Every source file is under 500 lines, all tests pass, and the static build succeeds; the uncommitted worktree contains only intended implementation, test, and documentation changes. | `find src -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.css' \) -print0 \| xargs -0 wc -l`: 최대 447줄(`src/domain/session.test.ts`); `npm test -- --run` 249 passed; `npm run build` 성공, `dist/index.html` 및 해시가 붙은 JS/CSS 자산 생성. `git status --short`에서 계획·구현·검증 관련 파일만 확인. | 통과 |
+| 16 | Every source file is under 500 lines, all tests pass, the static build succeeds, and the released worktree is clean. | `find src -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.css' \) -print0 \| xargs -0 wc -l`: 최대 447줄(`src/domain/session.test.ts`); `npm run check`와 공개·로컬 Chromium 검증 통과, `dist/index.html` 및 해시가 붙은 JS/CSS 자산 생성. `git status --short` 무출력으로 확인. | 통과 |
 
 ## Reproducibility evidence
 
@@ -68,6 +68,6 @@
 | 의존성 재현 | `npm ci` 성공, 128 packages added, 0 vulnerabilities |
 | lockfile 후 | 동일 SHA-256 `d2c6cd586488c3d2134f0a02bab48b2ff0ce899d242565562d9c14c15ba2cbdd`; `git diff -- package-lock.json` 무출력 |
 | 타입·단위 | `npm run typecheck` 성공; `npm test -- --run` 28 files/249 tests passed |
-| 브라우저 | 승인된 권한으로 `PLAYWRIGHT_PORT=4188 PLAYWRIGHT_REUSE_SERVER=false npm run test:e2e -- --project=chromium` 실행 후 21 passed |
+| 브라우저 | 로컬 `PLAYWRIGHT_PORT=4193 PLAYWRIGHT_REUSE_SERVER=false npm run test:e2e -- --project=chromium` 21 passed; 공개 Pages `stage-focus-and-copy` 2 passed 및 accessibility/history/responsive 14 passed |
 | 빌드 | `npm run build` 성공; `dist/index.html`, hashed local JS/CSS 생성 |
 | preview | `npm run preview -- --host 127.0.0.1 --port 4187` 후 built preview Chromium check, viewport 1280×800. 제목 `평균 균형 조정실`, valid situation route, guarded `/predict`, console/page errors 0, non-loopback requests `[]`, 해시가 붙은 JS/CSS 자산을 확인 |
