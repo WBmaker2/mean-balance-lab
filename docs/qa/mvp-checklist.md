@@ -4,7 +4,7 @@
 검증 기준 소스 커밋: `08b525f fix: keep production stage focus handoff`
 검증 범위: 로컬 소스, `dist/` preview, Vitest, Playwright Chromium, 공개 GitHub Pages. HVC 등록은 확인 범위가 아닙니다.
 
-기능 구현은 `8e79875`에서 완료했고, `e7da7cd`는 테스트 EOF whitespace-only 정리 커밋, `f2b769f`는 공개 배포를 위한 favicon·운영 메타데이터·업데이트 내역 커밋입니다. 이번 개선은 `55e6e48`에서 학습자 UX·접근성·모바일·검증을 반영하고, `08b525f`에서 production 단계 초점 회귀를 수정한 뒤 `main`에 푸시했습니다.
+기능 구현은 `8e79875`에서 완료했고, `e7da7cd`는 테스트 EOF whitespace-only 정리 커밋, `f2b769f`는 공개 배포를 위한 favicon·운영 메타데이터·업데이트 내역 커밋입니다. 이번 개선은 `55e6e48`에서 학습자 UX·접근성·모바일·검증을 반영하고, `08b525f`에서 production 단계 초점 회귀를 수정한 뒤 `main`에 푸시했습니다. 공개 Pages가 같은 origin의 HTML·JS·CSS를 외부 요청으로 오인하지 않도록 `tests/e2e/learner-flow.spec.ts`의 네트워크 판정도 origin 기준으로 보완했습니다.
 
 ## Public release evidence
 
@@ -14,10 +14,10 @@
 
 | 항목 | 증거 |
 |---|---|
-| 공개 저장소 | [`WBmaker2/mean-balance-lab`](https://github.com/WBmaker2/mean-balance-lab), `main`에 `55e6e48`·`08b525f` 반영 |
+| 공개 저장소 | [`WBmaker2/mean-balance-lab`](https://github.com/WBmaker2/mean-balance-lab), `main`에 학습자 개선·production 단계 초점 수정·검증 기록 반영 |
 | GitHub Actions | [Deploy to GitHub Pages workflow](https://github.com/WBmaker2/mean-balance-lab/actions/workflows/deploy-pages.yml) — latest main deployment succeeded; checkout, `npm ci`, build, Pages configure/upload/deploy 모두 통과 |
 | 공개 앱 | [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/) — HTTP 200, title `평균 균형 조정실`, HTML 참조 JS/CSS assets 200 |
-| 공개 학습자 smoke | 공개 URL에서 단계 초점·문구 2개와 키보드·모바일·새로고침·인쇄 14개를 Chromium으로 확인; console/page errors 0, 실제 아동 참가자·VoiceOver 승인은 수행하지 않음 |
+| 공개 학습자 smoke | 공개 URL에서 전체 Chromium 학습 흐름 21개(단계 초점·문구, 4개 필수 미션, 키보드·모바일·새로고침·인쇄, 업데이트 내역)를 확인; console/page errors 0, 실제 아동 참가자·VoiceOver 승인은 수행하지 않음 |
 
 ## Specification and Traceability
 
@@ -68,6 +68,6 @@
 | 의존성 재현 | `npm ci` 성공, 128 packages added, 0 vulnerabilities |
 | lockfile 후 | 동일 SHA-256 `d2c6cd586488c3d2134f0a02bab48b2ff0ce899d242565562d9c14c15ba2cbdd`; `git diff -- package-lock.json` 무출력 |
 | 타입·단위 | `npm run typecheck` 성공; `npm test -- --run` 28 files/249 tests passed |
-| 브라우저 | 로컬 `PLAYWRIGHT_PORT=4193 PLAYWRIGHT_REUSE_SERVER=false npm run test:e2e -- --project=chromium` 21 passed; 공개 Pages `stage-focus-and-copy` 2 passed 및 accessibility/history/responsive 14 passed |
+| 브라우저 | 로컬 `PLAYWRIGHT_PORT=4193 PLAYWRIGHT_REUSE_SERVER=false npm run test:e2e -- --project=chromium` 21 passed; 공개 Pages `PLAYWRIGHT_BASE_URL=https://wbmaker2.github.io/mean-balance-lab/ PLAYWRIGHT_PORT=4197 PLAYWRIGHT_REUSE_SERVER=true npx playwright test --project=chromium` 21 passed |
 | 빌드 | `npm run build` 성공; `dist/index.html`, hashed local JS/CSS 생성 |
 | preview | `npm run preview -- --host 127.0.0.1 --port 4187` 후 built preview Chromium check, viewport 1280×800. 제목 `평균 균형 조정실`, valid situation route, guarded `/predict`, console/page errors 0, non-loopback requests `[]`, 해시가 붙은 JS/CSS 자산을 확인 |

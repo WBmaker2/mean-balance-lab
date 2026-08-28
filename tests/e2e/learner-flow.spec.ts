@@ -3,11 +3,12 @@ import {
   completeRequiredDataset, expectChallengeValues, expectOutlierChallengeValues, expectTwinChallengeValues,
 } from './helpers/learner';
 
-test('completes all required missions without drag and shows evidence-first results', async ({ page }) => {
+test('completes all required missions without drag and shows evidence-first results', async ({ page }, testInfo) => {
   const externalRequests: string[] = [];
+  const appOrigin = new URL(testInfo.project.use.baseURL ?? page.url()).origin;
   page.on('request', (request) => {
     const url = new URL(request.url());
-    if (url.protocol.startsWith('http') && url.hostname !== '127.0.0.1') externalRequests.push(request.url());
+    if (url.protocol.startsWith('http') && url.origin !== appOrigin) externalRequests.push(request.url());
   });
 
   await page.goto('./#/');
