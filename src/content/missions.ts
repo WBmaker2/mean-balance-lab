@@ -10,6 +10,7 @@ export const MISSIONS = [
   {
     id: 'balance-delivery',
     title: '1. 균형 배송',
+    learnerTitle: '1. 골고루 나누기',
     learningGoal: '전체 양을 보존하며 같은 수로 나누어요.',
     requiredDatasetId: 'balance-20-a',
     datasets: [
@@ -30,6 +31,7 @@ export const MISSIONS = [
   {
     id: 'mean-twins',
     title: '2. 평균 쌍둥이',
+    learnerTitle: '2. 평균이 같아도 다를까요?',
     learningGoal: '평균이 같아도 자료의 모양은 다를 수 있어요.',
     requiredDatasetId: 'twins-4-a',
     datasets: [
@@ -50,6 +52,7 @@ export const MISSIONS = [
   {
     id: 'outlier-alert',
     title: '3. 튀는 값 경보',
+    learnerTitle: '3. 한 값이 바뀌면?',
     learningGoal: '합계 변화와 평균 변화를 연결해요.',
     requiredDatasetId: 'outlier-5-a',
     datasets: [
@@ -70,6 +73,7 @@ export const MISSIONS = [
   {
     id: 'representative-review',
     title: '4. 대표값 심의',
+    learnerTitle: '4. 평균만으로 괜찮을까요?',
     learningGoal: '평균의 도움과 한계를 근거로 판단해요.',
     requiredDatasetId: 'review-cards-a',
     datasets: [

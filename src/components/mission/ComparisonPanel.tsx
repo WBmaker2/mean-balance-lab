@@ -98,7 +98,7 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null, o
 
       <section aria-label="두 자료의 계산 결과">
         <h2>계산 결과</h2>
-        <p>평균 {leftMean}·{rightMean} / 범위 {leftRange}·{rightRange}</p>
+        <p>자료 A 평균 {leftMean}, 자료 B 평균 {rightMean} / 자료 A 범위 {leftRange}, 자료 B 범위 {rightRange}</p>
       </section>
 
       <div className="comparison-plots" aria-label="두 자료 점도표">
@@ -113,7 +113,7 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null, o
       </div>
 
       <p ref={plotExplanationRef} tabIndex={-1} role="note" aria-label="점도표 설명">
-        점도표에서 같은 값이 모인 정도와 가장 작은 값부터 큰 값까지의 퍼짐을 비교해 보세요.
+        점도표에서 같은 값이 모인 정도와 가장 작은 값부터 큰 값까지의 흩어진 정도를 비교해 보세요.
       </p>
 
       <fieldset>
@@ -132,7 +132,7 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null, o
             checked={selectedIds.includes('different-spread')}
             onChange={() => toggle('different-spread')}
           />
-          자료 B가 자료 A보다 더 퍼져 있습니다.
+          자료 B가 자료 A보다 더 흩어져 있습니다.
         </label>
         <label>
           <input

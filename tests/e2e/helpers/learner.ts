@@ -5,8 +5,8 @@ type DatasetId = 'balance-20-a' | 'balance-24-b' | 'twins-4-a' | 'twins-6-b' | '
 
 const missions: readonly MissionId[] = ['balance-delivery', 'mean-twins', 'outlier-alert', 'representative-review'];
 const missionTitles: Readonly<Record<MissionId, string>> = {
-  'balance-delivery': '1. 균형 배송', 'mean-twins': '2. 평균 쌍둥이',
-  'outlier-alert': '3. 튀는 값 경보', 'representative-review': '4. 대표값 심의',
+  'balance-delivery': '1. 골고루 나누기', 'mean-twins': '2. 평균이 같아도 다를까요?',
+  'outlier-alert': '3. 한 값이 바뀌면?', 'representative-review': '4. 평균만으로 괜찮을까요?',
 };
 const requiredDatasets: Readonly<Record<MissionId, DatasetId>> = {
   'balance-delivery': 'balance-20-a', 'mean-twins': 'twins-4-a',
@@ -24,7 +24,7 @@ const expectedMeans: Readonly<Record<DatasetId, number>> = {
 };
 
 const startNextDataset = async (page: Page, missionId: MissionId, datasetId: DatasetId) => {
-  await page.goto('/#/');
+  await page.goto('./#/');
   await expect(page.getByText(`다음 미션: ${missionTitles[missionId]}`, { exact: true })).toBeVisible();
   const challenge = datasetId.endsWith('-b');
   const difficulty = page.getByRole('radio', { name: challenge ? '도전(B 세트)' : '기본(A 세트)', exact: true });
@@ -50,8 +50,8 @@ const moveOne = async (page: Page, source: number, destination: number) => {
 };
 
 export const startBalanceMission = async (page: Page): Promise<void> => {
-  await page.goto('/#/');
-  await expect(page.getByText('다음 미션: 1. 균형 배송', { exact: true })).toBeVisible();
+  await page.goto('./#/');
+  await expect(page.getByText('다음 미션: 1. 골고루 나누기', { exact: true })).toBeVisible();
   await page.getByRole('radio', { name: '기본(A 세트)', exact: true }).check();
   await page.getByRole('button', { name: '미션 시작', exact: true }).click();
   await expect(page.getByText(situationValues['balance-20-a'], { exact: true })).toBeVisible();
@@ -78,7 +78,7 @@ const submitCalculation = async (page: Page, heading: string, total: number, cou
   await section.getByRole('spinbutton', { name: '자료 개수', exact: true }).fill(String(count));
   await section.getByRole('spinbutton', { name: '평균', exact: true }).fill(String(average));
   await section.getByRole('button', { name: '계산 확인', exact: true }).click();
-  await expect(section.getByText(`${total} ÷ ${count} = ${average}`, { exact: true })).toBeVisible();
+  await expect(section.getByText(new RegExp(`${total} ÷ ${count} = ${average}`))).toBeVisible();
 };
 
 const completeDataset = async (page: Page, missionId: MissionId, datasetId: DatasetId) => {
@@ -103,9 +103,11 @@ const completeDataset = async (page: Page, missionId: MissionId, datasetId: Data
     await submitCalculation(page, '자료 A의 평균을 계산해 볼까요?', total, 4, expectedMeans[datasetId]);
     await submitCalculation(page, '자료 B의 평균을 계산해 볼까요?', total, 4, expectedMeans[datasetId]);
     await page.getByRole('button', { name: '다음 단계', exact: true }).click();
-    await expect(page.getByText(datasetId === 'twins-4-a' ? '평균 4·4 / 범위 0·6' : '평균 6·6 / 범위 0·8', { exact: true })).toBeVisible();
+    await expect(page.getByText(datasetId === 'twins-4-a'
+      ? '자료 A 평균 4, 자료 B 평균 4 / 자료 A 범위 0, 자료 B 범위 6'
+      : '자료 A 평균 6, 자료 B 평균 6 / 자료 A 범위 0, 자료 B 범위 8', { exact: true })).toBeVisible();
     await page.getByRole('checkbox', { name: `두 자료의 평균은 모두 ${expectedMeans[datasetId]}입니다.`, exact: true }).check();
-    await page.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 퍼져 있습니다.', exact: true }).check();
+    await page.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 흩어져 있습니다.', exact: true }).check();
     await page.getByRole('button', { name: '비교 확인', exact: true }).click();
     await page.getByRole('button', { name: '다음 단계', exact: true }).click();
   } else if (datasetId.startsWith('outlier-')) {
@@ -133,7 +135,7 @@ const completeDataset = async (page: Page, missionId: MissionId, datasetId: Data
 
   await expect(page.getByRole('heading', { name: '근거 문장을 완성해 볼까요?', exact: true })).toBeVisible();
   const evidence = datasetId.startsWith('balance-') ? '고르게 옮긴 결과와 합계 ÷ 개수를 함께 확인했어요.'
-    : datasetId.startsWith('twins-') ? '두 자료의 평균은 같고 퍼짐은 달라요.'
+    : datasetId.startsWith('twins-') ? '두 자료의 평균은 같고 흩어진 정도는 달라요.'
       : datasetId.startsWith('outlier-') ? '합계 변화와 평균 변화를 연결했어요.' : null;
   if (evidence) await page.getByRole('radio', { name: evidence, exact: true }).check();
   else {
@@ -163,7 +165,7 @@ const reachChallenge = async (page: Page, datasetId: DatasetId) => {
   const index = missions.indexOf(missionId);
   for (let prior = 0; prior < index; prior += 1) {
     const priorMission = missions[prior]!;
-    await page.goto('/#/');
+    await page.goto('./#/');
     await expect(page.getByText(`다음 미션: ${missionTitles[priorMission]}`, { exact: true })).toBeVisible();
     await completeRequiredDataset(page, priorMission, requiredDatasets[priorMission]);
   }

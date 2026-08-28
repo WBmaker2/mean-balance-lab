@@ -24,30 +24,46 @@ const rowsFor = (attempts: TeacherSummaryProps['attempts']): readonly TeacherSum
   });
 };
 
-export const TeacherSummary = ({ attempts }: TeacherSummaryProps) => (
-  <section className="teacher-summary" aria-labelledby="teacher-summary-heading">
-    <h2 id="teacher-summary-heading">교사용 활동 요약</h2>
-    <ActionButton className="teacher-summary-controls" type="button" onClick={() => window.print()}>
-      교사용 요약 인쇄
-    </ActionButton>
-    <div className="teacher-summary-table-region" role="region" aria-label="교사용 요약 표">
-      <table>
-        <caption className="sr-only">미션별 근거와 수정 기록</caption>
-        <thead>
-          <tr><th scope="col">미션</th><th scope="col">자료</th><th scope="col">선택한 근거</th><th scope="col">근거 단계 설명</th><th scope="col">수정 기록</th></tr>
-        </thead>
-        <tbody>
-          {rowsFor(attempts).map(({ mission, attempt }) => (
-            <tr key={attempt.datasetId}>
-              <th scope="row">{mission.title}</th>
-              <td>{getDataset(attempt.datasetId).label}</td>
-              <td>{attempt.sentence}</td>
-              <td>{levelDescription[attempt.level]}</td>
-              <td>{attempt.revisions}회</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </section>
-);
+export const TeacherSummary = ({ attempts }: TeacherSummaryProps) => {
+  const rows = rowsFor(attempts);
+  return (
+    <section className="teacher-summary" aria-labelledby="teacher-summary-heading">
+      <h2 id="teacher-summary-heading">교사용 활동 요약</h2>
+      <ActionButton className="teacher-summary-controls" type="button" onClick={() => window.print()}>
+        교사용 요약 인쇄
+      </ActionButton>
+      <div className="teacher-summary-table-region" role="region" aria-label="교사용 요약 표">
+        <table>
+          <caption className="sr-only">미션별 근거와 수정 기록</caption>
+          <thead>
+            <tr><th scope="col">미션</th><th scope="col">자료</th><th scope="col">선택한 근거</th><th scope="col">근거 단계 설명</th><th scope="col">수정 기록</th></tr>
+          </thead>
+          <tbody>
+            {rows.map(({ mission, attempt }) => (
+              <tr key={attempt.datasetId}>
+                <th scope="row">{mission.title}</th>
+                <td>{getDataset(attempt.datasetId).label}</td>
+                <td>{attempt.sentence}</td>
+                <td>{levelDescription[attempt.level]}</td>
+                <td>{attempt.revisions}회</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <ul className="teacher-summary-mobile" aria-label="모바일 교사용 요약">
+        {rows.map(({ mission, attempt }) => (
+          <li key={`mobile-${attempt.datasetId}`}>
+            <h3>{mission.title}</h3>
+            <dl>
+              <dt>자료</dt><dd>{getDataset(attempt.datasetId).label}</dd>
+              <dt>선택한 근거</dt><dd>{attempt.sentence}</dd>
+              <dt>근거 단계 설명</dt><dd>{levelDescription[attempt.level]}</dd>
+              <dt>수정 기록</dt><dd>{attempt.revisions}회</dd>
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+};

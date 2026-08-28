@@ -28,7 +28,7 @@ describe('learning router handoff', () => {
     renderAppAt('#/mission/mean-twins/twins-4-a/compare', initialState);
     expect(await screen.findByRole('heading', { name: '평균 쌍둥이 자료를 비교해 볼까요?' })).toBeVisible();
     expect(window.location.hash).toBe('#/mission/mean-twins/twins-4-a/compare');
-    expect(screen.getByText('평균 4·4 / 범위 0·6')).toBeVisible();
+    expect(screen.getByText('자료 A 평균 4, 자료 B 평균 4 / 자료 A 범위 0, 자료 B 범위 6')).toBeVisible();
   });
 
   it('advances only after both twin calculations are verified', async () => {
@@ -151,11 +151,11 @@ describe('learning router handoff', () => {
 
     await user.click(screen.getByRole('button', { name: '미션 결과 보기' }));
     expect(window.location.hash).toBe('#/mission/balance-delivery/balance-20-a/mission-result');
-    expect(await screen.findByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '1. 골고루 나누기 결과' })).toBeVisible();
 
     await user.click(screen.getByRole('button', { name: '활동 마치기' }));
     expect(window.location.hash).toBe('#/');
-    expect(await screen.findByText('다음 미션: 2. 평균 쌍둥이')).toBeVisible();
+    expect(await screen.findByText('다음 미션: 2. 평균이 같아도 다를까요?')).toBeVisible();
   });
 
   it('returns to the missing mission when completion IDs lack its canonical attempt', async () => {
@@ -165,7 +165,7 @@ describe('learning router handoff', () => {
     };
     renderAppAt('#/', completeIdsButMissingAttempt);
 
-    expect(await screen.findByText('다음 미션: 4. 대표값 심의')).toBeVisible();
+    expect(await screen.findByText('다음 미션: 4. 평균만으로 괜찮을까요?')).toBeVisible();
     expect(screen.queryByRole('button', { name: '전체 결과 보기' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '미션 시작' })).toBeVisible();
   });

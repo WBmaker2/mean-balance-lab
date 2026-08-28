@@ -90,6 +90,16 @@ button:not(.gi-pulse) { box-shadow: 0 2px 0 rgb(23 50 77 / 0.18); }
 .teacher-summary table { width: 100%; min-width: 42rem; border-collapse: collapse; }
 .teacher-summary th, .teacher-summary td { padding: 0.65rem; border: 1px solid var(--color-border); text-align: start; vertical-align: top; }
 .teacher-summary th { background: #edf3ff; }
+.teacher-summary-mobile { display: none; padding: 0; list-style: none; }
+.teacher-summary-mobile li { margin-block: var(--space-3); padding: var(--space-3); border: 2px solid var(--color-border); border-radius: 0.65rem; background: var(--color-surface); }
+.teacher-summary-mobile h3 { margin-block-start: 0; }
+.teacher-summary-mobile dl { display: grid; grid-template-columns: minmax(7rem, auto) minmax(0, 1fr); gap: 0.35rem 0.65rem; margin: 0; }
+.teacher-summary-mobile dt { font-weight: 800; }
+.teacher-summary-mobile dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.progress-step-status { display: inline-block; min-width: 5.5rem; margin-inline-end: 0.35rem; font-weight: 700; }
+.progress-step-completed { border-inline-start: 0.35rem solid var(--color-success); padding-inline-start: 0.45rem; font-weight: 700; }
+.progress-step-current { border: 3px solid var(--color-primary); padding: 0.2rem 0.45rem; font-weight: 800; }
+.progress-step-upcoming { border-inline-start: 0.35rem solid var(--color-border); padding-inline-start: 0.45rem; color: var(--color-muted); }
 .update-history-trigger { border-radius: 999px; }
 .update-history-dialog { position: fixed; z-index: 30; inset: 10vh max(1rem, calc(50% - 22rem)) auto; max-height: 80vh; overflow: auto; padding: var(--space-4); border: 3px solid var(--color-primary); border-radius: var(--radius-card); background: var(--color-surface); box-shadow: 0 1rem 4rem rgb(23 50 77 / 0.3); }
 .update-history-dialog li { display: grid; grid-template-columns: auto auto 1fr; gap: var(--space-2); margin-block: var(--space-2); }
@@ -102,4 +112,6 @@ button:not(.gi-pulse) { box-shadow: 0 2px 0 rgb(23 50 77 / 0.18); }
   .summary-actions button, .result-global-actions button { flex: 1 1 12rem; }
   .update-history-dialog { inset: 1rem; max-height: calc(100vh - 2rem); }
   .update-history-dialog li { grid-template-columns: 1fr; gap: 0; }
+  .teacher-summary-table-region { display: none; }
+  .teacher-summary-mobile { display: block; }
 }

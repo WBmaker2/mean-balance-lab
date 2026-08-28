@@ -10,7 +10,7 @@ test('completes all required missions without drag and shows evidence-first resu
     if (url.protocol.startsWith('http') && url.hostname !== '127.0.0.1') externalRequests.push(request.url());
   });
 
-  await page.goto('/#/');
+  await page.goto('./#/');
   await completeRequiredDataset(page, 'balance-delivery', 'balance-20-a');
   await completeRequiredDataset(page, 'mean-twins', 'twins-4-a');
   await completeRequiredDataset(page, 'outlier-alert', 'outlier-5-a');

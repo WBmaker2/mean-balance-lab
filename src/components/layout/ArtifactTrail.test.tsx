@@ -11,8 +11,17 @@ describe('ArtifactTrail', () => {
 
     expect(screen.getByText('예측: 평균 5')).toBeVisible();
     expect(screen.getByText('재배분: 5, 5, 5, 5')).toBeVisible();
-    expect(screen.getByText('20 ÷ 4 = 5')).toBeVisible();
+    expect(screen.getByText('현재 자료 계산: 20 ÷ 4 = 5')).toBeVisible();
     expect(screen.getByText('수정 횟수: 2')).toBeVisible();
+  });
+
+  it('labels both verified calculations', () => {
+    render(<ArtifactTrail artifacts={{ calculations: {
+      left: { target: 'left', total: 16, count: 4, average: 4, verified: true },
+      right: { target: 'right', total: 16, count: 4, average: 4, verified: true },
+    } }} />);
+    expect(screen.getByText('자료 A 계산: 16 ÷ 4 = 4')).toBeVisible();
+    expect(screen.getByText('자료 B 계산: 16 ÷ 4 = 4')).toBeVisible();
   });
 
   it('omits unanswered artifact rows', () => {

@@ -37,7 +37,7 @@ test('active calculation history returns to canonical calculate stage', async ({
   await completeBalanceWithButtons(page);
   await expect(page.getByRole('heading', { name: '평균을 계산해 볼까요?', exact: true })).toBeVisible();
   await expect(page).toHaveURL(/\/mission\/balance-delivery\/balance-20-a\/calculate$/);
-  await page.goto('/#/mission/balance-delivery/balance-20-a/explain');
+  await page.goto('./#/mission/balance-delivery/balance-20-a/explain');
   await expect(page).toHaveURL(/\/mission\/balance-delivery\/balance-20-a\/calculate$/);
   await expect(page.getByRole('heading', { name: '평균을 계산해 볼까요?', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: '근거 문장을 완성해 볼까요?', exact: true })).toHaveCount(0);
@@ -48,14 +48,14 @@ test('active calculation history returns to canonical calculate stage', async ({
 });
 
 test('direct navigation without a run cannot expose a locked later stage', async ({ page }) => {
-  await page.goto('/#/mission/balance-delivery/balance-20-a/explain');
+  await page.goto('./#/mission/balance-delivery/balance-20-a/explain');
   await expect(page).toHaveURL(/\/mission\/balance-delivery\/balance-20-a\/predict$/);
   await expect(page.getByRole('heading', { name: '평균을 먼저 예측해 볼까요?', exact: true })).toBeVisible();
-  await page.goto('/#/mission/balance-delivery/balance-20-a/explain');
+  await page.goto('./#/mission/balance-delivery/balance-20-a/explain');
   await expect(page).not.toHaveURL(/\/explain$/);
   await expect(page.getByRole('heading', { name: '근거 문장을 완성해 볼까요?', exact: true })).toHaveCount(0);
 
-  await page.goto('/#/');
+  await page.goto('./#/');
   await expect(page.getByRole('heading', { name: '평균은 여러 값을 어떻게 대표하며, 한 값이 달라지면 평균은 왜 움직일까요?', exact: true })).toBeVisible();
   await page.goBack();
   await expect(page.getByRole('heading', { name: '평균을 먼저 예측해 볼까요?', exact: true })).toBeVisible();

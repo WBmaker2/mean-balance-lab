@@ -2,6 +2,12 @@ import type { EvidenceChoiceId } from '../domain/types';
 
 /** 학생에게 보여 주는 계산 확인 피드백입니다. 모든 오답 안내는 다음 행동을 함께 제공합니다. */
 export const CALCULATION_COPY = {
+  emptyTotalMessage: '합계를 입력해 주세요.',
+  emptyTotalNextAction: '합계를 먼저 채워 보세요.',
+  emptyCountMessage: '자료 개수를 입력해 주세요.',
+  emptyCountNextAction: '자료 개수를 먼저 채워 보세요.',
+  emptyMeanMessage: '평균을 입력해 주세요.',
+  emptyMeanNextAction: '평균을 먼저 채워 보세요.',
   totalMessage: '상자 속 수를 다시 모두 더해 보세요.',
   totalNextAction: '전체 양은 그대로인지 확인해 보세요.',
   countMessage: '자료 칸의 개수를 다시 세어 보세요.',
@@ -14,10 +20,10 @@ export const CALCULATION_COPY = {
 export const COMPARISON_COPY = {
   twinsMeanNextAction: '두 자료의 평균을 먼저 비교해 보세요.',
   twinsMeanNextActionDetail: '자료 A와 자료 B의 합계를 각각 자료 개수로 나누어 보세요.',
-  twinsSpreadMessage: '점들이 얼마나 퍼져 있는지도 살펴보세요.',
+  twinsSpreadMessage: '점들이 얼마나 흩어져 있는지도 살펴보세요.',
   twinsSpreadNextAction: '두 자료의 범위나 각 값을 비교해 보세요.',
-  twinsShapeMessage: '평균이 같아도 각 값과 퍼짐은 다를 수 있어요.',
-  twinsShapeNextAction: '점도표에서 각 값과 퍼짐을 다시 살펴보세요.',
+  twinsShapeMessage: '평균이 같아도 각 값과 흩어진 정도는 다를 수 있어요.',
+  twinsShapeNextAction: '점도표에서 각 값과 흩어진 정도를 다시 살펴보세요.',
   twinsSuccessMessage: '평균은 같지만 자료의 모양은 다를 수 있어요.',
   outlierSumMessage: '합계 변화를 먼저 살펴보세요.',
   outlierSumNextAction: '변경 전후의 전체 양을 비교해 보세요.',
@@ -37,7 +43,7 @@ export const EVIDENCE_FRAGMENTS: Readonly<Record<EvidenceChoiceId, string>> = {
   'redistribution-and-division': '고르게 옮긴 결과와 합계 ÷ 개수를 함께 확인했어요.',
   'redistribution-only': '자료를 고르게 옮긴 결과를 확인했어요.',
   'calculation-only': '합계 ÷ 개수로 평균을 계산했어요.',
-  'same-mean-and-different-spread': '두 자료의 평균은 같고 퍼짐은 달라요.',
+  'same-mean-and-different-spread': '두 자료의 평균은 같고 흩어진 정도는 달라요.',
   'same-mean-only': '두 자료의 평균이 같다는 점을 살펴보았어요.',
   'same-shape': '자료의 모양을 살펴보았어요.',
   'sum-change-and-mean-change': '합계 변화와 평균 변화를 연결했어요.',
@@ -52,7 +58,7 @@ export const EVIDENCE_EMPTY_COPY: Readonly<Record<
   'balance-delivery' | 'mean-twins' | 'outlier-alert' | 'representative-review', string
 >> = {
   'balance-delivery': '고르게 옮긴 결과와 합계 ÷ 개수를 보여 주는 근거를 선택해 보세요.',
-  'mean-twins': '평균이 같고 퍼짐이 다른 근거를 선택해 보세요.',
+  'mean-twins': '평균이 같고 흩어진 정도가 다른 근거를 선택해 보세요.',
   'outlier-alert': '합계 변화와 평균 변화를 연결한 근거를 선택해 보세요.',
   'representative-review': '평균의 도움 또는 범위와 각 값의 근거를 선택해 보세요.',
 };
@@ -62,22 +68,22 @@ export const buildBalanceEvidenceSentence = (
   total: number,
   count: number,
   average: number,
-): string => `고르게 옮긴 결과, 전체 양 ${total}을 자료 ${count}개로 나누어 평균 ${average}를 확인했어요.`;
+): string => `고르게 옮긴 결과, 전체 양은 ${total}이고 자료 ${count}개로 나누면 평균은 ${average}예요.`;
 
 export const buildBalanceCalculationSentence = (
   total: number,
   count: number,
   average: number,
-): string => `전체 양 ${total}을 자료 ${count}개로 나누어 평균 ${average}를 계산했어요.`;
+): string => `전체 양은 ${total}이고 자료 ${count}개로 나누면 평균은 ${average}예요.`;
 
 export const buildTwinsEvidenceSentence = (
   average: number,
   leftRange: number,
   rightRange: number,
-): string => `두 자료의 평균은 ${average}으로 같지만, 범위는 ${leftRange}과 ${rightRange}로 달라요.`;
+): string => `두 자료의 평균은 모두 ${average}이고, 범위는 자료 A가 ${leftRange}, 자료 B가 ${rightRange}이라서 달라요.`;
 
 export const buildTwinsMeanSentence = (leftMean: number, rightMean: number): string =>
-  `두 자료의 평균은 각각 ${leftMean}과 ${rightMean}으로 같아요.`;
+  `자료 A 평균 ${leftMean}, 자료 B 평균 ${rightMean}이고 두 평균은 같아요.`;
 
 export const buildOutlierEvidenceSentence = (
   beforeTotal: number,

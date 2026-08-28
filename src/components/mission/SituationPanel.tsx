@@ -22,6 +22,7 @@ export const SituationPanel = ({ dataset, onAdvance }: SituationPanelProps) => (
     <h1 id="situation-heading">상황을 살펴볼까요?</h1>
     <p>{dataset.context}</p>
     <p>{values(dataset)}</p>
+    <p>실제 자료가 아닌 수학 연습용 가상 자료예요.</p>
     <p>{SAFETY_COPY.modelBoundary}</p>
     <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음: 평균 예측</ActionButton>
   </section>

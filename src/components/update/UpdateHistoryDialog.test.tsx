@@ -12,8 +12,17 @@ describe('UpdateHistoryDialog', () => {
     window.location.hash = '#/';
   });
 
+  it('records the 2026-08-28 improvement', () => {
+    expect(UPDATE_HISTORY[0]).toEqual({
+      date: '2026-08-28',
+      category: '개선',
+      summary: '학습 단계 안내와 입력·모바일 화면 개선',
+    });
+  });
+
   it('keeps literal dated entries for deployment, design, and MVP', () => {
     expect(UPDATE_HISTORY).toEqual([
+      { date: '2026-08-28', category: '개선', summary: '학습 단계 안내와 입력·모바일 화면 개선' },
       { date: '2026-08-27', category: '배포', summary: 'GitHub Pages 공개 배포 경로 정리' },
       { date: '2026-08-26', category: '개발', summary: '평균 균형 조정실 MVP 구현' },
       { date: '2026-08-26', category: '설계', summary: '최초 설계 문서 작성' },
@@ -33,8 +42,10 @@ describe('UpdateHistoryDialog', () => {
     const title = screen.getByRole('heading', { name: '업데이트 내역' });
     expect(title.tagName).toBe('H2');
     expect(dialog).toHaveAttribute('aria-labelledby', title.id);
+    expect(screen.getByText('2026-08-28')).toBeVisible();
     expect(screen.getByText('2026-08-27')).toBeVisible();
     expect(screen.getAllByText('2026-08-26')).toHaveLength(2);
+    expect(screen.getByText('학습 단계 안내와 입력·모바일 화면 개선')).toBeVisible();
     expect(screen.getByText('GitHub Pages 공개 배포 경로 정리')).toBeVisible();
     expect(screen.getByText('평균 균형 조정실 MVP 구현')).toBeVisible();
     expect(screen.getByText('최초 설계 문서 작성')).toBeVisible();

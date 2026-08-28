@@ -13,6 +13,7 @@ import { CalculationCheck } from './CalculationCheck';
 import { ComparisonPanel } from './ComparisonPanel';
 import { EvidenceBuilder } from './EvidenceBuilder';
 import { MissionSummary } from './MissionSummary';
+import { useStageFocus } from '../../hooks/useStageFocus';
 
 interface MissionScreenProps {
   mission: MissionDefinition;
@@ -27,6 +28,8 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
   const run = state.activeRun?.missionId === mission.id && state.activeRun.datasetId === dataset.id
     ? state.activeRun
     : null;
+
+  useStageFocus([mission.id, dataset.id, stage].join(':'));
 
   useEffect(() => {
     if (!run) {

@@ -81,6 +81,7 @@ export type MissionDataset =
 export interface MissionDefinition {
   id: MissionId;
   title: string;
+  learnerTitle: string;
   learningGoal: string;
   requiredDatasetId: DatasetId;
   datasets: readonly MissionDataset[];

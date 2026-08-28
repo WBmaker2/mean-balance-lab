@@ -71,7 +71,7 @@ describe('EvidenceBuilder', () => {
     const user = userEvent.setup();
     const choiceInput = screen.getByRole('radio', { name: new RegExp(choice === 'redistribution-and-division'
       ? '고르게 옮긴 결과와 합계'
-      : choice === 'same-mean-and-different-spread' ? '평균은 같고 퍼짐' : '합계 변화와 평균 변화') });
+      : choice === 'same-mean-and-different-spread' ? '평균은 같고 흩어진 정도' : '합계 변화와 평균 변화') });
     await user.click(choiceInput);
     await user.click(screen.getByRole('button', { name: '근거 문장 완성' }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
@@ -153,7 +153,7 @@ describe('EvidenceBuilder', () => {
 
   it.each([
     ['balance-delivery', '고르게 옮긴 결과와 합계 ÷ 개수를 보여 주는 근거를 선택해 보세요.'],
-    ['mean-twins', '평균이 같고 퍼짐이 다른 근거를 선택해 보세요.'],
+    ['mean-twins', '평균이 같고 흩어진 정도가 다른 근거를 선택해 보세요.'],
     ['outlier-alert', '합계 변화와 평균 변화를 연결한 근거를 선택해 보세요.'],
     ['representative-review', '평균의 도움 또는 범위와 각 값의 근거를 선택해 보세요.'],
   ] as const)('gives mission-specific next action for empty %s evidence', async (mission, nextAction) => {

@@ -11,7 +11,7 @@ const tabTo = async (page: import('@playwright/test').Page, target: import('@pla
 };
 
 test('has no serious axe violations and exposes one current action', async ({ page }) => {
-  await page.goto('/#/');
+  await page.goto('./#/');
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations.filter(({ impact }) => impact === 'serious' || impact === 'critical')).toEqual([]);
   await expect(page.locator('[data-current-action="true"]')).toHaveCount(1);
@@ -26,7 +26,7 @@ test('completes the balance step at 375px without horizontal overflow', async ({
 });
 
 test('keeps one enabled prediction action through empty, feedback, and selected states', async ({ page }) => {
-  await page.goto('/#/');
+  await page.goto('./#/');
   await page.getByRole('button', { name: '미션 시작', exact: true }).click();
   await page.getByRole('button', { name: '다음: 평균 예측', exact: true }).click();
   const currentActions = () => page.locator('[data-current-action="true"]');
@@ -50,7 +50,7 @@ test('keeps one enabled prediction action through empty, feedback, and selected 
 test.use({ reducedMotion: 'reduce' });
 test('replaces pulse animation with border and next-action text', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/#/');
+  await page.goto('./#/');
   const action = page.locator('[data-current-action="true"]');
   await expect(action).toHaveCSS('animation-name', 'none');
   await expect(action.locator('.reduced-motion-next')).toBeVisible();
@@ -58,7 +58,7 @@ test('replaces pulse animation with border and next-action text', async ({ page 
 });
 
 test('supports keyboard-only balance flow with live updates and mission result', async ({ page }) => {
-  await page.goto('/#/');
+  await page.goto('./#/');
   await page.keyboard.press('Tab');
   await page.keyboard.press('Shift+Tab');
   const start = page.getByRole('button', { name: '미션 시작' });
@@ -104,11 +104,11 @@ test('supports keyboard-only balance flow with live updates and mission result',
   await page.keyboard.press('Enter');
   await tabTo(page, page.getByRole('button', { name: '미션 결과 보기' }));
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '1. 골고루 나누기 결과' })).toBeVisible();
 });
 
 test('keeps update history focus inside the dialog and restores it on Escape', async ({ page }) => {
-  await page.goto('/#/');
+  await page.goto('./#/');
   const trigger = page.getByRole('button', { name: '업데이트 내역' });
   await tabTo(page, trigger);
   await page.keyboard.press('Enter');

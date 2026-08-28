@@ -44,8 +44,8 @@ describe('ComparisonPanel', () => {
   it('shows exact domain-derived means and ranges before the plots', () => {
     renderTwinsComparison();
 
-    expect(screen.getByText('평균 4·4 / 범위 0·6')).toBeVisible();
-    const summary = screen.getByText('평균 4·4 / 범위 0·6');
+    expect(screen.getByText('자료 A 평균 4, 자료 B 평균 4 / 자료 A 범위 0, 자료 B 범위 6')).toBeVisible();
+    const summary = screen.getByText('자료 A 평균 4, 자료 B 평균 4 / 자료 A 범위 0, 자료 B 범위 6');
     const plots = screen.getByRole('img', { name: '자료 A 점도표: 4, 4, 4, 4' });
     expect(summary.compareDocumentPosition(plots) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole('img', { name: '자료 B 점도표: 1, 3, 5, 7' })).toBeVisible();
@@ -57,9 +57,9 @@ describe('ComparisonPanel', () => {
 
     await user.click(screen.getByRole('checkbox', { name: '두 자료의 평균은 모두 4입니다.' }));
     await user.click(screen.getByRole('button', { name: '비교 확인' }));
-    expect(screen.getByText('점들이 얼마나 퍼져 있는지도 살펴보세요.')).toBeVisible();
+    expect(screen.getByText('점들이 얼마나 흩어져 있는지도 살펴보세요.')).toBeVisible();
 
-    await user.click(screen.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 퍼져 있습니다.' }));
+    await user.click(screen.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 흩어져 있습니다.' }));
     await user.click(screen.getByRole('button', { name: '비교 확인' }));
     expect(screen.getByText('평균은 같지만 자료의 모양은 다를 수 있어요.')).toBeVisible();
   });
@@ -71,7 +71,7 @@ describe('ComparisonPanel', () => {
     await user.click(screen.getByRole('checkbox', { name: '두 자료의 모양은 같습니다.' }));
     await user.click(screen.getByRole('button', { name: '비교 확인' }));
 
-    expect(screen.getByText('평균이 같아도 각 값과 퍼짐은 다를 수 있어요.')).toBeVisible();
+    expect(screen.getByText('평균이 같아도 각 값과 흩어진 정도는 다를 수 있어요.')).toBeVisible();
     expect(screen.getByRole('note', { name: '점도표 설명' })).toHaveFocus();
   });
 
@@ -80,7 +80,7 @@ describe('ComparisonPanel', () => {
     renderTwinsComparison();
 
     await user.click(screen.getByRole('checkbox', { name: '두 자료의 평균은 모두 4입니다.' }));
-    await user.click(screen.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 퍼져 있습니다.' }));
+    await user.click(screen.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 흩어져 있습니다.' }));
     await user.click(screen.getByRole('button', { name: '비교 확인' }));
 
     const currentActions = screen.getAllByRole('button').filter(

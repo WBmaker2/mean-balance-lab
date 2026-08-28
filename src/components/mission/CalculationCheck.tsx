@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { mean, sum } from '../../domain/math';
+import { CALCULATION_COPY } from '../../content/copy';
 import type { CalculationInput } from '../../domain/evaluation';
 import type { CalculationTarget, EvaluationResult } from '../../domain/types';
 import { ActionButton } from '../shared/ActionButton';
@@ -31,7 +32,8 @@ export const CalculationCheck = ({
   const [enteredTotal, setEnteredTotal] = useState('');
   const [enteredCount, setEnteredCount] = useState('');
   const [enteredMean, setEnteredMean] = useState('');
-  const [firstIncorrect, setFirstIncorrect] = useState<CalculationField>('total');
+  const [firstIncorrect, setFirstIncorrect] = useState<CalculationField | null>(null);
+  const [localFeedback, setLocalFeedback] = useState<EvaluationResult | null>(null);
   const totalRef = useRef<HTMLInputElement>(null);
   const countRef = useRef<HTMLInputElement>(null);
   const meanRef = useRef<HTMLInputElement>(null);
@@ -42,11 +44,26 @@ export const CalculationCheck = ({
   };
 
   useEffect(() => {
-    if (feedback && !feedback.isCorrect) focusField(firstIncorrect);
-  }, [feedback, firstIncorrect]);
+    const shownFeedback = feedback ?? localFeedback;
+    if (shownFeedback && !shownFeedback.isCorrect && firstIncorrect) focusField(firstIncorrect);
+  }, [feedback, firstIncorrect, localFeedback]);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const blankFeedback: Record<CalculationField, EvaluationResult> = {
+      total: { isCorrect: false, message: CALCULATION_COPY.emptyTotalMessage, nextAction: CALCULATION_COPY.emptyTotalNextAction },
+      count: { isCorrect: false, message: CALCULATION_COPY.emptyCountMessage, nextAction: CALCULATION_COPY.emptyCountNextAction },
+      mean: { isCorrect: false, message: CALCULATION_COPY.emptyMeanMessage, nextAction: CALCULATION_COPY.emptyMeanNextAction },
+    };
+    const firstBlank: CalculationField | null = enteredTotal === '' ? 'total'
+      : enteredCount === '' ? 'count'
+        : enteredMean === '' ? 'mean' : null;
+    if (firstBlank) {
+      setFirstIncorrect(firstBlank);
+      setLocalFeedback(blankFeedback[firstBlank]);
+      focusField(firstBlank);
+      return;
+    }
     const input: CalculationInput = {
       values: [...values],
       enteredTotal: Number(enteredTotal),
@@ -60,24 +77,33 @@ export const CalculationCheck = ({
     if (incorrectField) {
       setFirstIncorrect(incorrectField);
       focusField(incorrectField);
+    } else {
+      setFirstIncorrect(null);
     }
+    setLocalFeedback(null);
     onSubmit(target, input);
   };
 
-  const isSuccess = feedback?.isCorrect === true;
-  const buttonLabel = feedback && !isSuccess ? '계산 다시 확인' : '계산 확인';
+  const shownFeedback = feedback ?? localFeedback;
+  const isSuccess = shownFeedback?.isCorrect === true;
+  const buttonLabel = shownFeedback && !isSuccess ? '계산 다시 확인' : '계산 확인';
+  const hintIds = {
+    total: `calculation-total-hint-${target}`,
+    count: `calculation-count-hint-${target}`,
+    mean: `calculation-mean-hint-${target}`,
+  };
 
   return (
     <section aria-labelledby={`calculation-heading-${target}`}>
       <h2 id={`calculation-heading-${target}`}>{targetLabel[target]}의 평균을 계산해 볼까요?</h2>
       {isSuccess ? (
         <>
-          <p role="status">{feedback.message}</p>
+          <p role="status">{shownFeedback?.message}</p>
           <p aria-label="평균 계산 방정식">{sum(values)} ÷ {values.length} = {mean(values)}</p>
           {showNextAction ? <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음 단계</ActionButton> : null}
         </>
       ) : (
-        <form onSubmit={submit}>
+        <form onSubmit={submit} noValidate>
           <label htmlFor={`calculation-total-${target}`}>합계</label>
           <input
             ref={totalRef}
@@ -85,10 +111,15 @@ export const CalculationCheck = ({
             type="number"
             inputMode="numeric"
             min="0"
+            step="1"
+            required
+            aria-describedby={hintIds.total}
+            aria-invalid={firstIncorrect === 'total' ? 'true' : undefined}
             disabled={!isActive}
             value={enteredTotal}
             onChange={(event) => setEnteredTotal(event.target.value)}
           />
+          <span id={hintIds.total} className="sr-only">0 이상의 자연수를 입력하세요.</span>
           <label htmlFor={`calculation-count-${target}`}>자료 개수</label>
           <input
             ref={countRef}
@@ -96,10 +127,15 @@ export const CalculationCheck = ({
             type="number"
             inputMode="numeric"
             min="0"
+            step="1"
+            required
+            aria-describedby={hintIds.count}
+            aria-invalid={firstIncorrect === 'count' ? 'true' : undefined}
             disabled={!isActive}
             value={enteredCount}
             onChange={(event) => setEnteredCount(event.target.value)}
           />
+          <span id={hintIds.count} className="sr-only">0 이상의 자연수를 입력하세요.</span>
           <label htmlFor={`calculation-mean-${target}`}>평균</label>
           <input
             ref={meanRef}
@@ -107,11 +143,16 @@ export const CalculationCheck = ({
             type="number"
             inputMode="numeric"
             min="0"
+            step="1"
+            required
+            aria-describedby={hintIds.mean}
+            aria-invalid={firstIncorrect === 'mean' ? 'true' : undefined}
             disabled={!isActive}
             value={enteredMean}
             onChange={(event) => setEnteredMean(event.target.value)}
           />
-          {feedback && !isSuccess ? <FeedbackPrompt {...feedback} /> : null}
+          <span id={hintIds.mean} className="sr-only">0 이상의 자연수를 입력하세요.</span>
+          {shownFeedback && !isSuccess ? <FeedbackPrompt {...shownFeedback} /> : null}
           <ActionButton type="submit" emphasis={isActive ? 'next' : 'normal'} disabled={!isActive}>{buttonLabel}</ActionButton>
         </form>
       )}

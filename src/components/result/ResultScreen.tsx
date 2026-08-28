@@ -1,18 +1,31 @@
 import { useNavigate } from 'react-router-dom';
 import { MISSIONS } from '../../content/missions';
 import { isCanonicalEvidenceRecord } from '../../domain/evaluation';
+import type { LabSessionState } from '../../domain/session';
 import { useLabSession } from '../../state/LabSessionContext';
 import { ActionButton } from '../shared/ActionButton';
 import { MissionSummary } from '../mission/MissionSummary';
 import { TeacherSummary } from './TeacherSummary';
-
-export const RESULT_LOCK_COPY = '대표값 심의 필수 자료를 마치면 전체 결과를 볼 수 있어요.';
 
 const requiredAttempts = (attempts: ReturnType<typeof useLabSession>['state']['attempts']) => MISSIONS.map((mission) => {
   const attempt = attempts[mission.requiredDatasetId];
   return attempt && isCanonicalEvidenceRecord(attempt, mission.id, mission.requiredDatasetId, attempt.revisions)
     ? { mission, attempt } : null;
 }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+export const getIncompleteRequiredMissionTitles = (
+  state: LabSessionState,
+): readonly string[] => MISSIONS
+  .filter((mission) => {
+    const attempt = state.attempts[mission.requiredDatasetId];
+    const hasCanonicalAttempt = attempt !== undefined
+      && isCanonicalEvidenceRecord(attempt, mission.id, mission.requiredDatasetId, attempt.revisions);
+    return !(state.completedRequiredMissions.includes(mission.id) && hasCanonicalAttempt);
+  })
+  .map((mission) => mission.learnerTitle);
+
+export const resultLockCopy = (remainingTitles: readonly string[]): string =>
+  `전체 결과를 보려면 ${remainingTitles.join(', ')} 미션을 끝내야 해요.`;
 
 export const ResultScreen = () => {
   const { state, dispatch } = useLabSession();
@@ -33,10 +46,11 @@ export const ResultScreen = () => {
   };
 
   if (!isComplete) {
+    const remainingTitles = getIncompleteRequiredMissionTitles(state);
     return (
       <section aria-labelledby="result-heading">
         <h1 id="result-heading">전체 결과</h1>
-        <p role="status">{RESULT_LOCK_COPY}</p>
+        <p role="status">{resultLockCopy(remainingTitles)}</p>
       </section>
     );
   }

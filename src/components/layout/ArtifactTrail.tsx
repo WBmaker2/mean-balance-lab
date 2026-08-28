@@ -1,6 +1,6 @@
 import { isBalanced, sum } from '../../domain/math';
 import type { CalculationArtifact, StageArtifacts } from '../../domain/session';
-import type { ComparisonChoiceId, PredictionValue } from '../../domain/types';
+import type { CalculationTarget, ComparisonChoiceId, PredictionValue } from '../../domain/types';
 
 interface ArtifactTrailProps {
   artifacts: StageArtifacts;
@@ -15,12 +15,20 @@ const predictionText = (value: PredictionValue): string => {
   return `예측: ${labels[value]}`;
 };
 
+const CALCULATION_TARGET_LABELS: Readonly<Record<CalculationTarget, string>> = {
+  current: '현재 자료 계산',
+  left: '자료 A 계산',
+  right: '자료 B 계산',
+  before: '변경 전 자료 계산',
+  after: '변경 후 자료 계산',
+};
+
 const calculationText = (artifact: CalculationArtifact): string =>
-  `${artifact.total} ÷ ${artifact.count} = ${artifact.average}`;
+  `${CALCULATION_TARGET_LABELS[artifact.target]}: ${artifact.total} ÷ ${artifact.count} = ${artifact.average}`;
 
 const comparisonLabels: Readonly<Record<ComparisonChoiceId, string>> = {
   'same-mean': '평균이 같음',
-  'different-spread': '퍼짐이 다름',
+  'different-spread': '흩어진 정도가 다름',
   'same-shape': '모양이 같음',
   'sum-changed-first': '합계가 먼저 변함',
   'mean-changed-after': '평균이 변함',

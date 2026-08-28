@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { completedSession, renderAppAt, sessionWithThreeRequiredMissions, completedBalanceStateWithTwoRetries } from '../../test/fixtures';
+import { createInitialSession } from '../../domain/session';
 import { ResultScreen } from './ResultScreen';
 
 describe('ResultScreen', () => {
@@ -9,7 +10,7 @@ describe('ResultScreen', () => {
 
   it('locks final results until all four required canonical attempts exist', async () => {
     renderAppAt('#/results', sessionWithThreeRequiredMissions());
-    expect(await screen.findByText('대표값 심의 필수 자료를 마치면 전체 결과를 볼 수 있어요.')).toBeVisible();
+    expect(await screen.findByText('전체 결과를 보려면 4. 평균만으로 괜찮을까요? 미션을 끝내야 해요.')).toBeVisible();
     expect(screen.queryByRole('button', { name: '교사용 요약 인쇄' })).not.toBeInTheDocument();
   });
 
@@ -18,7 +19,7 @@ describe('ResultScreen', () => {
       'balance-delivery', 'mean-twins', 'outlier-alert', 'representative-review',
     ] as const };
     renderAppAt('#/results', state);
-    expect(await screen.findByText('대표값 심의 필수 자료를 마치면 전체 결과를 볼 수 있어요.')).toBeVisible();
+    expect(await screen.findByText('전체 결과를 보려면 4. 평균만으로 괜찮을까요? 미션을 끝내야 해요.')).toBeVisible();
   });
 
   it('shows each card in evidence, revisions, level, actions order without aggregate scoring', async () => {
@@ -60,7 +61,7 @@ describe('ResultScreen', () => {
     await user.click(within(card).getByRole('radio', { name: /자료를 고르게 옮긴 결과를 확인/ }));
     await user.click(within(card).getByRole('radio', { name: /고르게 옮긴 결과와 합계/ }));
     await user.click(within(card).getByRole('button', { name: '근거 문장 완성' }));
-    expect(within(card).getByText('고르게 옮긴 결과, 전체 양 20을 자료 4개로 나누어 평균 5를 확인했어요.')).toBeVisible();
+    expect(within(card).getByText('고르게 옮긴 결과, 전체 양은 20이고 자료 4개로 나누면 평균은 5예요.')).toBeVisible();
     expect(within(card).getByText('수정 기록 0회')).toBeVisible();
   });
 
@@ -69,7 +70,7 @@ describe('ResultScreen', () => {
     const user = userEvent.setup();
     const cards = screen.getAllByRole('region').filter((region) => region.classList.contains('mission-summary'));
     const card = cards[0]!;
-    const cardHeading = within(card).getByRole('heading', { name: '1. 균형 배송 결과' });
+    const cardHeading = within(card).getByRole('heading', { name: '1. 골고루 나누기 결과' });
 
     await user.click(within(card).getByRole('button', { name: '근거 수정' }));
 
@@ -107,7 +108,7 @@ describe('ResultScreen', () => {
   it('starts the next incomplete mission in registry order and applies the B dataset choice', async () => {
     renderAppAt('#/', completedBalanceStateWithTwoRetries());
     const user = userEvent.setup();
-    expect(await screen.findByText('다음 미션: 2. 평균 쌍둥이')).toBeVisible();
+    expect(await screen.findByText('다음 미션: 2. 평균이 같아도 다를까요?')).toBeVisible();
     await user.click(screen.getByRole('radio', { name: '도전(B 세트)' }));
     await user.click(screen.getByRole('button', { name: '미션 시작' }));
     expect(window.location.hash).toBe('#/mission/mean-twins/twins-6-b/situation');
@@ -118,5 +119,25 @@ describe('ResultScreen', () => {
     expect(await screen.findByRole('button', { name: '전체 결과 보기' })).toBeVisible();
     expect(screen.queryByRole('button', { name: '미션 시작' })).not.toBeInTheDocument();
     expect(screen.queryByRole('radio', { name: '기본(A 세트)' })).not.toBeInTheDocument();
+  });
+
+  it('lists every unfinished required mission in registry order', () => {
+    renderAppAt('#/results', createInitialSession());
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '전체 결과를 보려면 1. 골고루 나누기, 2. 평균이 같아도 다를까요?, 3. 한 값이 바뀌면?, 4. 평균만으로 괜찮을까요? 미션을 끝내야 해요.',
+    );
+  });
+
+  it('confirms before replacing another in-progress run', async () => {
+    const state = {
+      ...completedBalanceStateWithTwoRetries(),
+      activeRun: { ...completedBalanceStateWithTwoRetries().activeRun!, stage: 'calculate' as const },
+    };
+    renderAppAt('#/', state);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await userEvent.setup().click(screen.getByRole('button', { name: '미션 시작' }));
+    expect(confirm).toHaveBeenCalledWith('현재 진행 중인 자료를 버리고 새 미션을 시작할까요?');
+    expect(window.location.hash).toBe('#/');
+    confirm.mockRestore();
   });
 });

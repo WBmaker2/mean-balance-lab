@@ -124,7 +124,8 @@ label { display: flex; align-items: center; gap: 0.5rem; min-height: var(--contr
   input,
   select,
   textarea { display: none !important; }
-  .teacher-summary-table-region { overflow: visible !important; }
+  .teacher-summary-table-region { display: block !important; overflow: visible !important; }
+  .teacher-summary-mobile { display: none !important; }
   .teacher-summary table {
     width: 100%;
     min-width: 0 !important;

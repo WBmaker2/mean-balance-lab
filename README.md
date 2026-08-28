@@ -22,8 +22,8 @@
 |---|---|---|---|
 | 1. 균형 배송 | A `balance-20-a` | `[2, 4, 6, 8]` → `[5, 5, 5, 5]` | 합 20, 평균 5 |
 | 1. 균형 배송 | B `balance-24-b` | `[1, 5, 7, 11]` → `[6, 6, 6, 6]` | 합 24, 평균 6 |
-| 2. 평균 쌍둥이 | A `twins-4-a` | `[4, 4, 4, 4]` 대 `[1, 3, 5, 7]` | 평균 4·4, 범위 0·6 |
-| 2. 평균 쌍둥이 | B `twins-6-b` | `[6, 6, 6, 6]` 대 `[2, 4, 8, 10]` | 평균 6·6, 범위 0·8 |
+| 2. 평균 쌍둥이 | A `twins-4-a` | `[4, 4, 4, 4]` 대 `[1, 3, 5, 7]` | 자료 A/B 평균 4, 범위 0/6 |
+| 2. 평균 쌍둥이 | B `twins-6-b` | `[6, 6, 6, 6]` 대 `[2, 4, 8, 10]` | 자료 A/B 평균 6, 범위 0/8 |
 | 3. 튀는 값 경보 | A `outlier-5-a` | `[4, 5, 5, 6]` → `[4, 5, 5, 10]` | 합 +4, 평균 5→6 |
 | 3. 튀는 값 경보 | B `outlier-6-b` | `[5, 6, 6, 7]` → `[5, 6, 6, 15]` | 합 +8, 평균 6→8 |
 | 4. 대표값 심의 | A `review-cards-a` | `[2, 2, 2, 2, 12]` | 평균 4, 범위 10 |
@@ -45,7 +45,7 @@ npm run build
 npm run preview -- --host 127.0.0.1
 ```
 
-`npm run dev`는 개발 서버를 열고, `npm run test:e2e`는 Playwright Chromium으로 브라우저 경로를 확인합니다. `npm run build`는 `dist/`에 정적 산출물을 만들며, `npm run preview -- --host 127.0.0.1`는 그 빌드를 로컬에서 확인합니다. 이 저장소의 의존성 재현에는 `npm ci`만 사용합니다.
+`npm run dev`는 개발 서버를 열고, `npm run test:e2e`는 Playwright Chromium으로 브라우저 경로를 확인합니다. 로컬 E2E는 기본 4174 포트를 사용하고, CI는 4173을 사용합니다. 필요하면 `PLAYWRIGHT_PORT=4188 PLAYWRIGHT_REUSE_SERVER=false npm run test:e2e -- --project=chromium`처럼 포트와 서버 재사용을 명시할 수 있습니다. `npm run build`는 `dist/`에 정적 산출물을 만들며, `npm run preview -- --host 127.0.0.1`는 그 빌드를 로컬에서 확인합니다. 이 저장소의 의존성 재현에는 `npm ci`만 사용합니다.
 
 ## 학습 흐름과 키보드 조작
 
@@ -56,7 +56,10 @@ npm run preview -- --host 127.0.0.1
 - 균형 배송에서는 `마지막 이동 취소`로 바로 앞 이동을 되돌릴 수 있습니다.
 - 현재 단계의 다음 행동 버튼 하나만 강조되며, 대화상자는 `Escape`로 닫고 열었던 `업데이트 내역` 버튼으로 초점이 돌아옵니다.
 - `prefers-reduced-motion: reduce`에서는 깜빡이는 `gi-pulse` 대신 굵은 테두리와 `다음 행동` 문구를 표시합니다.
+- 단계가 바뀌면 새 `main` 영역으로 초점이 이동하고, 진행 단계에는 완료·현재·예정 상태가 글자로도 표시됩니다.
 - 375px 너비와 큰 글자에서도 핵심 흐름은 한 열로 표시되며, 색만으로 상자나 자료를 구분하지 않습니다.
+
+교사용 요약은 데스크톱·인쇄에서 표로, 640px 이하에서는 줄바꿈되는 카드 목록으로 표시합니다. VoiceOver와 실제 보조공학 사용자 승인은 이번 자동 검증 범위에서 제외했으며, 키보드·DOM 접근성·axe 검사를 수행합니다.
 
 ## 저장·개인정보·안전
 
@@ -82,10 +85,10 @@ npm run preview -- --host 127.0.0.1
 
 ## 업데이트 내역 정책
 
-화면 오른쪽 아래의 `업데이트 내역` 버튼에서 날짜·구분·변경 요약을 확인할 수 있습니다. 현재 기록에는 `2026-08-27 / 배포 / GitHub Pages 공개 배포 경로 정리`가 포함되어 있습니다. 앱을 수정할 때마다 `src/content/updateHistory.ts`에 실제 Asia/Seoul 날짜와 짧은 변경 요약을 추가하고, 버튼 대화상자에서 확인되는 기록과 함께 검증합니다.
+화면 오른쪽 아래의 `업데이트 내역` 버튼에서 날짜·구분·변경 요약을 확인할 수 있습니다. 현재 기록에는 `2026-08-28 / 개선 / 학습 단계 안내와 입력·모바일 화면 개선`과 `2026-08-27 / 배포 / GitHub Pages 공개 배포 경로 정리`가 포함되어 있습니다. 앱을 수정할 때마다 `src/content/updateHistory.ts`에 실제 Asia/Seoul 날짜와 짧은 변경 요약을 추가하고, 버튼 대화상자에서 확인되는 기록과 함께 검증합니다.
 
 ## 현재 운영 범위
 
 공개 저장소는 [`WBmaker2/mean-balance-lab`](https://github.com/WBmaker2/mean-balance-lab)이며, 공개 앱은 [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/)입니다. `main`에 반영된 변경은 [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml)에 정의된 GitHub Pages workflow를 통해 배포됩니다. 현재 검증 범위는 로컬 개발 서버와 빌드 산출물의 실행·접근성·학습 경로 확인 및 공개 Pages 경로 확인입니다.
 
-구현 구조와 세부 검증 기록은 [`2026-08-26-mean-balance-lab-implementation-plan.md`](./2026-08-26-mean-balance-lab-implementation-plan.md)와 [`docs/qa/mvp-checklist.md`](./docs/qa/mvp-checklist.md)에서 확인할 수 있습니다.
+구현 구조와 세부 검증 기록은 [`2026-08-26-mean-balance-lab-implementation-plan.md`](./2026-08-26-mean-balance-lab-implementation-plan.md), [`2026-08-28-mean-balance-lab-improvement-plan.md`](./2026-08-28-mean-balance-lab-improvement-plan.md), [`docs/qa/mvp-checklist.md`](./docs/qa/mvp-checklist.md)에서 확인할 수 있습니다.

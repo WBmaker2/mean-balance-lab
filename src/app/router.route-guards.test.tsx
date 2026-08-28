@@ -117,7 +117,7 @@ describe('learning router', () => {
     await user.type(inputs()[1]!, '4');
     await user.type(inputs()[2]!, '4');
     await user.click(screen.getAllByRole('button', { name: '계산 확인' })[0]!);
-    expect(screen.getAllByText('16 ÷ 4 = 4')).toHaveLength(2);
+    expect(screen.getAllByText(/16 ÷ 4 = 4/)).toHaveLength(2);
     expect(screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true')).toHaveLength(1);
     expect(inputs()).toHaveLength(3);
     expect(inputs()[0]).toBeEnabled();
@@ -178,7 +178,7 @@ describe('learning router', () => {
     await user.type(inputs[1]!, '4');
     await user.type(inputs[2]!, '5');
     await user.click(screen.getByRole('button', { name: '계산 확인' }));
-    expect(screen.getAllByText('20 ÷ 4 = 5')).toHaveLength(2);
+    expect(screen.getAllByText(/20 ÷ 4 = 5/)).toHaveLength(2);
     expect(screen.getByRole('button', { name: '다음 단계' })).toBeVisible();
   });
 
@@ -234,7 +234,7 @@ describe('learning router', () => {
     '#/mission/balance-delivery/balance-20-a/redistribute',
   ])('settles a complete mission-result run on the mission summary (%s)', async (hash) => {
     renderAppAt(hash, completedBalanceStateWithTwoRetries());
-    expect(await screen.findByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '1. 골고루 나누기 결과' })).toBeVisible();
     expect(window.location.hash).toBe('#/mission/balance-delivery/balance-20-a/mission-result');
   });
 });

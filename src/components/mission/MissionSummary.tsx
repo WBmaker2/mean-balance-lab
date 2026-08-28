@@ -50,10 +50,10 @@ export const MissionSummary = ({
   return (
     <section className="mission-summary" aria-labelledby={headingId}>
       {headingLevel === 'h1'
-        ? <h1 id={headingId}>{mission.title} 결과</h1>
+        ? <h1 id={headingId}>{mission.learnerTitle} 결과</h1>
         : headingLevel === 'h2'
-          ? <h2 id={headingId}>{mission.title} 결과</h2>
-          : <h3 id={headingId}>{mission.title} 결과</h3>}
+          ? <h2 id={headingId}>{mission.learnerTitle} 결과</h2>
+          : <h3 id={headingId}>{mission.learnerTitle} 결과</h3>}
       {editing ? (
         <EvidenceBuilder
           mission={mission.id}

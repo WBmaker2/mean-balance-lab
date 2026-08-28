@@ -76,4 +76,16 @@ describe('CalculationCheck', () => {
       expect(input).not.toHaveAttribute('placeholder', expect.stringContaining('5'));
     }
   });
+
+  it('asks for the first empty field before dispatching', async () => {
+    const onSubmit = vi.fn();
+    const user = userEvent.setup();
+    renderCalculation(null, onSubmit);
+    await user.click(screen.getByRole('button', { name: '계산 확인' }));
+    expect(screen.getByText('합계를 입력해 주세요.')).toBeVisible();
+    expect(screen.getByRole('spinbutton', { name: '합계' })).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('spinbutton', { name: '합계' })).toHaveAttribute('required');
+    expect(screen.getByRole('spinbutton', { name: '합계' })).toHaveAttribute('step', '1');
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
 });

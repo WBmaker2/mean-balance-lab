@@ -5,6 +5,7 @@ import { MISSIONS } from '../../content/missions';
 import { isCanonicalEvidenceRecord } from '../../domain/evaluation';
 import { routeFor } from '../../app/router';
 import { ActionButton } from '../shared/ActionButton';
+import { stageLabel } from '../../content/stages';
 
 type Difficulty = 'a' | 'b';
 
@@ -34,11 +35,25 @@ export const StartScreen = () => {
     return !(state.completedRequiredMissions.includes(mission.id) && hasCanonicalRequiredAttempt);
   });
   const dataset = nextMission?.datasets.find((candidate) => candidate.id.endsWith(difficulty)) ?? nextMission?.datasets[0];
+  const activeRun = state.activeRun;
+  const activeMission = activeRun ? MISSIONS.find((mission) => mission.id === activeRun.missionId) : undefined;
+  const activeDataset = activeRun ? activeMission?.datasets.find((candidate) => candidate.id === activeRun.datasetId) : undefined;
 
   const start = () => {
     if (!nextMission || !dataset) return;
+    if (activeRun && activeRun.missionId === nextMission.id && activeRun.datasetId === dataset.id) {
+      resume();
+      return;
+    }
+    const hasInProgressRun = activeRun && activeRun.stage !== 'mission-result';
+    if (hasInProgressRun && !window.confirm('현재 진행 중인 자료를 버리고 새 미션을 시작할까요?')) return;
     dispatch({ type: 'START_DATASET', missionId: nextMission.id, datasetId: dataset.id });
     navigate(routeFor(nextMission.id, dataset.id, 'situation').replace(/^#/, ''));
+  };
+
+  const resume = () => {
+    if (!activeRun) return;
+    navigate(routeFor(activeRun.missionId, activeRun.datasetId, activeRun.stage).replace(/^#/, ''));
   };
 
   return (
@@ -48,9 +63,18 @@ export const StartScreen = () => {
       <h1 id="start-heading">평균은 여러 값을 어떻게 대표하며, 한 값이 달라지면 평균은 왜 움직일까요?</h1>
       <h2>오늘의 목표</h2>
       <ul>{goals.map((goal) => <li key={goal}>{goal}</li>)}</ul>
+      {activeRun && activeMission && activeDataset ? (
+        <aside aria-label="진행 중인 미션">
+          <h2>진행 중인 미션</h2>
+          <p>{activeMission.learnerTitle}</p>
+          <p>자료: {activeDataset.label}</p>
+          <p>현재 단계: {stageLabel(activeRun.stage)}</p>
+          <ActionButton type="button" onClick={resume}>이어서 하기</ActionButton>
+        </aside>
+      ) : null}
       {nextMission ? (
         <>
-          <p>다음 미션: {nextMission.title}</p>
+          <p>다음 미션: {nextMission.learnerTitle}</p>
           <fieldset>
             <legend>자료 난이도</legend>
             <label>

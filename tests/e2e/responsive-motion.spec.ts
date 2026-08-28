@@ -13,7 +13,7 @@ test('patterns are visible and labelled for every balance box', async ({ page })
 
 test('large text keeps the page within the mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto('/#/');
+  await page.goto('./#/');
   await page.evaluate(() => { document.documentElement.style.fontSize = '32px'; });
   const assertNoOverflow = async () => {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
@@ -51,13 +51,17 @@ test('keeps teacher summary as the only visible print content', async ({ page })
     { width: 375, height: 3000 },
     { width: 1440, height: 900 },
   ] as const;
-  await page.goto('/#/');
+  await page.goto('./#/');
   await completeRequiredDataset(page, 'balance-delivery', 'balance-20-a');
   await completeRequiredDataset(page, 'mean-twins', 'twins-4-a');
   await completeRequiredDataset(page, 'outlier-alert', 'outlier-5-a');
   await completeRequiredDataset(page, 'representative-review', 'review-cards-a');
   await page.getByRole('button', { name: '전체 결과 보기', exact: true }).click();
   await expect(page).toHaveURL(/\/results$/);
+  await page.emulateMedia({ media: 'screen' });
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.locator('.teacher-summary-mobile')).toBeVisible();
+  await expect(page.locator('.teacher-summary-table-region')).not.toBeVisible();
 
   const extents: Array<{ bodyHeight: number; rootHeight: number; summaryHeight: number; shellAllowance: number; width: number }> = [];
   for (const viewport of printViewports) {

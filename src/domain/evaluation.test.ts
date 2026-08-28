@@ -63,8 +63,8 @@ describe('comparison feedback', () => {
   it('treats same-shape as an incorrect twins explanation even with the correct pair', () => {
     expect(evaluateComparison(getDataset('twins-4-a'), ['same-mean', 'different-spread', 'same-shape'])).toEqual({
       isCorrect: false,
-      message: '평균이 같아도 각 값과 퍼짐은 다를 수 있어요.',
-      nextAction: '점도표에서 각 값과 퍼짐을 다시 살펴보세요.',
+      message: '평균이 같아도 각 값과 흩어진 정도는 다를 수 있어요.',
+      nextAction: '점도표에서 각 값과 흩어진 정도를 다시 살펴보세요.',
     });
   });
 
@@ -72,7 +72,7 @@ describe('comparison feedback', () => {
     const dataset = getDataset('twins-4-a');
     expect(evaluateComparison(dataset, ['same-mean'])).toEqual({
       isCorrect: false,
-      message: '점들이 얼마나 퍼져 있는지도 살펴보세요.',
+      message: '점들이 얼마나 흩어져 있는지도 살펴보세요.',
       nextAction: '두 자료의 범위나 각 값을 비교해 보세요.',
     });
     expect(evaluateComparison(dataset, ['same-mean', 'different-spread'])).toEqual({
@@ -193,15 +193,15 @@ describe('evidence levels', () => {
   });
 
   it.each([
-    ['balance-20-a', '고르게 옮긴 결과, 전체 양 20을 자료 4개로 나누어 평균 5를 확인했어요.'],
-    ['balance-24-b', '고르게 옮긴 결과, 전체 양 24을 자료 4개로 나누어 평균 6를 확인했어요.'],
+    ['balance-20-a', '고르게 옮긴 결과, 전체 양은 20이고 자료 4개로 나누면 평균은 5예요.'],
+    ['balance-24-b', '고르게 옮긴 결과, 전체 양은 24이고 자료 4개로 나누면 평균은 6예요.'],
   ] as const)('keeps exact balance evidence sentence for %s', (datasetId, expected) => {
     expect(buildEvidenceSentence('balance-delivery', datasetId, ['redistribution-and-division'])).toBe(expected);
   });
 
   it.each([
-    ['twins-4-a', '두 자료의 평균은 4으로 같지만, 범위는 0과 6로 달라요.'],
-    ['twins-6-b', '두 자료의 평균은 6으로 같지만, 범위는 0과 8로 달라요.'],
+    ['twins-4-a', '두 자료의 평균은 모두 4이고, 범위는 자료 A가 0, 자료 B가 6이라서 달라요.'],
+    ['twins-6-b', '두 자료의 평균은 모두 6이고, 범위는 자료 A가 0, 자료 B가 8이라서 달라요.'],
   ] as const)('keeps exact twins evidence sentence for %s', (datasetId, expected) => {
     expect(buildEvidenceSentence('mean-twins', datasetId, ['same-mean-and-different-spread'])).toBe(expected);
   });

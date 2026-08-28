@@ -29,4 +29,12 @@ describe('TeacherSummary', () => {
     expect(print).toHaveBeenCalledOnce();
     print.mockRestore();
   });
+
+  it('renders mobile cards and retains the labelled table', () => {
+    const state = completedSession();
+    const attempts = MISSIONS.map((mission) => ({ mission, attempt: state.attempts[mission.requiredDatasetId]! }));
+    render(<TeacherSummary attempts={attempts} />);
+    expect(screen.getByRole('list', { name: '모바일 교사용 요약' })).toBeInTheDocument();
+    expect(screen.getByRole('table')).toBeInTheDocument();
+  });
 });

@@ -125,7 +125,7 @@ describe('StoragePreference', () => {
     const user = userEvent.setup();
     render(<StrictMode><App /></StrictMode>);
 
-    expect(await screen.findByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '1. 골고루 나누기 결과' })).toBeVisible();
     await user.click(screen.getByText('설정'));
     await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
 
@@ -133,8 +133,8 @@ describe('StoragePreference', () => {
     await new Promise((resolve) => window.setTimeout(resolve, 100));
     expect(sessionStorage.getItem(TAB_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(DEVICE_STORAGE_KEY)).toBeNull();
-    expect(screen.queryByRole('heading', { name: '1. 균형 배송 결과' })).not.toBeInTheDocument();
-    expect(screen.getByText('다음 미션: 1. 균형 배송')).toBeVisible();
+    expect(screen.queryByRole('heading', { name: '1. 골고루 나누기 결과' })).not.toBeInTheDocument();
+    expect(screen.getByText('다음 미션: 1. 골고루 나누기')).toBeVisible();
 
     cleanup();
     window.location.hash = '#/';
@@ -177,7 +177,7 @@ describe('StoragePreference', () => {
     const user = userEvent.setup();
     render(<StrictMode><App /></StrictMode>);
 
-    expect(await screen.findByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '1. 골고루 나누기 결과' })).toBeVisible();
     await user.click(screen.getByText('설정'));
     await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
     await new Promise((resolve) => window.setTimeout(resolve, 100));
@@ -185,7 +185,7 @@ describe('StoragePreference', () => {
     expect(window.location.hash).toBe('#/mission/balance-delivery/balance-20-a/mission-result');
     expect(sessionStorage.getItem(TAB_STORAGE_KEY)).not.toBeNull();
     expect(localStorage.getItem(DEVICE_STORAGE_KEY)).not.toBeNull();
-    expect(screen.getByRole('heading', { name: '1. 균형 배송 결과' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: '1. 골고루 나누기 결과' })).toBeVisible();
   });
 
   it('preserves the results route, state, and both keys when clearing is cancelled', async () => {
@@ -217,7 +217,7 @@ describe('StoragePreference', () => {
     const user = userEvent.setup();
     render(<StrictMode><App /></StrictMode>);
 
-    await screen.findByRole('heading', { name: '1. 균형 배송 결과' });
+    await screen.findByRole('heading', { name: '1. 골고루 나누기 결과' });
     await user.click(screen.getByText('설정'));
     await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
     await waitFor(() => expect(window.location.hash).toBe('#/'));
