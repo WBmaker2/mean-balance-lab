@@ -13,13 +13,13 @@ describe('useStageFocus', () => {
     document.getElementById('main-content')?.remove();
   });
 
-  it('focuses main after the focus key changes', () => {
+  it('focuses main on mount and after the focus key changes', () => {
     const main = document.createElement('main');
     main.id = 'main-content';
     main.tabIndex = -1;
     document.body.append(main);
     const { rerender } = render(<FocusProbe focusKey="situation" />);
-    expect(main).not.toHaveFocus();
+    expect(main).toHaveFocus();
     rerender(<FocusProbe focusKey="predict" />);
     expect(main).toHaveFocus();
   });
