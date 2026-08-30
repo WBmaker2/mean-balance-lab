@@ -129,7 +129,7 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null, o
             checked={selectedIds.includes('same-mean')}
             onChange={() => toggle('same-mean')}
           />
-          두 자료의 평균은 모두 {leftMean}입니다.
+          두 자료의 평균은 모두 {leftMean}예요.
         </label>
         <label>
           <input
@@ -137,7 +137,7 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null, o
             checked={selectedIds.includes('different-spread')}
             onChange={() => toggle('different-spread')}
           />
-          자료 B가 자료 A보다 더 흩어져 있습니다.
+          자료 B가 자료 A보다 더 흩어져 있어요.
         </label>
         <label>
           <input
@@ -145,7 +145,7 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null, o
             checked={selectedIds.includes('same-shape')}
             onChange={() => toggle('same-shape')}
           />
-          두 자료의 모양은 같습니다.
+          두 자료의 모양은 같아요.
         </label>
       </fieldset>
 
@@ -221,7 +221,7 @@ const RepresentativeComparisonPanel = ({
             checked={currentSelection === 'range-or-individual-values'}
             onChange={() => { setSelectedIds(['range-or-individual-values']); setLocalFeedback(null); }}
           />
-          범위나 각 값을 함께 살펴봐야 합니다.
+          범위나 각 값을 함께 살펴봐야 해요.
         </label>
         <label>
           <input
@@ -230,7 +230,7 @@ const RepresentativeComparisonPanel = ({
             checked={currentSelection === 'mean-always-enough'}
             onChange={() => { setSelectedIds(['mean-always-enough']); setLocalFeedback(null); }}
           />
-          평균만으로 모든 자료를 판단할 수 있습니다.
+          평균만으로 모든 자료를 판단할 수 있어요.
         </label>
       </fieldset>
       {shownFeedback ? <FeedbackPrompt {...shownFeedback} /> : null}

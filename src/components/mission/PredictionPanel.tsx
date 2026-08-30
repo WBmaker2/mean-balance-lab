@@ -1,4 +1,5 @@
 import { useEffect, useState, type Dispatch } from 'react';
+import { COMPARISON_COPY } from '../../content/copy';
 import type { LabAction } from '../../domain/session';
 import type { MissionDataset, PredictionValue } from '../../domain/types';
 import { predictionOptions } from '../../domain/prediction';
@@ -57,7 +58,7 @@ export const PredictionPanel = ({ dataset, prediction, dispatch, onAdvance }: Pr
         ))}
       </div>
       {dataset.kind === 'outlier' && prediction !== undefined ? (
-        <p role="status">가상 자료에서 바꾼 값이 커졌는지 작아졌는지를 다시 살펴보세요. 합계와 평균의 숫자는 계산 단계에서 확인해요.</p>
+        <p role="status">{COMPARISON_COPY.outlierPredictionHint}</p>
       ) : null}
       {predictionError ? <p role="alert" aria-live="assertive">먼저 평균을 예측해 보세요.</p> : null}
       <div className="action-group">

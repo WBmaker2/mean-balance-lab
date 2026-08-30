@@ -81,7 +81,7 @@ describe('OutlierDeltaPanel', () => {
     expect(screen.getByRole('button', { name: '평균이 커집니다' })).toBeVisible();
     expect(screen.getByRole('button', { name: '평균이 작아집니다' })).toBeVisible();
     expect(screen.getByRole('button', { name: '평균이 같습니다' })).toBeVisible();
-    expect(screen.getByText(/바꾼 값이 커졌는지 작아졌는지를 다시 살펴보세요/)).toBeVisible();
+    expect(screen.getByText(/바뀐 값이 커졌는지 작아졌는지 다시 살펴봐요/)).toBeVisible();
     expect(screen.queryByText(/20|24|5|6/)).not.toBeInTheDocument();
   });
 });

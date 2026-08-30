@@ -16,13 +16,13 @@ export const MISSIONS = [
     datasets: [
       {
         kind: 'balance', id: 'balance-20-a', label: '기본 구슬 상자',
-        context: '가상 포장 상자 네 개의 구슬을 고르게 나눕니다.',
+        context: '가상 포장 상자 네 개의 구슬을 고르게 나눠 봐요.',
         stages: ['situation', 'predict', 'redistribute', 'calculate', 'explain', 'mission-result'],
         expectedMean: 5, values: [2, 4, 6, 8], targetValues: [5, 5, 5, 5],
       },
       {
         kind: 'balance', id: 'balance-24-b', label: '도전 구슬 상자',
-        context: '다른 가상 포장 상자 네 개의 구슬을 고르게 나눕니다.',
+        context: '다른 가상 포장 상자 네 개의 구슬을 고르게 나눠 봐요.',
         stages: ['situation', 'predict', 'redistribute', 'calculate', 'explain', 'mission-result'],
         expectedMean: 6, values: [1, 5, 7, 11], targetValues: [6, 6, 6, 6],
       },
@@ -37,13 +37,13 @@ export const MISSIONS = [
     datasets: [
       {
         kind: 'twins', id: 'twins-4-a', label: '평균 4 카드',
-        context: '두 가상 선반의 독서 카드 수를 비교합니다.',
+        context: '두 가상 선반의 독서 카드 수를 비교해 봐요.',
         stages: ['situation', 'predict', 'calculate', 'compare', 'explain', 'mission-result'],
         expectedMean: 4, leftValues: [4, 4, 4, 4], rightValues: [1, 3, 5, 7],
       },
       {
         kind: 'twins', id: 'twins-6-b', label: '평균 6 카드',
-        context: '다른 두 가상 선반의 독서 카드 수를 비교합니다.',
+        context: '다른 두 가상 선반의 독서 카드 수를 비교해 봐요.',
         stages: ['situation', 'predict', 'calculate', 'compare', 'explain', 'mission-result'],
         expectedMean: 6, leftValues: [6, 6, 6, 6], rightValues: [2, 4, 8, 10],
       },
@@ -58,13 +58,13 @@ export const MISSIONS = [
     datasets: [
       {
         kind: 'outlier', id: 'outlier-5-a', label: '4 증가 바구니',
-        context: '가상 수확 바구니 하나의 수를 바꾸어 평균 변화를 살펴봅니다.',
+        context: '가상 수확 바구니 하나의 수를 바꿔 평균 변화를 살펴봐요.',
         stages: ['situation', 'predict', 'calculate', 'compare', 'explain', 'mission-result'],
         expectedMean: 5, beforeValues: [4, 5, 5, 6], afterValues: [4, 5, 5, 10], changedIndex: 3,
       },
       {
         kind: 'outlier', id: 'outlier-6-b', label: '8 증가 바구니',
-        context: '다른 가상 수확 바구니 하나의 수를 바꾸어 평균 변화를 살펴봅니다.',
+        context: '다른 가상 수확 바구니 하나의 수를 바꿔 평균 변화를 살펴봐요.',
         stages: ['situation', 'predict', 'calculate', 'compare', 'explain', 'mission-result'],
         expectedMean: 6, beforeValues: [5, 6, 6, 7], afterValues: [5, 6, 6, 15], changedIndex: 3,
       },
@@ -79,7 +79,7 @@ export const MISSIONS = [
     datasets: [
       {
         kind: 'representativeness', id: 'review-cards-a', label: '독서 카드 배치',
-        context: '가상 선반별 독서 카드 배치를 평균만으로 설명할 수 있는지 살펴봅니다.',
+        context: '가상 선반별 독서 카드 배치를 평균만으로 설명할 수 있는지 살펴봐요.',
         stages: ['situation', 'predict', 'calculate', 'compare', 'explain', 'mission-result'],
         expectedMean: 4, values: [2, 2, 2, 2, 12],
         acceptedEvidenceIds: ['mean-use-and-limit', 'range-or-individual-values'],
@@ -87,7 +87,7 @@ export const MISSIONS = [
       },
       {
         kind: 'representativeness', id: 'review-baskets-b', label: '보급 상자 배치',
-        context: '가상 보급 상자 네 곳의 물건 수를 평균만으로 설명할 수 있는지 살펴봅니다.',
+        context: '가상 보급 상자 네 곳의 물건 수를 평균만으로 설명할 수 있는지 살펴봐요.',
         stages: ['situation', 'predict', 'calculate', 'compare', 'explain', 'mission-result'],
         expectedMean: 3, values: [1, 1, 1, 9],
         acceptedEvidenceIds: ['mean-use-and-limit', 'range-or-individual-values'],

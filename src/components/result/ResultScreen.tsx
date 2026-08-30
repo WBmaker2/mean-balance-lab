@@ -7,6 +7,7 @@ import { ActionButton } from '../shared/ActionButton';
 import { MissionSummary } from '../mission/MissionSummary';
 import { TeacherSummary } from './TeacherSummary';
 import { SectionIntro } from '../shared/SectionIntro';
+import { SAFETY_COPY } from '../../content/copy';
 
 const requiredAttempts = (attempts: ReturnType<typeof useLabSession>['state']['attempts']) => MISSIONS.map((mission) => {
   const attempt = attempts[mission.requiredDatasetId];
@@ -73,8 +74,8 @@ export const ResultScreen = () => {
         tone="green"
       />
       <div className="result-safety-notes" aria-label="결과를 읽는 방법">
-        <p className="model-boundary">이 활동은 실제 세계를 정밀하게 측정하지 않는 교육용 이산 모형입니다.</p>
-        <p className="fairness-notice">평균 하나가 공정성이나 개인의 가치를 결정하지 않습니다.</p>
+        <p className="model-boundary">{SAFETY_COPY.learnerModelBoundary}</p>
+        <p className="fairness-notice">{SAFETY_COPY.learnerFairness}</p>
       </div>
       <section className="mission-result-cards" aria-labelledby="mission-results-heading">
         <h2 id="mission-results-heading">미션별 근거</h2>

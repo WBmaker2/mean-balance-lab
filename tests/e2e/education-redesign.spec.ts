@@ -3,10 +3,10 @@ import { expect, test } from '@playwright/test';
 test('keeps the start screen focused on one clear next action', async ({ page }) => {
   await page.goto('./#/');
 
-  await expect(page.getByRole('region', { name: '평균은 여러 값을 어떻게 대표하며, 한 값이 달라지면 평균은 왜 움직일까요?' })).toBeVisible();
+  await expect(page.getByRole('region', { name: '평균은 여러 값을 어떻게 나타내고, 값 하나가 달라지면 평균은 어떻게 달라질까요?' })).toBeVisible();
   await expect(page.getByRole('region', { name: '오늘의 목표' })).toBeVisible();
   await expect(page.getByRole('region', { name: /다음 미션/ })).toBeVisible();
-  await expect(page.getByRole('group', { name: '자료 난이도' })).toBeVisible();
+  await expect(page.getByRole('group', { name: '자료 선택' })).toBeVisible();
   await expect(page.locator('[data-current-action="true"]')).toHaveCount(1);
   await expect(page.getByRole('button', { name: '미션 시작', exact: true })).toHaveClass(/gi-pulse/);
 });

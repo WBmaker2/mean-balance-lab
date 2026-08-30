@@ -88,4 +88,30 @@ describe('PredictionPanel', () => {
     expect(selectedAfterRerender).toHaveAttribute('data-selected', 'true');
     expect(selectedAfterRerender).toHaveClass('choice-selected');
   });
+
+  it('uses short, actionable feedback after an outlier prediction', async () => {
+    const user = userEvent.setup();
+    const view = render(
+      <PredictionPanel
+        dataset={getDataset('outlier-5-a')}
+        prediction={undefined}
+        dispatch={vi.fn()}
+        onAdvance={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: '평균이 커집니다' }));
+    view.rerender(
+      <PredictionPanel
+        dataset={getDataset('outlier-5-a')}
+        prediction="increase"
+        dispatch={vi.fn()}
+        onAdvance={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '바뀐 값이 커졌는지 작아졌는지 다시 살펴봐요. 합계와 평균의 숫자는 계산 단계에서 확인해요.',
+    );
+  });
 });

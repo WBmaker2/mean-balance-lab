@@ -33,26 +33,32 @@ const nextHeadingTag = (level: EvidenceHeadingLevel): 'h2' | 'h3' | 'h4' | 'h5' 
 
 type ChoiceOption = { id: EvidenceChoiceId; label: string };
 
+const learnerEvidenceLabel = (id: EvidenceChoiceId): string => {
+  if (id === 'mean-use-and-limit') return '평균은 여러 값을 한 수로 살펴보는 데 도움이 돼요.';
+  if (id === 'range-or-individual-values') return '범위와 각 값도 함께 봐야 해요.';
+  return EVIDENCE_FRAGMENTS[id];
+};
+
 const OPTIONS: Readonly<Record<MissionId, readonly ChoiceOption[]>> = {
   'balance-delivery': [
-    { id: 'redistribution-and-division', label: EVIDENCE_FRAGMENTS['redistribution-and-division'] },
-    { id: 'redistribution-only', label: EVIDENCE_FRAGMENTS['redistribution-only'] },
-    { id: 'calculation-only', label: EVIDENCE_FRAGMENTS['calculation-only'] },
+    { id: 'redistribution-and-division', label: learnerEvidenceLabel('redistribution-and-division') },
+    { id: 'redistribution-only', label: learnerEvidenceLabel('redistribution-only') },
+    { id: 'calculation-only', label: learnerEvidenceLabel('calculation-only') },
   ],
   'mean-twins': [
-    { id: 'same-mean-and-different-spread', label: EVIDENCE_FRAGMENTS['same-mean-and-different-spread'] },
-    { id: 'same-mean-only', label: EVIDENCE_FRAGMENTS['same-mean-only'] },
-    { id: 'same-shape', label: EVIDENCE_FRAGMENTS['same-shape'] },
+    { id: 'same-mean-and-different-spread', label: learnerEvidenceLabel('same-mean-and-different-spread') },
+    { id: 'same-mean-only', label: learnerEvidenceLabel('same-mean-only') },
+    { id: 'same-shape', label: learnerEvidenceLabel('same-shape') },
   ],
   'outlier-alert': [
-    { id: 'sum-change-and-mean-change', label: EVIDENCE_FRAGMENTS['sum-change-and-mean-change'] },
-    { id: 'direction-only', label: EVIDENCE_FRAGMENTS['direction-only'] },
-    { id: 'guess-only', label: EVIDENCE_FRAGMENTS['guess-only'] },
+    { id: 'sum-change-and-mean-change', label: learnerEvidenceLabel('sum-change-and-mean-change') },
+    { id: 'direction-only', label: learnerEvidenceLabel('direction-only') },
+    { id: 'guess-only', label: learnerEvidenceLabel('guess-only') },
   ],
   'representative-review': [
-    { id: 'mean-use-and-limit', label: EVIDENCE_FRAGMENTS['mean-use-and-limit'] },
-    { id: 'range-or-individual-values', label: EVIDENCE_FRAGMENTS['range-or-individual-values'] },
-    { id: 'mean-always-enough', label: EVIDENCE_FRAGMENTS['mean-always-enough'] },
+    { id: 'mean-use-and-limit', label: learnerEvidenceLabel('mean-use-and-limit') },
+    { id: 'range-or-individual-values', label: learnerEvidenceLabel('range-or-individual-values') },
+    { id: 'mean-always-enough', label: learnerEvidenceLabel('mean-always-enough') },
   ],
 };
 
@@ -165,13 +171,13 @@ export const EvidenceBuilder = ({
     <section className="stage-panel stage-panel-explain evidence-panel" data-stage="explain" aria-labelledby={headingId}>
       <div className="stage-heading">
         <HeadingTag id={headingId}>근거 문장을 완성해 볼까요?</HeadingTag>
-        <p className="stage-description">검토한 근거를 골라 고정된 문장을 완성해 보세요.</p>
+        <p className="stage-description">살펴본 근거를 골라 문장을 완성해 보세요.</p>
       </div>
 
       {isRepresentative(mission) ? (
         <aside className="safety-note" aria-label="대표값 안전 안내">
-          <p>{SAFETY_COPY.usefulness}</p>
-          <p>{SAFETY_COPY.fairness}</p>
+          <p>{SAFETY_COPY.learnerUsefulness}</p>
+          <p>{SAFETY_COPY.learnerFairness}</p>
         </aside>
       ) : null}
 
