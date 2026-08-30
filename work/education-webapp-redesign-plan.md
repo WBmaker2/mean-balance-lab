@@ -186,7 +186,7 @@ git diff --check
 
 ### Task 12 implementation record
 
-2026-08-30 14:50 KST 기준 이미지 중심 보강을 작업 트리에 구현했습니다. `npm run check`와 전체 Chromium 27개가 통과했고, 데스크톱·모바일 캡처에서 생성 빈 트레이 underlay와 DOM 오버레이를 확인했습니다. 후속 변경은 아직 커밋·push·배포하지 않았습니다.
+2026-08-30 14:50 KST 기준 이미지 중심 보강을 구현했습니다. `npm run check`와 전체 Chromium 27개가 통과했고, 데스크톱·모바일 캡처에서 생성 빈 트레이 underlay와 DOM 오버레이를 확인했습니다. 이후 사용자 승인에 따라 `759685a`로 커밋·push했으며 GitHub Actions run `33296397026`으로 Pages 배포를 완료했습니다.
 
 ## Initial audit findings
 
@@ -628,4 +628,4 @@ PLAYWRIGHT_PORT=4188 PLAYWRIGHT_REUSE_SERVER=false npx playwright test --project
 - [ ] 계획·감사·자산·디자인 시스템·최종 보고서의 경로가 명확하고 자리표시자 표현을 사용하지 않았습니다.
 - [ ] 단일 소스 파일 500줄 미만과 실제 결과 기록 단계가 포함되었습니다.
 - [ ] VoiceOver와 실제 보조공학 사용자 승인을 범위 밖으로 명시했으며, 이를 완료 증거로 과장하지 않습니다.
-- [x] Task 12 이미지 중심 보강은 생성 자산 안전 검토, DOM 데이터 소유, HashRouter same-page 이동, 320/375px·reduced-motion·27개 Chromium 검증과 문서 기록을 완료했으며 커밋·push·배포는 대기 상태입니다.
+- [x] Task 12 이미지 중심 보강은 생성 자산 안전 검토, DOM 데이터 소유, HashRouter same-page 이동, 320/375px·reduced-motion·27개 Chromium 검증과 문서 기록을 완료했으며 `759685a` 커밋·push·Pages 배포(run `33296397026`)까지 마쳤습니다.

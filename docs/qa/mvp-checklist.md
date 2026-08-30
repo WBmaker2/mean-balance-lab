@@ -95,7 +95,7 @@ VoiceOver 및 실제 보조공학 사용자 승인은 이 자동·로컬 검증 
 
 ## Image-centric follow-up verification (2026-08-30)
 
-이번 항목은 공개 배포 이전 작업 트리에서 수행한 이미지 중심 보강 검증입니다. 이전 `Published redesign verification`과 섞어 공개 릴리스 증거로 해석하지 않습니다.
+이번 항목은 이미지 중심 보강을 공개 배포한 뒤 로컬·공개 경로에서 수행한 검증입니다. 이전 `Published redesign verification`과 구분해 최신 릴리스 증거를 함께 기록합니다.
 
 | 항목 | 증거 | 결과 |
 |---|---|---|
@@ -107,6 +107,7 @@ VoiceOver 및 실제 보조공학 사용자 승인은 이 자동·로컬 검증 
 | 반응형·모션·접근성 | 375/320px overflow 0, 44px controls, reduced-motion 정적 상태, current action 1개, serious/critical axe 0, keyboard learner flow 통과 | 통과 |
 | 외부 요청·개인정보 | 런타임 external request 0, 원격 이미지·폰트·API 0, 학생 식별 입력 0; 로컬 PNG 정적 import 1개 | 통과 |
 | 시각 확인 | `/private/tmp/mean-balance-desktop.png` 1280px, `/private/tmp/mean-balance-mobile.png` 390px에서 노트·트레이·작업대·DOM overlay 확인 | 통과 — 캡처는 로컬 임시 산출물 |
-| 릴리스 경계 | 이번 보강 변경은 커밋·push·GitHub Pages 배포·HVC 등록을 실행하지 않음 | 대기 — 사용자 별도 승인 필요 |
+| 공개 릴리스 | 커밋 `759685a`, [GitHub Actions run `33296397026`](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33296397026) 성공, 공개 URL에서 27개 Chromium 테스트 통과 | 통과 |
+| 릴리스 경계 | 이미지 중심 보강은 커밋·push·GitHub Pages 배포까지 완료했으며 HVC 등록·갤러리 동기화는 실행하지 않음 | 통과 — HVC는 별도 작업 |
 
 VoiceOver 및 실제 보조공학 사용자 승인은 이 후속 자동·로컬 검증 범위에도 포함하지 않습니다.
