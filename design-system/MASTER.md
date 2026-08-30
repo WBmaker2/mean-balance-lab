@@ -17,6 +17,7 @@
 
 - `src/assets/notebook/bench-illustration-v2.png`는 빈 트레이와 작업대의 분위기만 제공하는 장식 레이어입니다. 이미지에 읽을 수 있는 글자·숫자·수식·표·로고·버튼·실존 인물·사실을 넣지 않습니다.
 - 장식 `<img>`는 `alt=""`, `aria-hidden="true"`, `pointer-events: none`을 사용하고, 같은 영역의 초기 수량·현재 수량·평균·상태는 DOM 텍스트와 기존 컨트롤로 중복 제공해야 합니다.
+- `src/components/mission/QuantityDots.tsx`가 그리는 동그라미는 현재 수량을 시각적으로 보여 주는 DOM 장식이며 `aria-hidden="true"`를 유지합니다. 각 바구니의 `data-dot-count`와 기존 현재 수량 텍스트·`LiveRegion`은 같은 `currentValues`에서 파생되어야 하며, raster 이미지에 숫자나 동그라미를 굽지 않습니다.
 - 생성 결과가 흐리거나 학습 의미를 오도하면 이미지 import를 제거하고 기존 CSS 작업대로 되돌립니다. 원본 favicon과 DOM 패턴은 삭제·덮어쓰지 않습니다.
 
 ## Token architecture

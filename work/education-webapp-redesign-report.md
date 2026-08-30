@@ -8,6 +8,7 @@
 - 이전 릴리스 변경: 프레젠테이션·레이아웃·카피 계층·상태 피드백을 교체하고 평균 계산·판정·라우팅·저장·고정 가상 자료 계약은 보존
 - 이전 릴리스 상태: 커밋, 원격 push, GitHub Pages 배포 완료
 - 이번 후속 변경: 2026-08-30 이미지 중심 노트 작업대 보강을 구현하고 `759685a`로 `main`에 커밋·push했으며 GitHub Pages 배포 완료
+- 이번 추가 변경: 2026-08-30 현재 수량 원형 요소 실시간 시뮬레이션을 작업 트리에 구현하고 로컬 검증 완료; 이 추가 변경은 아직 커밋·push·GitHub Pages 배포하지 않음
 - 실행하지 않음: HVC 등록·갤러리 동기화
 - VoiceOver 및 실제 보조공학 사용자 승인은 검증 범위에서 제외
 
@@ -35,7 +36,8 @@ Impeccable build-phase의 hero·responsive 비교 점수는 각각 약 `0.5373`,
 - `src/components/mission/MissionScreen.tsx`: 왼쪽 맥락, 중앙 stage workbench, 오른쪽 진행/검증 장부의 3열 구조를 제공하고 640px 이하에서 한 열로 쌓습니다.
 - `src/components/mission/RedistributionPanel.tsx`: `처음 자료` semantic tray, `현재 작업대`, `1개씩 옮기기` 연결 문장, 현재 수량, `합계 ÷ 자료 개수 = 평균` 힌트를 추가했습니다. 보이는 버튼은 어린이용으로 짧게 쓰고 full action은 `aria-label`로 보존했습니다.
 - `src/components/layout/UtilityToolbar.tsx`: 노트·기록·설정 앵커와 학생 정보, 장식 inline SVG를 한 줄 도구 모음으로 제공하며 HashRouter 경로를 바꾸지 않고 같은 화면 목적지로 이동합니다.
-- `src/components/mission/BalanceIllustration.tsx`: `src/assets/notebook/bench-illustration-v2.png`를 `alt=""`·`aria-hidden="true"` 장식 레이어로 배치하고 초기/현재 수량·평균·균형 상태는 DOM 오버레이와 figcaption으로 제공합니다.
+- `src/components/mission/BalanceIllustration.tsx`: `src/assets/notebook/bench-illustration-v2.png`를 `alt=""`·`aria-hidden="true"` 장식 레이어로 배치하고 초기/현재 수량·평균·균형 상태는 DOM 오버레이와 figcaption으로 제공합니다. 현재 수량은 `QuantityDots` DOM 레이어로 트레이 안에서 실시간 갱신합니다.
+- `src/components/mission/QuantityDots.tsx`: `currentValues`의 각 값만큼 장식 동그라미를 만들고 바구니·동그라미 수를 `data-*` 계약으로 노출합니다. 동그라미는 `aria-hidden="true"`이며 학습 정보는 기존 텍스트와 `LiveRegion`이 소유합니다.
 - `src/styles/illustrations.css`: 이미지 underlay, 수량 오버레이, 하단 행동 표면, 960/640/375px 반응형, reduced-motion 정적 상태를 토큰으로 정의했습니다.
 - `src/components/layout/ProgressRail.tsx`, `src/components/layout/ArtifactTrail.tsx`: 현재 단계 하나만 코발트로 강조하고 완료·예정 상태와 검증된 산출물만 기록합니다.
 
@@ -49,8 +51,8 @@ Impeccable build-phase의 hero·responsive 비교 점수는 각각 약 `0.5373`,
 
 | 검증 | 실행 결과 | 판정 |
 |---|---|---|
-| `npm run check` | `tsc -b` exit 0; Vitest 31 files / 258 tests passed; Vite build exit 0, `dist/index.html` 및 `bench-illustration-v2` hashed asset 생성 | 통과 |
-| Playwright Chromium | `PLAYWRIGHT_PORT=4192 PLAYWRIGHT_REUSE_SERVER=false npx --no-install playwright test --project=chromium` → 27 passed | 통과 |
+| `npm run check` | `tsc -b` exit 0; Vitest 32 files / 260 tests passed; Vite build exit 0, `dist/index.html` 및 `bench-illustration-v2` hashed asset 생성 | 통과 |
+| Playwright Chromium | `PLAYWRIGHT_PORT=4194 PLAYWRIGHT_REUSE_SERVER=false npx --no-install playwright test --project=chromium` → 29 passed | 통과 |
 | 학습 흐름 | 4개 필수 미션, 선택 B 세트, 재배분·계산·비교·근거·결과·새로고침·기록 복원을 버튼/키보드로 완주 | 통과 |
 | 접근성 DOM/axe | current action 정확히 1개, `aria-current="step"`, live region, dialog focus, 44px controls, serious/critical axe 위반 0 | 통과 |
 | 반응형 | 375px overflow 0, 큰 글자 32px, 640px 이하 한 열, 모바일 스크린샷 390×3087 | 통과 |
@@ -60,7 +62,7 @@ Impeccable build-phase의 hero·responsive 비교 점수는 각각 약 `0.5373`,
 | 파일 크기 | `src/styles/components.css` 477줄, 나머지 단일 소스 파일 500줄 미만 | 통과 |
 | 작업 트리 위생 | `git diff --check` 통과; 계획 문서의 명령을 제외한 placeholder 검색 0건 | 통과 |
 
-첫 번째 권한 없는 macOS Chromium 실행은 `mach_port_rendezvous_mac.mm` Permission denied로 브라우저가 시작되지 않았습니다. 같은 서버를 재사용해 권한 승인된 실행을 한 번 수행했고 위 25개 테스트가 통과했습니다. 이는 앱 실패가 아니라 로컬 브라우저 실행 환경 차이로 기록합니다.
+첫 번째 권한 없는 macOS Chromium 실행은 `mach_port_rendezvous_mac.mm` Permission denied로 브라우저가 시작되지 않았습니다. 권한 승인된 실행에서는 동그라미 통합 선택기 수정 후 위 29개 테스트가 통과했습니다. 이는 앱 실패가 아니라 로컬 브라우저 실행 환경 차이로 기록합니다.
 
 자동 DOM·axe·Playwright 결과는 실제 초등학생·실제 기기·VoiceOver 승인과 같은 의미가 아닙니다. 실제 교실 기기와 스크린리더를 포함한 별도 수동 사용성 승인은 아직 수행하지 않았습니다.
 
@@ -79,8 +81,16 @@ Impeccable build-phase의 hero·responsive 비교 점수는 각각 약 `0.5373`,
 
 - 생성 자산: `src/assets/notebook/bench-illustration-v2.png` (1896×830, 1.3MB). `imagegen` 프롬프트에 빈 트레이·아이보리 작업대·글자/숫자/수식/표/로고/사람/버튼 없음과 DOM 오버레이 사용을 명시했고, `view_image`로 결과를 확인했습니다.
 - 자동 테스트: `npm run check` → typecheck exit 0, Vitest 31 files / 258 tests passed, Vite build exit 0.
-- 브라우저 테스트: `PLAYWRIGHT_PORT=4190 PLAYWRIGHT_REUSE_SERVER=false npx --no-install playwright test --project=chromium` → 27 passed (14.9s). 새 toolbar 목적지·장식 이미지 `naturalWidth=1896`·DOM 수량·375px overflow·reduced motion·axe·키보드 경로를 포함합니다.
+- 자동 테스트: `npm run check` → typecheck exit 0, Vitest 32 files / 260 tests passed, Vite build exit 0.
+- 브라우저 테스트: `PLAYWRIGHT_PORT=4194 PLAYWRIGHT_REUSE_SERVER=false npx --no-install playwright test --project=chromium` → 29 passed. 새 toolbar 목적지·장식 이미지 `naturalWidth=1896`·DOM 수량·375px overflow·reduced motion·axe·키보드 경로를 포함합니다.
 - 로컬 시각 확인: 1280px 및 390px 캡처에서 질문/작업대/진행/근거/하단 행동 순서, 이미지 underlay와 DOM 오버레이를 확인했습니다. 캡처는 `/private/tmp/mean-balance-desktop.png`, `/private/tmp/mean-balance-mobile.png`에만 남겼습니다.
 - HashRouter 안전성: toolbar same-page link 클릭 시 `window.location.hash`가 기존 학습 경로를 유지하고 목적지 요소에 초점이 이동하는 단위 테스트를 추가했습니다.
 - 후속 변경은 `759685a`로 커밋·push했고 GitHub Pages run `33296397026`으로 배포했습니다. 공개 URL에서 동일한 이미지·DOM 오버레이·도구 모음 학습 경로를 확인했습니다.
 - VoiceOver와 실제 보조공학 사용자 승인은 이번 자동 검증 범위에서 제외합니다.
+
+## Live quantity dot simulation verification (2026-08-30)
+
+- `QuantityDots` 단위 테스트는 `[2,4,6,8]`에서 20개를 렌더링하고 `[3,4,6,7]`로 다시 렌더링할 때 전체 20개와 바구니별 수를 보존하는지 확인합니다.
+- `education-redesign.spec.ts`는 실제 버튼 이동 뒤 `data-current-values="3,4,6,7"`, 바구니별 `data-dot-count="3,4,6,7"`, 동그라미 총 20개, 현재 수량 텍스트를 확인합니다.
+- CSS 캡처에서 1280px·390px 화면의 동그라미가 네 트레이 내부에 놓이는 것을 확인했고, reduced-motion에서는 `animation-name: none`을 확인했습니다.
+- 이 추가 변경은 현재 작업 트리에만 있으며 커밋·push·GitHub Pages 배포를 실행하지 않았습니다. 공개 URL은 이전 릴리스 상태입니다.

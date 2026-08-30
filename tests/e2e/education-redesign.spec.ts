@@ -94,3 +94,40 @@ test('keeps balance values in DOM beside the loaded decorative tray', async ({ p
   await expect(figure).toContainText('평균: 5');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
+
+test('updates the basket dots immediately when one item moves', async ({ page }) => {
+  await page.goto('./#/');
+  await page.getByRole('button', { name: '미션 시작', exact: true }).click();
+  await page.getByRole('button', { name: '다음: 평균 예측', exact: true }).click();
+  await page.getByRole('button', { name: '평균 5', exact: true }).click();
+  await page.getByRole('button', { name: '다음 단계', exact: true }).click();
+
+  const visualization = page.locator('[data-visualization="quantity-dots"]');
+  const baskets = visualization.locator('[data-basket-index]');
+  await expect(visualization).toHaveAttribute('data-current-values', '2,4,6,8');
+  await expect(visualization.locator('.quantity-dot')).toHaveCount(20);
+  await expect(baskets.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-dot-count'))))
+    .resolves.toEqual(['2', '4', '6', '8']);
+
+  await page.getByRole('button', { name: '4번 상자에서 1개 꺼내기' }).click();
+  await page.getByRole('button', { name: '1번 상자에 1개 넣기' }).click();
+
+  await expect(visualization).toHaveAttribute('data-current-values', '3,4,6,7');
+  await expect(visualization.locator('.quantity-dot')).toHaveCount(20);
+  await expect(baskets.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-dot-count'))))
+    .resolves.toEqual(['3', '4', '6', '7']);
+  await expect(page.getByLabel('현재 상자 수량')).toHaveText('현재 수량 3, 4, 6, 7');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+
+test('keeps basket dots static when reduced motion is requested', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('./#/');
+  await page.getByRole('button', { name: '미션 시작', exact: true }).click();
+  await page.getByRole('button', { name: '다음: 평균 예측', exact: true }).click();
+  await page.getByRole('button', { name: '평균 5', exact: true }).click();
+  await page.getByRole('button', { name: '다음 단계', exact: true }).click();
+
+  await expect(page.locator('[data-visualization="quantity-dots"] .quantity-dot').first())
+    .toHaveCSS('animation-name', 'none');
+});

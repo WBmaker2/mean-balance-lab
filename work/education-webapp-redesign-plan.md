@@ -591,6 +591,52 @@ rg -n "TBD|TODO|FIXME|적절히 처리|나중에 작성|Task [0-9]+과 동일" w
 - [ ] 통과 확인: `npm run check`, Playwright 전체 Chromium, `git diff --check`, source 줄 수·placeholder 검색.
 - [ ] 합격: serious/critical axe violation 0, current action 정확히 1개, 컨트롤 44px 이상, overflow 0, public deployment·VoiceOver 승인을 완료 증거로 제시하지 않습니다.
 
+### Task 13 — 현재 수량 원형 요소 실시간 시뮬레이션
+
+**Goal and scope**
+
+`BalanceIllustration`의 빈 트레이 장식 위에 현재 바구니 수량만큼 동그라미를 DOM으로 표시합니다. `MOVE_ONE`과 `UNDO_MOVE`가 갱신하는 `currentValues`를 단일 데이터 원천으로 사용하여, 학생이 1개를 옮길 때 출발 바구니의 동그라미 하나가 사라지고 도착 바구니에 하나가 즉시 나타나도록 합니다. 기존 생성 PNG는 트레이 선과 종이 분위기만 담당하며 숫자·동그라미·수식·상태를 포함하지 않습니다. 초기 수량·현재 수량·평균·상태 텍스트와 기존 버튼/리듀서는 변경하지 않습니다.
+
+**Files**
+
+- Create: `src/components/mission/QuantityDots.tsx`
+- Create: `src/components/mission/QuantityDots.test.tsx`
+- Modify: `src/components/mission/BalanceIllustration.tsx`
+- Modify: `src/components/mission/BalanceIllustration.test.tsx`
+- Modify: `src/styles/illustrations.css`
+- Modify: `tests/e2e/education-redesign.spec.ts`
+- Modify: `src/content/updateHistory.ts`
+- Modify: `src/components/update/UpdateHistoryDialog.test.tsx`
+- Modify: `design-system/MASTER.md`
+- Modify: `work/education-webapp-redesign-assets.md`
+- Modify: `work/education-webapp-redesign-report.md`
+- Modify: `docs/qa/mvp-checklist.md`
+
+**Interfaces and contracts**
+
+- `QuantityDotsProps`는 `{ values: readonly number[]; label: string }`를 공개하고, `values[index]`를 `index + 1`번 바구니의 표시 개수로 사용합니다.
+- `QuantityDots`는 `data-visualization="quantity-dots"`, 각 바구니 그룹의 `data-basket-index`·`data-dot-count`, 각 동그라미의 `data-dot-index`를 제공합니다. 시각 요소 전체는 `aria-hidden="true"`이며 학습 정보는 기존 DOM 텍스트·`LiveRegion`이 소유합니다.
+- `BalanceIllustration`은 `currentValues`를 `QuantityDots`에 전달하고 `data-current-values`를 쉼표로 구분한 상태 값으로 유지합니다. `initialValues`·`meanValue`·`balanced` 공개 타입은 변경하지 않습니다.
+- 각 바구니는 CSS grid/flex 슬롯으로 정렬하며 동그라미 크기·간격은 320px부터 1280px까지 축소 가능합니다. 고정 픽셀 좌표, canvas, 외부 이미지·폰트·요청은 사용하지 않습니다.
+- 동그라미 추가·삭제에는 240ms 이하의 opacity/transform transition만 사용하고, `prefers-reduced-motion: reduce`에서는 transition/animation을 `none`으로 만들어 즉시 정적인 수량을 보여 줍니다.
+
+**TDD order and acceptance**
+
+1. **실패 테스트 작성:** `QuantityDots.test.tsx`에서 `[2, 4, 6, 8]`이 네 그룹의 `data-dot-count`와 총 20개 동그라미를 만드는지, `aria-hidden="true"`와 `data-visualization`을 확인합니다. 같은 렌더러를 `[3, 4, 6, 7]`로 다시 렌더링해 그룹별 3·4·6·7개로 즉시 갱신되는지 검증합니다.
+2. **실패 확인:** `npm test -- --run src/components/mission/QuantityDots.test.tsx src/components/mission/BalanceIllustration.test.tsx`가 컴포넌트와 연결 계약 부재로 실패하는 것을 확인합니다.
+3. **최소 구현:** `QuantityDots.tsx`에서 값 배열을 순회해 동그라미를 생성하고, `BalanceIllustration.tsx`의 이미지 stage 위에 현재 수량 슬롯을 배치합니다. `illustrations.css`에 반응형 grid, `dot-pop` transition, reduced-motion 대체를 추가합니다. 동적 숫자·상태는 텍스트 노드로 계속 유지합니다.
+4. **단위 테스트 통과:** 위 선택 테스트가 통과하고 기존 `RedistributionPanel.test.tsx`의 이동·되돌리기·알림 계약이 그대로 통과합니다.
+5. **브라우저 통합 테스트:** `tests/e2e/education-redesign.spec.ts`에서 재배분 화면 진입 후 초기 20개를 확인하고, 4번에서 1번으로 이동했을 때 DOM 동그라미 수가 `[3, 4, 6, 7]`로 바뀌며 전체 20개를 보존하는지 확인합니다. `naturalWidth=1896`, 이미지 장식 속성, 375px 가로 overflow 0, 키보드 이동, reduced-motion 정적 상태를 함께 검증합니다.
+6. **합격 기준:** `npm run check`, 전체 Chromium E2E, `git diff --check`, placeholder 검색이 모두 exit 0이고, 320/375/768/1280px에서 동그라미가 바구니 밖으로 겹치지 않습니다. 초점 가능한 컨트롤·수량 텍스트·`LiveRegion`은 기존 접근성 계약을 유지하고, 실제 수량은 생성 이미지에 들어가지 않습니다.
+
+**Rollback**
+
+`BalanceIllustration.tsx`에서 `QuantityDots` import와 슬롯을 제거하고 `illustrations.css`의 `.balance-dot-grid`, `.balance-dot-basket`, `.quantity-dot` 규칙을 삭제하면 기존 빈 트레이 underlay와 텍스트 오버레이로 되돌아갑니다. `currentValues`·리듀서·도메인 계산은 롤백 대상이 아닙니다.
+
+**Implementation record**
+
+2026-08-30 승인 후 구현을 완료했습니다. 사실·정체성 이미지 생성이 필요하지 않아 새 raster 자산을 만들지 않고, 기존 로컬 장식 PNG와 DOM 원형 요소를 조합했습니다. 실패 테스트에서 컴포넌트 부재·동그라미 0개를 확인한 뒤 최소 구현을 적용했으며, 선택 Vitest 10개·전체 Vitest 260개·전체 Chromium 29개·모바일 캡처·reduced-motion 확인을 통과했습니다. 실제 날짜와 변경 요약은 `src/content/updateHistory.ts`에 기록했습니다. 커밋·push·배포는 사용자 별도 승인 전까지 실행하지 않습니다.
+
 ## Future commands and expected results
 
 구현 중 사용할 명령과 기대 결과는 다음과 같습니다. 계획 저장 단계에는 실행하지 않습니다.
@@ -629,3 +675,4 @@ PLAYWRIGHT_PORT=4188 PLAYWRIGHT_REUSE_SERVER=false npx playwright test --project
 - [ ] 단일 소스 파일 500줄 미만과 실제 결과 기록 단계가 포함되었습니다.
 - [ ] VoiceOver와 실제 보조공학 사용자 승인을 범위 밖으로 명시했으며, 이를 완료 증거로 과장하지 않습니다.
 - [x] Task 12 이미지 중심 보강은 생성 자산 안전 검토, DOM 데이터 소유, HashRouter same-page 이동, 320/375px·reduced-motion·27개 Chromium 검증과 문서 기록을 완료했으며 `759685a` 커밋·push·Pages 배포(run `33296397026`)까지 마쳤습니다.
+- [x] Task 13 현재 수량 원형 요소 시뮬레이션은 `QuantityDotsProps` 계약, `[2,4,6,8] → [3,4,6,7]` 실시간 갱신, 전체 20개 보존, 320/375px 트레이 정렬, reduced-motion 정적 상태, Vitest 260개·Chromium 29개 검증과 문서 기록을 완료했습니다. 현재 변경은 작업 트리에만 있으며 커밋·push·배포는 실행하지 않았습니다.

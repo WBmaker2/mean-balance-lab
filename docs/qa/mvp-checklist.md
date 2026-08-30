@@ -111,3 +111,18 @@ VoiceOver 및 실제 보조공학 사용자 승인은 이 자동·로컬 검증 
 | 릴리스 경계 | 이미지 중심 보강은 커밋·push·GitHub Pages 배포까지 완료했으며 HVC 등록·갤러리 동기화는 실행하지 않음 | 통과 — HVC는 별도 작업 |
 
 VoiceOver 및 실제 보조공학 사용자 승인은 이 후속 자동·로컬 검증 범위에도 포함하지 않습니다.
+
+## Live quantity dot simulation verification (2026-08-30)
+
+이번 항목은 현재 수량에 맞춰 트레이 안의 동그라미가 실시간으로 갱신되는 작업대 보강입니다. 새 raster 자산은 만들지 않았고 기존 빈 트레이 PNG 위에 `QuantityDots` DOM 레이어를 올렸습니다.
+
+| 항목 | 증거 | 결과 |
+|---|---|---|
+| 원형 요소 계약 | `src/components/mission/QuantityDots.tsx`, `QuantityDots.test.tsx`; `[2,4,6,8]`에서 20개, `[3,4,6,7]`에서 바구니별 3·4·6·7개, `aria-hidden="true"` | 통과 |
+| 버튼 이동 통합 | `tests/e2e/education-redesign.spec.ts`; 4번→1번 이동 후 `currentValues="3,4,6,7"`, 총 20개, 현재 수량 텍스트 | 통과 |
+| 반응형·모션 | 1280px·390px 캡처에서 네 트레이 내부 정렬, 375px overflow 0, reduced-motion `animation-name: none` | 통과 |
+| 타입·단위·빌드 | `npm run check` → 32 files / 260 tests passed, typecheck·Vite build exit 0 | 통과 |
+| 전체 Chromium | `PLAYWRIGHT_PORT=4194 PLAYWRIGHT_REUSE_SERVER=false npx --no-install playwright test --project=chromium` → 29 passed | 통과 |
+| 릴리스 경계 | 이번 추가 변경은 커밋·push·GitHub Pages 배포를 실행하지 않음. 공개 URL은 이전 이미지 중심 릴리스 상태 | 대기 — 사용자 별도 승인 필요 |
+
+VoiceOver 및 실제 보조공학 사용자 승인은 이 동그라미 자동·로컬 검증 범위에도 포함하지 않습니다.

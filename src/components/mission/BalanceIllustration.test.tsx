@@ -17,6 +17,9 @@ describe('BalanceIllustration', () => {
     expect(screen.getByText('현재 수량: 5, 5, 5, 5')).toBeVisible();
     expect(screen.getByText('평균: 5')).toBeVisible();
     expect(screen.getByText('고르게 나뉘었어요.')).toBeVisible();
+    expect(document.querySelectorAll('.quantity-dot')).toHaveLength(20);
+    expect(document.querySelector('[data-visualization="quantity-dots"]'))
+      .toHaveAttribute('data-current-values', '5,5,5,5');
   });
 
   it('states when the current values are not balanced', () => {
@@ -26,5 +29,6 @@ describe('BalanceIllustration', () => {
 
     expect(screen.getByText('아직 고르게 나뉘지 않았어요.')).toBeVisible();
     expect(screen.getByRole('figure', { name: '구슬 분배 작업대' })).toHaveAttribute('data-balanced', 'false');
+    expect(document.querySelectorAll('.quantity-dot')).toHaveLength(20);
   });
 });
