@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { useReducer } from 'react';
 import { getDataset } from '../../content/missions';
 import { createInitialSession, sessionReducer } from '../../domain/session';
-import type { TwinDataset } from '../../domain/types';
+import type { ReviewDataset, TwinDataset } from '../../domain/types';
 import { ComparisonPanel } from './ComparisonPanel';
 
 const dataset = getDataset('twins-4-a') as TwinDataset;
@@ -49,6 +49,19 @@ describe('ComparisonPanel', () => {
     const plots = screen.getByRole('img', { name: '자료 A 점도표: 4, 4, 4, 4' });
     expect(summary.compareDocumentPosition(plots) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole('img', { name: '자료 B 점도표: 1, 3, 5, 7' })).toBeVisible();
+  });
+
+  it('shows representative review values as a dot plot before the choice', () => {
+    const representative = getDataset('review-cards-a') as ReviewDataset;
+    render(
+      <ComparisonPanel
+        dataset={representative}
+        artifacts={{}}
+        dispatch={() => undefined}
+      />,
+    );
+
+    expect(screen.getByRole('img', { name: '대표값 자료 점도표: 2, 2, 2, 2, 12' })).toBeVisible();
   });
 
   it('requires both same mean and different spread evidence', async () => {

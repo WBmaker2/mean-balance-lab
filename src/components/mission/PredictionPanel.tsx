@@ -48,6 +48,8 @@ export const PredictionPanel = ({ dataset, prediction, dispatch, onAdvance }: Pr
             key={value}
             type="button"
             aria-pressed={prediction === value}
+            data-selected={prediction === value ? 'true' : undefined}
+            className={prediction === value ? 'choice-selected' : ''}
             onClick={() => selectPrediction(value)}
           >
             {label}

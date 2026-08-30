@@ -17,6 +17,13 @@ const focusableTarget = (target: HTMLElement): HTMLElement => {
   return target;
 };
 
+const scrollBehavior = (): ScrollBehavior => (
+  typeof window.matchMedia === 'function'
+  && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ? 'auto'
+    : 'smooth'
+);
+
 const keepHashRouterRoute = (event: MouseEvent<HTMLAnchorElement>) => {
   const targetId = event.currentTarget.hash.slice(1);
   const target = targetId ? document.getElementById(targetId) : null;
@@ -24,7 +31,7 @@ const keepHashRouterRoute = (event: MouseEvent<HTMLAnchorElement>) => {
   event.preventDefault();
   if (target instanceof HTMLDetailsElement) target.open = true;
   if (typeof target.scrollIntoView === 'function') {
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
   }
   const focusTarget = focusableTarget(target);
   if (typeof focusTarget.focus === 'function') focusTarget.focus({ preventScroll: true });

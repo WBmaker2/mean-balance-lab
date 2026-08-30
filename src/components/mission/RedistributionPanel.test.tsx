@@ -68,6 +68,19 @@ describe('RedistributionPanel', () => {
     expect(screen.getByRole('button', { name: '마지막 이동 취소' })).toBeDisabled();
   });
 
+  it('keeps an incorrect confirmation in one alert without duplicating status text', async () => {
+    const user = userEvent.setup();
+    renderBalancePanel();
+
+    await user.click(screen.getByRole('button', { name: '고르게 나누기 확인' }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent('아직 상자 수가 같지 않아요.');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '4번 상자에서 1개 꺼내기' }));
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
   it('marks exactly one enabled next action', () => {
     renderBalancePanel([5, 5, 5, 5]);
     const currentActions = screen.getAllByRole('button')
@@ -109,5 +122,18 @@ describe('RedistributionPanel', () => {
     cleanup();
     renderBalancePanel([5, 5, 5, 5]);
     expect(currentActionCount()).toBe(1);
+  });
+
+  it('shows the selected source before the learner chooses a destination', async () => {
+    const user = userEvent.setup();
+    renderBalancePanel();
+
+    await user.click(screen.getByRole('button', { name: '4번 상자에서 1개 꺼내기' }));
+
+    const source = screen.getByRole('button', { name: '4번 상자에서 1개 꺼내기' });
+    expect(source).toHaveAttribute('aria-pressed', 'true');
+    expect(source.closest('article')).toHaveAttribute('data-selected', 'true');
+    expect(screen.getByText('선택한 상자: 4번')).toBeVisible();
+    expect(screen.getByText('먼저 꺼낼 상자를 골라요. 다음으로 넣을 상자를 골라요.')).toBeVisible();
   });
 });

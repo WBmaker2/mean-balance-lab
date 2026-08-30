@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { UtilityToolbar } from './UtilityToolbar';
@@ -40,5 +40,38 @@ describe('UtilityToolbar', () => {
 
     expect(window.location.hash).toBe('#/mission/balance-delivery/balance-20-a/redistribute');
     expect(document.getElementById('main-content')).toHaveFocus();
+  });
+
+  it('uses an instant scroll and focuses the record target for reduced motion', async () => {
+    const user = userEvent.setup();
+    const scrollIntoView = vi.fn();
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: true,
+      media: '(prefers-reduced-motion: reduce)',
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    });
+
+    render(
+      <>
+        <main id="main-content" tabIndex={-1}>노트 본문</main>
+        <aside id="artifact-records" tabIndex={-1} aria-label="실험 기록">기록</aside>
+        <UtilityToolbar />
+      </>,
+    );
+    const records = document.getElementById('artifact-records');
+    if (!records) throw new Error('record target missing');
+    records.scrollIntoView = scrollIntoView;
+
+    await user.click(screen.getByRole('link', { name: '기록' }));
+
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'auto', block: 'start' });
+    expect(records).toHaveFocus();
+    window.matchMedia = originalMatchMedia;
   });
 });

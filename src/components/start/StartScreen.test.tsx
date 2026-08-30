@@ -17,6 +17,7 @@ describe('StartScreen learner copy', () => {
     expect(screenRegion).toBeVisible();
     expect(screenRegion.closest('.worksheet-page')).not.toBeNull();
     expect(screen.getByRole('region', { name: '오늘의 목표' })).toBeVisible();
+    expect(screen.getByText('다음 행동: 자료 난이도를 고르고 미션 시작을 눌러요.')).toBeVisible();
     expect(screen.getByRole('region', { name: /다음 미션/ })).toBeVisible();
     expect(screen.getByRole('group', { name: '자료 난이도' })).toBeVisible();
     expect(screen.getAllByRole('button').filter((button) => button.dataset.currentAction === 'true')).toHaveLength(1);

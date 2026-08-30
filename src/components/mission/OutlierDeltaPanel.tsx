@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { describeDelta } from '../../domain/math';
 import type { OutlierDataset, PredictionValue } from '../../domain/types';
 import { ActionButton } from '../shared/ActionButton';
+import { DotPlot } from '../shared/DotPlot';
 import { SectionIntro } from '../shared/SectionIntro';
 
 export interface OutlierDeltaPanelProps {
@@ -44,6 +45,17 @@ export const OutlierDeltaPanel = ({
         tone="orange"
       />
       <p className="prediction-badge">내 예측: {predictionLabel(prediction)}</p>
+
+      <div className="comparison-plots outlier-plots" aria-label="변경 전과 후 점도표">
+        <section aria-labelledby="outlier-before-plot-heading">
+          <h2 id="outlier-before-plot-heading">변경 전 자료</h2>
+          <DotPlot values={dataset.beforeValues} label="변경 전" />
+        </section>
+        <section aria-labelledby="outlier-after-plot-heading">
+          <h2 id="outlier-after-plot-heading">변경 후 자료</h2>
+          <DotPlot values={dataset.afterValues} label="변경 후" />
+        </section>
+      </div>
 
       <section className="concept-step" aria-label="합계 변화">
         <h2>먼저 합계 변화를 확인해요</h2>

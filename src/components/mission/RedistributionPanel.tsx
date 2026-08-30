@@ -42,7 +42,7 @@ export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: Redis
 
   const showFeedback = (messageText: string, nextAction: string) => {
     setFeedback({ message: messageText, nextAction });
-    announce(`${messageText} 다음 행동: ${nextAction}`);
+    announce('');
   };
 
   const selectSource = (index: number) => {
@@ -51,6 +51,7 @@ export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: Redis
       return;
     }
     setFeedback(null);
+    announce('');
     setSelectedSource(index);
   };
 
@@ -104,7 +105,7 @@ export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: Redis
   };
 
   return (
-    <section className="stage-panel stage-panel-redistribute" data-stage="redistribute" aria-labelledby="redistribution-heading">
+    <section className="stage-panel stage-panel-redistribute" data-stage="redistribute" aria-label="재배분 활동">
       <SectionIntro
         id="redistribution-heading"
         title="구슬을 고르게 옮겨 볼까요?"
@@ -129,12 +130,20 @@ export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: Redis
         <div className="redistribution-connector" aria-hidden="true"><span>1개씩 옮기기</span></div>
         <section className="redistribution-current" aria-labelledby="redistribution-current-heading">
           <h2 id="redistribution-current-heading">현재 작업대</h2>
+          <p className="redistribution-instruction">먼저 꺼낼 상자를 골라요. 다음으로 넣을 상자를 골라요.</p>
+          {selectedSource !== null ? (
+            <p className="selected-source" aria-live="polite">선택한 상자: {selectedSource + 1}번</p>
+          ) : null}
           <div className="box-grid" aria-label="상자 수량">
             {currentValues.map((value, index) => {
               const sourceRecommended = selectedSource === null && recommendedMove?.fromIndex === index;
               const destinationRecommended = selectedSource !== null && destinationRecommendation === index;
               return (
-                <article key={`${dataset.id}-${index}`} className={`box-card box-pattern-${PATTERNS[index % PATTERNS.length]}`}>
+                <article
+                  key={`${dataset.id}-${index}`}
+                  className={`box-card box-pattern-${PATTERNS[index % PATTERNS.length]}`}
+                  data-selected={selectedSource === index ? 'true' : undefined}
+                >
                   <h2>{index + 1}번 상자</h2>
                   <p aria-label={`${index + 1}번 상자 현재 수량`}>현재 수량 {value}개</p>
                   <ActionButton
@@ -142,6 +151,7 @@ export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: Redis
                     emphasis={sourceRecommended ? 'next' : 'normal'}
                     disabled={value === 0}
                     aria-label={`${index + 1}번 상자에서 1개 꺼내기`}
+                    aria-pressed={selectedSource === index}
                     onClick={() => selectSource(index)}
                   >
                     1개 꺼내기

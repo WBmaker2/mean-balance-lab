@@ -12,16 +12,19 @@ describe('UpdateHistoryDialog', () => {
     window.location.hash = '#/';
   });
 
-  it('records the 2026-08-30 live basket dot improvement', () => {
+  it('records the latest 2026-08-30 learner-flow improvement', () => {
     expect(UPDATE_HISTORY[0]).toEqual({
       date: '2026-08-30',
       category: '개선',
-      summary: '바구니 동그라미 수량 실시간 시뮬레이션 추가',
+      summary: '선택 상태와 미션별 점도표·모션 안내 보강',
     });
   });
 
   it('keeps literal dated entries for deployment, design, and MVP', () => {
     expect(UPDATE_HISTORY).toEqual([
+      { date: '2026-08-30', category: '개선', summary: '선택 상태와 미션별 점도표·모션 안내 보강' },
+      { date: '2026-08-30', category: '개선', summary: '모바일 단계 진입 스크롤과 첫 행동 안내 보강' },
+      { date: '2026-08-30', category: '개선', summary: '오답 알림 중복 제거' },
       { date: '2026-08-30', category: '개선', summary: '바구니 동그라미 수량 실시간 시뮬레이션 추가' },
       { date: '2026-08-30', category: '개선', summary: '빈 트레이 장식 이미지와 DOM 수량 오버레이 보강' },
       { date: '2026-08-30', category: '개선', summary: '교실 측정 노트 작업표 시각 세계와 3열 학습 작업대 적용' },
@@ -47,12 +50,15 @@ describe('UpdateHistoryDialog', () => {
     const title = screen.getByRole('heading', { name: '업데이트 내역' });
     expect(title.tagName).toBe('H2');
     expect(dialog).toHaveAttribute('aria-labelledby', title.id);
-    expect(screen.getAllByText('2026-08-30')).toHaveLength(3);
+    expect(screen.getAllByText('2026-08-30')).toHaveLength(6);
     expect(screen.getByText('2026-08-29')).toBeVisible();
     expect(screen.getAllByText('2026-08-28')).toHaveLength(2);
     expect(screen.getByText('2026-08-27')).toBeVisible();
     expect(screen.getAllByText('2026-08-26')).toHaveLength(2);
     expect(screen.getByText('배포 환경의 단계 초점 인계 보완')).toBeVisible();
+    expect(screen.getByText('모바일 단계 진입 스크롤과 첫 행동 안내 보강')).toBeVisible();
+    expect(screen.getByText('오답 알림 중복 제거')).toBeVisible();
+    expect(screen.getByText('선택 상태와 미션별 점도표·모션 안내 보강')).toBeVisible();
     expect(screen.getByText('학습 단계 안내와 입력·모바일 화면 개선')).toBeVisible();
     expect(screen.getByText('GitHub Pages 공개 배포 경로 정리')).toBeVisible();
     expect(screen.getByText('평균 균형 조정실 MVP 구현')).toBeVisible();

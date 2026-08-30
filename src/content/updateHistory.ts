@@ -5,6 +5,9 @@ export interface UpdateHistoryEntry {
 }
 
 export const UPDATE_HISTORY: readonly UpdateHistoryEntry[] = [
+  { date: '2026-08-30', category: '개선', summary: '선택 상태와 미션별 점도표·모션 안내 보강' },
+  { date: '2026-08-30', category: '개선', summary: '모바일 단계 진입 스크롤과 첫 행동 안내 보강' },
+  { date: '2026-08-30', category: '개선', summary: '오답 알림 중복 제거' },
   { date: '2026-08-30', category: '개선', summary: '바구니 동그라미 수량 실시간 시뮬레이션 추가' },
   { date: '2026-08-30', category: '개선', summary: '빈 트레이 장식 이미지와 DOM 수량 오버레이 보강' },
   { date: '2026-08-30', category: '개선', summary: '교실 측정 노트 작업표 시각 세계와 3열 학습 작업대 적용' },

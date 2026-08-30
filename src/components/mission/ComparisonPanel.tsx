@@ -208,6 +208,10 @@ const RepresentativeComparisonPanel = ({
         <p>평균 {mean(dataset.values)} / 범위 {range(dataset.values)}</p>
         <p>각 값: {dataset.values.join(', ')}</p>
       </section>
+      <section className="representative-plot" aria-labelledby="representative-plot-heading">
+        <h2 id="representative-plot-heading">자료 모양</h2>
+        <DotPlot values={dataset.values} label="대표값 자료" />
+      </section>
       <fieldset>
         <legend>평균만으로 자료를 설명할 수 있을까요?</legend>
         <label>

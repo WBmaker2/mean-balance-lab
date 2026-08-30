@@ -59,7 +59,7 @@ export const StartScreen = () => {
 
   return (
     <section className="worksheet-page start-screen">
-      <span id="artifact-records" className="sr-only" aria-hidden="true" />
+      <span id="artifact-records" className="sr-only" tabIndex={-1} aria-label="실험 기록 위치" />
       {recoveryMessage ? <p role="alert">{recoveryMessage}</p> : null}
       <SectionIntro
         id="start-heading"
@@ -67,6 +67,7 @@ export const StartScreen = () => {
         description="자료를 직접 살펴보며 평균의 뜻과 움직임을 찾아봐요."
         tone="blue"
       />
+      <p className="start-next-action">다음 행동: 자료 난이도를 고르고 미션 시작을 눌러요.</p>
       <section className="goal-card" aria-labelledby="goal-heading">
         <h2 id="goal-heading">오늘의 목표</h2>
         <p>평균을 네 가지 방법으로 살펴봐요.</p>

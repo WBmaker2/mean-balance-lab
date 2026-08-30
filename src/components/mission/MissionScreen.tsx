@@ -208,7 +208,7 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
         />
       )}
       </div>
-      <aside id="artifact-records" className="notebook-records" aria-label="실험 진행과 검증 기록">
+      <aside id="artifact-records" className="notebook-records" tabIndex={-1} aria-label="실험 진행과 검증 기록">
         <ProgressRail mission={mission} dataset={dataset} currentStage={stage} />
         <ArtifactTrail artifacts={run?.artifacts ?? {}} revisions={run?.revisions} />
       </aside>

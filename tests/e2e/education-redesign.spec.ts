@@ -27,6 +27,29 @@ test('shows the current stage action and hands focus to the next stage', async (
   await expect(page.getByText('평균이 어떻게 될지 먼저 골라 봐요.', { exact: true })).toBeVisible();
 });
 
+test('returns to the top when starting a mission from a narrow screen', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('./#/');
+  await page.getByRole('button', { name: '미션 시작', exact: true }).click();
+
+  await expect(page.getByRole('heading', { name: '상황을 살펴볼까요?', exact: true })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page.locator('#main-content')).toBeFocused();
+});
+
+test('keeps incorrect redistribution feedback in one learner-facing alert', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('./#/');
+  await page.getByRole('button', { name: '미션 시작', exact: true }).click();
+  await page.getByRole('button', { name: '다음: 평균 예측', exact: true }).click();
+  await page.getByRole('button', { name: '평균 5', exact: true }).click();
+  await page.getByRole('button', { name: '다음 단계', exact: true }).click();
+  await page.getByRole('button', { name: '고르게 나누기 확인', exact: true }).click();
+
+  await expect(page.getByRole('alert')).toContainText('아직 상자 수가 같지 않아요.');
+  await expect(page.getByRole('status')).toHaveCount(0);
+});
+
 test('keeps the update control in normal flow on a narrow screen', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('./#/');

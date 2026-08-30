@@ -69,4 +69,23 @@ describe('PredictionPanel', () => {
     expect(screen.getByRole('button', { name: '다음 단계' })).toHaveAttribute('data-current-action', 'true');
     expect(screen.getAllByRole('button', { name: /평균/ }).every((button) => button.dataset.currentAction !== 'true')).toBe(true);
   });
+
+  it('keeps the selected prediction visibly identified after focus moves', async () => {
+    const user = userEvent.setup();
+    const dispatch = vi.fn<(action: LabAction) => void>();
+    const { rerender } = render(
+      <PredictionPanel dataset={getDataset('balance-20-a')} prediction={undefined} dispatch={dispatch} onAdvance={vi.fn()} />,
+    );
+
+    const selected = screen.getByRole('button', { name: '평균 5' });
+    await user.click(selected);
+    rerender(
+      <PredictionPanel dataset={getDataset('balance-20-a')} prediction={5} dispatch={dispatch} onAdvance={vi.fn()} />,
+    );
+
+    const selectedAfterRerender = screen.getByRole('button', { name: '평균 5' });
+    expect(selectedAfterRerender).toHaveAttribute('aria-pressed', 'true');
+    expect(selectedAfterRerender).toHaveAttribute('data-selected', 'true');
+    expect(selectedAfterRerender).toHaveClass('choice-selected');
+  });
 });

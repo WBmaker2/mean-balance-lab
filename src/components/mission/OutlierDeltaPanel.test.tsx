@@ -39,6 +39,13 @@ describe('OutlierDeltaPanel', () => {
     expect(screen.queryByText(/실제 관측/)).not.toBeInTheDocument();
   });
 
+  it('shows changed values as before-and-after dot plots', () => {
+    renderOutlierDelta('outlier-5-a');
+
+    expect(screen.getByRole('img', { name: '변경 전 점도표: 4, 5, 5, 6' })).toBeVisible();
+    expect(screen.getByRole('img', { name: '변경 후 점도표: 4, 5, 5, 10' })).toBeVisible();
+  });
+
   it('calls onConfirm from an ActionButton', async () => {
     const user = userEvent.setup();
     const { onConfirm } = renderOutlierDelta();
