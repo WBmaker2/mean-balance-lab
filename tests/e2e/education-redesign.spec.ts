@@ -58,3 +58,39 @@ test('keeps the redesigned learner path local and button based', async ({ page }
   await expect(page.locator('button[data-current-action="true"]')).toHaveCount(1);
   expect(externalRequests).toEqual([]);
 });
+
+test('exposes utility destinations and keeps the student label informational', async ({ page }) => {
+  await page.goto('./#/');
+
+  const toolbar = page.getByRole('navigation', { name: '도구 모음' });
+  await expect(toolbar.getByRole('link', { name: '노트' })).toHaveAttribute('href', '#main-content');
+  await expect(toolbar.getByRole('link', { name: '기록' })).toHaveAttribute('href', '#artifact-records');
+  await expect(toolbar.getByRole('link', { name: '설정' })).toHaveAttribute('href', '#app-settings');
+  await expect(toolbar.getByText('학생')).toBeVisible();
+  await expect(toolbar.getByRole('button')).toHaveCount(0);
+  await expect(page.locator('.utility-toolbar svg[aria-hidden="true"]')).toHaveCount(4);
+
+  const routeBeforeUtilityClick = page.url();
+  await toolbar.getByRole('link', { name: '노트' }).click();
+  await expect(page).toHaveURL(routeBeforeUtilityClick);
+  await expect(page.locator('#main-content')).toBeFocused();
+  await toolbar.getByRole('link', { name: '설정' }).click();
+  await expect(page.locator('#app-settings')).toHaveAttribute('open', '');
+});
+
+test('keeps balance values in DOM beside the loaded decorative tray', async ({ page }) => {
+  await page.goto('./#/');
+  await page.getByRole('button', { name: '미션 시작', exact: true }).click();
+  await page.getByRole('button', { name: '다음: 평균 예측', exact: true }).click();
+  await page.getByRole('button', { name: '평균 5', exact: true }).click();
+  await page.getByRole('button', { name: '다음 단계', exact: true }).click();
+
+  const figure = page.getByRole('figure', { name: '구슬 분배 작업대' });
+  await expect(figure).toHaveAttribute('data-balanced', 'false');
+  await expect(figure.locator('img[alt=""][aria-hidden="true"]')).toHaveCount(1);
+  await expect(figure.locator('img')).toHaveJSProperty('naturalWidth', 1896);
+  await expect(figure).toContainText('처음 수량: 2, 4, 6, 8');
+  await expect(figure).toContainText('현재 수량: 2, 4, 6, 8');
+  await expect(figure).toContainText('평균: 5');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});

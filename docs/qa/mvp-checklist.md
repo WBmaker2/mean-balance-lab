@@ -92,3 +92,21 @@
 | 공개 상태 | [GitHub Actions run 33293367821](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33293367821) 성공, 공개 URL HTTP 200·자산 200 확인. HVC 동기화는 실행하지 않음 | 통과 |
 
 VoiceOver 및 실제 보조공학 사용자 승인은 이 자동·로컬 검증 범위에 포함하지 않습니다.
+
+## Image-centric follow-up verification (2026-08-30)
+
+이번 항목은 공개 배포 이전 작업 트리에서 수행한 이미지 중심 보강 검증입니다. 이전 `Published redesign verification`과 섞어 공개 릴리스 증거로 해석하지 않습니다.
+
+| 항목 | 증거 | 결과 |
+|---|---|---|
+| 생성 자산 안전 | `src/assets/notebook/bench-illustration-v2.png` 1896×830; `view_image`로 글자·숫자·수식·표·로고·사람·버튼 없음 확인; 프롬프트·롤백은 `work/education-webapp-redesign-assets.md`에 기록 | 통과 |
+| DOM 데이터 소유 | `BalanceIllustration.test.tsx`, `education-redesign.spec.ts`; 이미지 `alt=""`·`aria-hidden="true"`, 초기/현재 수량·평균·균형 상태는 DOM text | 통과 |
+| 도구 모음·HashRouter | `UtilityToolbar.test.tsx`; 노트·기록·설정 목적지와 학생 정보 표시, same-page click에서 기존 hash route 유지 | 통과 |
+| 타입·단위·빌드 | `npm run check` → typecheck exit 0, Vitest 31 files/258 tests passed, Vite build exit 0, `dist/assets/bench-illustration-v2-DVepsdft.png` 생성 | 통과 |
+| 전체 Chromium | `PLAYWRIGHT_PORT=4190 PLAYWRIGHT_REUSE_SERVER=false npx --no-install playwright test --project=chromium` → 27 passed (14.9s) | 통과 |
+| 반응형·모션·접근성 | 375/320px overflow 0, 44px controls, reduced-motion 정적 상태, current action 1개, serious/critical axe 0, keyboard learner flow 통과 | 통과 |
+| 외부 요청·개인정보 | 런타임 external request 0, 원격 이미지·폰트·API 0, 학생 식별 입력 0; 로컬 PNG 정적 import 1개 | 통과 |
+| 시각 확인 | `/private/tmp/mean-balance-desktop.png` 1280px, `/private/tmp/mean-balance-mobile.png` 390px에서 노트·트레이·작업대·DOM overlay 확인 | 통과 — 캡처는 로컬 임시 산출물 |
+| 릴리스 경계 | 이번 보강 변경은 커밋·push·GitHub Pages 배포·HVC 등록을 실행하지 않음 | 대기 — 사용자 별도 승인 필요 |
+
+VoiceOver 및 실제 보조공학 사용자 승인은 이 후속 자동·로컬 검증 범위에도 포함하지 않습니다.

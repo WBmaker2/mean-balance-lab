@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StrictMode } from 'react';
 import App from '../../app/App';
@@ -126,7 +126,7 @@ describe('StoragePreference', () => {
     render(<StrictMode><App /></StrictMode>);
 
     expect(await screen.findByRole('heading', { name: '1. 골고루 나누기 결과' })).toBeVisible();
-    await user.click(screen.getByText('설정'));
+    await user.click(within(document.querySelector('details.app-settings')!).getByText('설정'));
     await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
 
     await waitFor(() => expect(window.location.hash).toBe('#/'));
@@ -157,7 +157,7 @@ describe('StoragePreference', () => {
     render(<StrictMode><App /></StrictMode>);
 
     expect(await screen.findByRole('heading', { name: '전체 결과' })).toBeVisible();
-    await user.click(screen.getByText('설정'));
+    await user.click(within(document.querySelector('details.app-settings')!).getByText('설정'));
     await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
 
     await waitFor(() => expect(window.location.hash).toBe('#/'));
@@ -178,7 +178,7 @@ describe('StoragePreference', () => {
     render(<StrictMode><App /></StrictMode>);
 
     expect(await screen.findByRole('heading', { name: '1. 골고루 나누기 결과' })).toBeVisible();
-    await user.click(screen.getByText('설정'));
+    await user.click(within(document.querySelector('details.app-settings')!).getByText('설정'));
     await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
     await new Promise((resolve) => window.setTimeout(resolve, 100));
 
@@ -198,7 +198,7 @@ describe('StoragePreference', () => {
     render(<StrictMode><App /></StrictMode>);
 
     expect(await screen.findByRole('heading', { name: '전체 결과' })).toBeVisible();
-    await user.click(screen.getByText('설정'));
+    await user.click(within(document.querySelector('details.app-settings')!).getByText('설정'));
     await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
     await new Promise((resolve) => window.setTimeout(resolve, 100));
 
@@ -218,7 +218,7 @@ describe('StoragePreference', () => {
     render(<StrictMode><App /></StrictMode>);
 
     await screen.findByRole('heading', { name: '1. 골고루 나누기 결과' });
-    await user.click(screen.getByText('설정'));
+    await user.click(within(document.querySelector('details.app-settings')!).getByText('설정'));
     await user.click(screen.getByRole('button', { name: '모든 진행 지우기' }));
     await waitFor(() => expect(window.location.hash).toBe('#/'));
     await user.click(screen.getByRole('button', { name: '미션 시작' }));

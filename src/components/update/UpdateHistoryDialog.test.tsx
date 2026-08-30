@@ -12,16 +12,17 @@ describe('UpdateHistoryDialog', () => {
     window.location.hash = '#/';
   });
 
-  it('records the 2026-08-30 notebook redesign improvement', () => {
+  it('records the 2026-08-30 notebook image improvement', () => {
     expect(UPDATE_HISTORY[0]).toEqual({
       date: '2026-08-30',
       category: '개선',
-      summary: '교실 측정 노트 작업표 시각 세계와 3열 학습 작업대 적용',
+      summary: '빈 트레이 장식 이미지와 DOM 수량 오버레이 보강',
     });
   });
 
   it('keeps literal dated entries for deployment, design, and MVP', () => {
     expect(UPDATE_HISTORY).toEqual([
+      { date: '2026-08-30', category: '개선', summary: '빈 트레이 장식 이미지와 DOM 수량 오버레이 보강' },
       { date: '2026-08-30', category: '개선', summary: '교실 측정 노트 작업표 시각 세계와 3열 학습 작업대 적용' },
       { date: '2026-08-29', category: '개선', summary: '학습 화면 계층과 모바일 행동 흐름 개선' },
       { date: '2026-08-28', category: '개선', summary: '배포 환경의 단계 초점 인계 보완' },
@@ -45,6 +46,7 @@ describe('UpdateHistoryDialog', () => {
     const title = screen.getByRole('heading', { name: '업데이트 내역' });
     expect(title.tagName).toBe('H2');
     expect(dialog).toHaveAttribute('aria-labelledby', title.id);
+    expect(screen.getAllByText('2026-08-30')).toHaveLength(2);
     expect(screen.getByText('2026-08-29')).toBeVisible();
     expect(screen.getAllByText('2026-08-28')).toHaveLength(2);
     expect(screen.getByText('2026-08-27')).toBeVisible();

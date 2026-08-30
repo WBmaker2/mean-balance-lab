@@ -1,6 +1,7 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { StoragePreference } from '../components/settings/StoragePreference';
 import { UpdateHistoryDialog } from '../components/update/UpdateHistoryDialog';
+import { UtilityToolbar } from '../components/layout/UtilityToolbar';
 import { useLabSession } from '../state/LabSessionContext';
 
 export const AppShell = () => {
@@ -21,13 +22,14 @@ export const AppShell = () => {
         <header className="app-header utility-strip">
           <p>평균 균형 조정실</p>
           <span className="app-header-context">오늘의 실험</span>
+          <UtilityToolbar />
           <Link to="/">처음으로</Link>
         </header>
         <main id="main-content" className="sheet-main" tabIndex={-1}>
           <Outlet />
         </main>
         <div className="shell-tools">
-          <details className="app-settings">
+          <details className="app-settings" id="app-settings">
             <summary>설정</summary>
             <StoragePreference
               mode={state.saveMode}

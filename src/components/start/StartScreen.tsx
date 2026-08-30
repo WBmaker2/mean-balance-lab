@@ -59,6 +59,7 @@ export const StartScreen = () => {
 
   return (
     <section className="worksheet-page start-screen">
+      <span id="artifact-records" className="sr-only" aria-hidden="true" />
       {recoveryMessage ? <p role="alert">{recoveryMessage}</p> : null}
       <SectionIntro
         id="start-heading"

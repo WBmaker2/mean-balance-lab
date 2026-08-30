@@ -18,7 +18,8 @@
 | `impeccable` | `/Users/kimhongnyeon/.agents/skills/impeccable/SKILL.md` | context·concept-seed·build-phase·comp-spec·font-match 실행 |
 | `design-system` | `/Users/kimhongnyeon/.agents/skills/design-system/SKILL.md` | token architecture 읽고 문서에 3계층 반영 |
 | `redesign-existing-projects` | `/Users/kimhongnyeon/.agents/skills/redesign-existing-projects/SKILL.md` | Vite/React/vanilla CSS 진단 기준 적용 |
-| `imagegen` | `/Users/kimhongnyeon/.codex/skills/imagegen/SKILL.md` | 내부 comp 3종 생성에 사용 |
+| `imagegen` | `/Users/kimhongnyeon/.codex/skills/imagegen/SKILL.md` | 내부 comp 3종과 글자 없는 `bench-illustration-v2.png` 생성·검토에 사용 |
+| `ui-ux-pro-max` | 현재 런타임 Skill 목록에 항목 없음 | unavailable; 기존 `design-system/MASTER.md`와 앱 토큰 계약으로 대체 |
 | 자산 안전 참조 | `/Users/kimhongnyeon/.codex/skills/education-webapp-redesign/references/asset-safety.md` | 데이터·문서·수식 이미지는 자동 교체 금지로 판정 |
 
 ## Initial incumbent findings
@@ -65,7 +66,7 @@
 
 ## Decision
 
-계산·판정·라우팅·저장 로직은 보존하고, 승인된 교실 측정 노트 방향으로 프레젠테이션 계층만 교체합니다. 내부 comp·plate는 방향 검증 자료이며 런타임에 import하지 않습니다. 구현 후 `impeccable` detector와 한 번의 batched desktop/mobile review로 기계적·시각적 회귀를 확인합니다.
+계산·판정·라우팅·저장 로직은 보존하고, 승인된 교실 측정 노트 방향으로 프레젠테이션 계층만 교체합니다. 내부 comp·plate는 방향 검증 자료이며 런타임에 import하지 않고, Task 12의 별도 검토된 빈 트레이 PNG만 장식 underlay로 정적 import합니다. 구현 후 `impeccable` detector와 한 번의 batched desktop/mobile review로 기계적·시각적 회귀를 확인합니다.
 
 ## Implementation review (2026-08-30)
 
@@ -74,3 +75,11 @@
 - 데스크톱 캡처는 1440×1680, 모바일 캡처는 390×3087이며 640px 이하에서 한 열로 재배치됩니다. 375px overflow 0, 키보드 경로, reduced-motion 정적 outline, update dialog focus를 Chromium에서 확인했습니다.
 - Impeccable detector는 의도적인 `.box-pattern-grid` measurement tray gradient 한 건만 advisory로 보고했습니다. 새 notebook 규칙선·상태색은 토큰으로 연결했고, 컴포넌트 side stripe와 중복 장식은 제거했습니다.
 - reference comp의 아이콘·raster tray·외부 display font를 복사하지 않았습니다. hero/responsive 비교는 semantic learner content와 comp topology 차이로 force 처리했으므로 최종 disposition은 `fix`이고 픽셀 동일성·배포 승인으로 해석하지 않습니다.
+
+## Image-centric follow-up review (2026-08-30)
+
+- 승인된 생성 자산 `src/assets/notebook/bench-illustration-v2.png`(1896×830)는 글자·숫자·수식·표·로고·사람이 없는 빈 트레이 underlay로 확인했습니다. 원본 생성 결과는 외부 경로에 보존하고, 저장소에는 버전 파일을 추가했습니다.
+- `BalanceIllustration`은 이미지를 `alt=""`·`aria-hidden="true"`·`pointer-events: none`으로 표시하며 초기 수량·현재 수량·평균·균형 상태는 DOM 오버레이와 figcaption에 남깁니다. 수식·점·판정·버튼은 이미지에 굽지 않았습니다.
+- `UtilityToolbar`는 노트·기록·설정의 실제 same-page 목적지와 학생 정보만 제공하고, HashRouter의 경로를 바꾸지 않는 클릭 처리와 44px 터치 영역을 사용합니다. 시작 화면에는 기록 목적지의 안정적인 앵커를 두고, 미션 화면에는 진행/검증 aside를 연결했습니다.
+- 1280px·390px 캡처에서 중앙 트레이 underlay와 DOM 수량 overlay가 함께 보였고, 375px·320px overflow·reduced-motion·current action 하나·axe 심각/치명 0을 자동 검증했습니다. 전체 Chromium E2E 27개가 통과했습니다.
+- 자산 안전 기준에 따라 학습 값·수식·표·점도표를 생성 이미지로 대체하지 않았습니다. 실제 교실 기기, VoiceOver, 보조공학 사용자 승인은 여전히 `pending`이며 이번 범위에서 실행하지 않았습니다.

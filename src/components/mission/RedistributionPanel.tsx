@@ -7,6 +7,7 @@ import { ActionButton } from '../shared/ActionButton';
 import { FeedbackPrompt } from '../shared/FeedbackPrompt';
 import { LiveRegion } from '../shared/LiveRegion';
 import { SectionIntro } from '../shared/SectionIntro';
+import { BalanceIllustration } from './BalanceIllustration';
 
 export interface RedistributionPanelProps {
   dataset: BalanceDataset;
@@ -111,6 +112,12 @@ export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: Redis
         tone="green"
       />
       <p className="total-badge" aria-label="전체 합계">합계 {initialTotal}개</p>
+      <BalanceIllustration
+        initialValues={dataset.values}
+        currentValues={currentValues}
+        meanValue={mean(currentValues)}
+        balanced={balanced}
+      />
       <div className="redistribution-board">
         <section className="redistribution-original" aria-labelledby="redistribution-original-heading">
           <h2 id="redistribution-original-heading">처음 자료</h2>
@@ -163,7 +170,7 @@ export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: Redis
       </p>
       {feedback ? <FeedbackPrompt {...feedback} /> : null}
       <LiveRegion message={message} />
-      <div className="action-group action-group-secondary">
+      <div className="action-group action-group-secondary action-surface">
         <ActionButton type="button" emphasis="normal" disabled={!canUndo} onClick={undo}>마지막 이동 취소</ActionButton>
         <ActionButton type="button" emphasis={balanced ? 'next' : 'normal'} onClick={confirmBalanced}>
           고르게 나누기 확인

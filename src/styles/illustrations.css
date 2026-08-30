@@ -1,0 +1,122 @@
+/* Local, text-free illustration is a passive layer. Learning values stay DOM text. */
+.utility-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-inline-start: auto;
+}
+.utility-toolbar-link,
+.utility-toolbar-student {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: var(--control-min);
+  min-height: var(--control-min);
+  padding-inline: 0.5rem;
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.utility-toolbar-link:hover { color: var(--color-cobalt-deep); background: var(--color-blue-wash); }
+.utility-toolbar-student { padding-inline-start: 0.9rem; border-inline-start: var(--rule-width) solid var(--border-rule); }
+.utility-toolbar-icon { width: 1.35rem; height: 1.35rem; flex: 0 0 auto; }
+
+.balance-illustration {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-2);
+  border-block: var(--rule-width) solid var(--color-paper-line);
+  background: rgb(var(--color-surface-sheet-rgb) / 0.7);
+}
+.balance-illustration-stage {
+  position: relative;
+  min-height: clamp(10rem, 22vw, 15rem);
+  overflow: hidden;
+  border-radius: var(--radius-control);
+  background: var(--color-blue-wash);
+}
+.balance-illustration-stage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+.balance-value-overlay {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  max-width: min(92%, 24rem);
+  padding: 0.5rem 0.7rem;
+  border: var(--rule-width) solid var(--color-cobalt);
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface-sheet-rgb) / 0.94);
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+.balance-value-initial { inset: 0.75rem auto auto 0.75rem; }
+.balance-value-current { inset: auto 0.75rem 0.75rem auto; }
+.balance-overlay-label { color: var(--color-cobalt-deep); }
+.balance-illustration figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-block: var(--space-2) 0;
+  color: var(--color-ink-muted);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.balance-illustration[data-balanced="true"] figcaption span:last-child { color: var(--color-success); }
+.balance-illustration[data-balanced="false"] figcaption span:last-child { color: var(--color-annotation); }
+
+.balance-illustration + .redistribution-board { margin-block-start: var(--space-3); }
+.action-surface {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-block-start: var(--space-3);
+  padding: var(--space-3);
+  border-block: 2px solid var(--color-cobalt);
+  background: rgb(var(--color-surface-sheet-rgb) / 0.76);
+}
+
+@media (max-width: 960px) {
+  .utility-toolbar-link,
+  .utility-toolbar-student { padding-inline: 0.35rem; }
+  .balance-illustration-stage { min-height: 12rem; }
+}
+
+@media (max-width: 640px) {
+  .utility-toolbar { width: 100%; margin-inline-start: 0; border-block-start: var(--rule-width) solid var(--border-rule); }
+  .utility-toolbar-link,
+  .utility-toolbar-student { flex: 1 1 0; }
+  .utility-toolbar-student { border-inline-start: 0; }
+  .balance-illustration-stage { min-height: 11rem; }
+  .balance-value-overlay { font-size: 0.88rem; }
+  .balance-value-initial { inset: 0.5rem auto auto 0.5rem; }
+  .balance-value-current { inset: auto 0.5rem 0.5rem auto; }
+  .balance-illustration figcaption { display: grid; }
+  .action-surface { align-items: stretch; }
+}
+
+@media (max-width: 375px) {
+  .balance-illustration { padding-inline: 0; }
+  .balance-value-overlay { max-width: calc(100% - 1rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .utility-toolbar-link,
+  .balance-illustration-stage img { transition: none; }
+  .balance-illustration[data-balanced="true"] { outline: 2px solid var(--color-success); outline-offset: 3px; }
+}

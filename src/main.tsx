@@ -4,6 +4,7 @@ import App from './app/App';
 import './styles/tokens.css';
 import './styles/global.css';
 import './styles/components.css';
+import './styles/illustrations.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Root element not found');
