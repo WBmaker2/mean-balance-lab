@@ -93,6 +93,13 @@ export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: Redis
     setSelectedSource(null);
   };
 
+  const resetRedistribution = () => {
+    dispatch({ type: 'RESET_REDISTRIBUTION' });
+    announce(`처음 상태로 되돌렸어요. 전체는 ${initialTotal}개로 같아요.`);
+    setFeedback(null);
+    setSelectedSource(null);
+  };
+
   const confirmBalanced = () => {
     if (!balanced) {
       showFeedback('아직 상자 수가 같지 않아요.', '더 많은 상자에서 적은 상자로 1개를 옮겨 보세요.');
@@ -181,6 +188,7 @@ export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: Redis
       {feedback ? <FeedbackPrompt {...feedback} /> : null}
       <LiveRegion message={message} />
       <div className="action-group action-group-secondary action-surface">
+        <ActionButton type="button" emphasis="normal" onClick={resetRedistribution}>처음 상태로 되돌리기</ActionButton>
         <ActionButton type="button" emphasis="normal" disabled={!canUndo} onClick={undo}>마지막 이동 취소</ActionButton>
         <ActionButton type="button" emphasis={balanced ? 'next' : 'normal'} onClick={confirmBalanced}>
           고르게 나누기 확인

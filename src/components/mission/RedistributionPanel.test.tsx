@@ -54,6 +54,21 @@ describe('RedistributionPanel', () => {
     expect(screen.getByRole('status')).toHaveTextContent('마지막 이동을 취소했어요. 전체는 20개로 같아요.');
   });
 
+  it('returns the whole simulation to its initial state with a clear reset action', async () => {
+    const user = userEvent.setup();
+    renderBalancePanel();
+    await user.click(screen.getByRole('button', { name: '4번 상자에서 1개 꺼내기' }));
+    await user.click(screen.getByRole('button', { name: '1번 상자에 1개 넣기' }));
+    expect(screen.getByText('현재 수량 3, 4, 6, 7')).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: '처음 상태로 되돌리기' }));
+
+    expect(screen.getByText('현재 수량 2, 4, 6, 8')).toBeVisible();
+    expect(screen.getByRole('figure', { name: '구슬 분배 작업대' })).toHaveAttribute('data-balanced', 'false');
+    expect(screen.getByRole('button', { name: '마지막 이동 취소' })).toBeDisabled();
+    expect(screen.getByRole('status')).toHaveTextContent('처음 상태로 되돌렸어요. 전체는 20개로 같아요.');
+  });
+
   it('disables empty sources and gives an actionable same-box prompt', async () => {
     const user = userEvent.setup();
     renderBalancePanel([0, 4, 6, 10]);

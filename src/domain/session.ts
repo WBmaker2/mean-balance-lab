@@ -55,6 +55,7 @@ export type LabAction =
   | { type: 'SET_PREDICTION'; value: PredictionValue }
   | { type: 'MOVE_ONE'; move: QuantityMove }
   | { type: 'UNDO_MOVE' }
+  | { type: 'RESET_REDISTRIBUTION' }
   | { type: 'CONFIRM_REDISTRIBUTION' }
   | { type: 'SUBMIT_CALCULATION'; target: CalculationTarget; input: CalculationInput }
   | { type: 'SET_COMPARISON'; selectedIds: readonly ComparisonChoiceId[] }
@@ -237,6 +238,23 @@ export const sessionReducer = (state: LabSessionState, action: LabAction): LabSe
           ...run.artifacts,
           redistribution: { ...redistribution, currentValues: previous, undoStack: stack },
         },
+      });
+    }
+    case 'RESET_REDISTRIBUTION': {
+      const run = state.activeRun;
+      const redistribution = run?.artifacts.redistribution;
+      if (!run || run.stage !== 'redistribute' || !redistribution) return state;
+      return withRun(state, {
+        ...run,
+        artifacts: {
+          ...run.artifacts,
+          redistribution: {
+            initialValues: [...redistribution.initialValues],
+            currentValues: [...redistribution.initialValues],
+            undoStack: [],
+          },
+        },
+        transientFeedback: null,
       });
     }
     case 'CONFIRM_REDISTRIBUTION': {

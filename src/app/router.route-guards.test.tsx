@@ -68,6 +68,33 @@ describe('learning router', () => {
       .toHaveLength(1);
   });
 
+  it('keeps the learner in redistribution after resetting the live simulation', async () => {
+    const initialState = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'redistribute' as const,
+        artifacts: {
+          prediction: { value: 5 as const },
+          redistribution: {
+            initialValues: [2, 4, 6, 8], currentValues: [3, 4, 6, 7], undoStack: [[2, 4, 6, 8]],
+          },
+        },
+        revisions: 0,
+        transientFeedback: null,
+      },
+    };
+    const user = userEvent.setup();
+    renderAppAt('#/mission/balance-delivery/balance-20-a/redistribute', initialState);
+
+    await user.click(screen.getByRole('button', { name: '처음 상태로 되돌리기' }));
+
+    expect(window.location.hash).toContain('/redistribute');
+    expect(screen.getByText('현재 수량 2, 4, 6, 8')).toBeVisible();
+    expect(screen.getByRole('button', { name: '고르게 나누기 확인' })).toBeVisible();
+  });
+
   it('hands a balanced redistribution off to calculation after confirmation', async () => {
     const initialState = {
       ...createInitialSession(),
