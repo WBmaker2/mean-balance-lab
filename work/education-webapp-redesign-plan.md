@@ -635,7 +635,7 @@ rg -n "TBD|TODO|FIXME|적절히 처리|나중에 작성|Task [0-9]+과 동일" w
 
 **Implementation record**
 
-2026-08-30 승인 후 구현을 완료했습니다. 사실·정체성 이미지 생성이 필요하지 않아 새 raster 자산을 만들지 않고, 기존 로컬 장식 PNG와 DOM 원형 요소를 조합했습니다. 실패 테스트에서 컴포넌트 부재·동그라미 0개를 확인한 뒤 최소 구현을 적용했으며, 선택 Vitest 10개·전체 Vitest 260개·전체 Chromium 29개·모바일 캡처·reduced-motion 확인을 통과했습니다. 실제 날짜와 변경 요약은 `src/content/updateHistory.ts`에 기록했습니다. 커밋·push·배포는 사용자 별도 승인 전까지 실행하지 않습니다.
+2026-08-30 승인 후 구현을 완료했습니다. 사실·정체성 이미지 생성이 필요하지 않아 새 raster 자산을 만들지 않고, 기존 로컬 장식 PNG와 DOM 원형 요소를 조합했습니다. 실패 테스트에서 컴포넌트 부재·동그라미 0개를 확인한 뒤 최소 구현을 적용했으며, 선택 Vitest 10개·전체 Vitest 260개·전체 Chromium 29개·모바일 캡처·reduced-motion 확인을 통과했습니다. 실제 날짜와 변경 요약은 `src/content/updateHistory.ts`에 기록했고, 사용자 승인에 따라 `366c26f`로 커밋·push 및 Pages 배포를 완료했습니다.
 
 ## Future commands and expected results
 
@@ -675,4 +675,4 @@ PLAYWRIGHT_PORT=4188 PLAYWRIGHT_REUSE_SERVER=false npx playwright test --project
 - [ ] 단일 소스 파일 500줄 미만과 실제 결과 기록 단계가 포함되었습니다.
 - [ ] VoiceOver와 실제 보조공학 사용자 승인을 범위 밖으로 명시했으며, 이를 완료 증거로 과장하지 않습니다.
 - [x] Task 12 이미지 중심 보강은 생성 자산 안전 검토, DOM 데이터 소유, HashRouter same-page 이동, 320/375px·reduced-motion·27개 Chromium 검증과 문서 기록을 완료했으며 `759685a` 커밋·push·Pages 배포(run `33296397026`)까지 마쳤습니다.
-- [x] Task 13 현재 수량 원형 요소 시뮬레이션은 `QuantityDotsProps` 계약, `[2,4,6,8] → [3,4,6,7]` 실시간 갱신, 전체 20개 보존, 320/375px 트레이 정렬, reduced-motion 정적 상태, Vitest 260개·Chromium 29개 검증과 문서 기록을 완료했습니다. 현재 변경은 작업 트리에만 있으며 커밋·push·배포는 실행하지 않았습니다.
+- [x] Task 13 현재 수량 원형 요소 시뮬레이션은 `QuantityDotsProps` 계약, `[2,4,6,8] → [3,4,6,7]` 실시간 갱신, 전체 20개 보존, 320/375px 트레이 정렬, reduced-motion 정적 상태, Vitest 260개·Chromium 29개 검증과 문서 기록을 완료했습니다. `366c26f` 커밋·push와 Pages 배포(run `33297842402`)까지 완료했습니다.

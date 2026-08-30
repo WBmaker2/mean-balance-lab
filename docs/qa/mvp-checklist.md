@@ -123,6 +123,7 @@ VoiceOver 및 실제 보조공학 사용자 승인은 이 후속 자동·로컬 
 | 반응형·모션 | 1280px·390px 캡처에서 네 트레이 내부 정렬, 375px overflow 0, reduced-motion `animation-name: none` | 통과 |
 | 타입·단위·빌드 | `npm run check` → 32 files / 260 tests passed, typecheck·Vite build exit 0 | 통과 |
 | 전체 Chromium | `PLAYWRIGHT_PORT=4194 PLAYWRIGHT_REUSE_SERVER=false npx --no-install playwright test --project=chromium` → 29 passed | 통과 |
-| 릴리스 경계 | 이번 추가 변경은 커밋·push·GitHub Pages 배포를 실행하지 않음. 공개 URL은 이전 이미지 중심 릴리스 상태 | 대기 — 사용자 별도 승인 필요 |
+| 공개 릴리스 | 동그라미 시뮬레이션 커밋 `366c26f`, [GitHub Actions run `33297842402`](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33297842402) 성공, 공개 URL에서 29개 Chromium 테스트 통과 | 통과 |
+| 릴리스 경계 | 동그라미 시뮬레이션은 커밋·push·GitHub Pages 배포까지 완료했으며 HVC 등록·갤러리 동기화는 실행하지 않음 | 통과 — HVC는 별도 작업 |
 
 VoiceOver 및 실제 보조공학 사용자 승인은 이 동그라미 자동·로컬 검증 범위에도 포함하지 않습니다.

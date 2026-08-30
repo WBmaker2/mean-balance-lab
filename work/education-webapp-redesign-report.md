@@ -8,7 +8,7 @@
 - 이전 릴리스 변경: 프레젠테이션·레이아웃·카피 계층·상태 피드백을 교체하고 평균 계산·판정·라우팅·저장·고정 가상 자료 계약은 보존
 - 이전 릴리스 상태: 커밋, 원격 push, GitHub Pages 배포 완료
 - 이번 후속 변경: 2026-08-30 이미지 중심 노트 작업대 보강을 구현하고 `759685a`로 `main`에 커밋·push했으며 GitHub Pages 배포 완료
-- 이번 추가 변경: 2026-08-30 현재 수량 원형 요소 실시간 시뮬레이션을 작업 트리에 구현하고 로컬 검증 완료; 이 추가 변경은 아직 커밋·push·GitHub Pages 배포하지 않음
+- 이번 추가 변경: 2026-08-30 현재 수량 원형 요소 실시간 시뮬레이션을 구현하고 `366c26f`로 커밋·push 및 GitHub Pages 배포 완료
 - 실행하지 않음: HVC 등록·갤러리 동기화
 - VoiceOver 및 실제 보조공학 사용자 승인은 검증 범위에서 제외
 
@@ -73,6 +73,8 @@ Impeccable build-phase의 hero·responsive 비교 점수는 각각 약 `0.5373`,
 - GitHub Actions: [Deploy to GitHub Pages run 33293367821](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33293367821)에서 의존성 설치·빌드·Pages 업로드·Deploy가 모두 성공했습니다.
 - 이미지 중심 후속 커밋: `759685a feat: add image-led notebook workspace`를 `main`에 push했습니다.
 - 이미지 중심 후속 배포: [Deploy to GitHub Pages run 33296397026](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33296397026)에서 의존성 설치·빌드·Pages 업로드·Deploy가 모두 성공했습니다.
+- 현재 수량 동그라미 커밋: `366c26f feat: simulate live basket quantities`를 `main`에 push했습니다.
+- 현재 수량 동그라미 배포: [Deploy to GitHub Pages run 33297842402](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33297842402)에서 의존성 설치·빌드·Pages 업로드·Deploy가 모두 성공했습니다.
 - 공개 앱: [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/) HTTP 200, 제목 `평균 균형 조정실`, HTML 참조 JS/CSS/favicon 각 200을 확인했습니다.
 - 공개 학습자 검증: `PLAYWRIGHT_BASE_URL=https://wbmaker2.github.io/mean-balance-lab/ PLAYWRIGHT_REUSE_SERVER=true npx --no-install playwright test --project=chromium` → 27 passed, 콘솔·페이지 오류와 외부 요청 0.
 - 남은 운영 작업: HVC 등록·갤러리 동기화와 실제 교실 기기·스크린리더 사용성 승인은 별도 작업입니다.
@@ -93,4 +95,4 @@ Impeccable build-phase의 hero·responsive 비교 점수는 각각 약 `0.5373`,
 - `QuantityDots` 단위 테스트는 `[2,4,6,8]`에서 20개를 렌더링하고 `[3,4,6,7]`로 다시 렌더링할 때 전체 20개와 바구니별 수를 보존하는지 확인합니다.
 - `education-redesign.spec.ts`는 실제 버튼 이동 뒤 `data-current-values="3,4,6,7"`, 바구니별 `data-dot-count="3,4,6,7"`, 동그라미 총 20개, 현재 수량 텍스트를 확인합니다.
 - CSS 캡처에서 1280px·390px 화면의 동그라미가 네 트레이 내부에 놓이는 것을 확인했고, reduced-motion에서는 `animation-name: none`을 확인했습니다.
-- 이 추가 변경은 현재 작업 트리에만 있으며 커밋·push·GitHub Pages 배포를 실행하지 않았습니다. 공개 URL은 이전 릴리스 상태입니다.
+- 이 추가 변경은 `366c26f`로 커밋·push했고 GitHub Pages run `33297842402`로 배포했습니다. 공개 URL에서 버튼 이동에 따른 동그라미 갱신과 전체 20개 보존을 확인했습니다.
