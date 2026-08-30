@@ -6,7 +6,8 @@
 - 대상: `/Volumes/ External Drive 256G/Dev2/codex/mean-balance-lab`
 - 요청: 기존 교육용 React/Vite 앱의 전체 시각 세계와 학습 화면 리디자인
 - 이번 변경: 프레젠테이션·레이아웃·카피 계층·상태 피드백을 교체하고 평균 계산·판정·라우팅·저장·고정 가상 자료 계약은 보존
-- 실행하지 않음: 커밋, 푸시, GitHub Pages 배포, HVC 등록·갤러리 동기화
+- 완료: 커밋, 원격 push, GitHub Pages 배포
+- 실행하지 않음: HVC 등록·갤러리 동기화
 - VoiceOver 및 실제 보조공학 사용자 승인은 검증 범위에서 제외
 
 이번 리디자인은 `교실 측정 노트와 분배 작업표` 방향으로 완료했습니다. 화면의 읽기 순서를 질문/처음 자료 → 중앙 작업대 → 진행·검증 기록 → 다음 행동으로 통일하고, 아이보리 종이·가는 규칙선·그래파이트 잉크·코발트 현재 상태·주황 주석을 사용합니다. 평균·합계·범위·점도표·상자 무늬는 모두 semantic DOM이며 제품 런타임은 새 이미지·외부 폰트·외부 요청을 사용하지 않습니다.
@@ -59,8 +60,11 @@ Impeccable build-phase의 hero·responsive 비교 점수는 각각 약 `0.5373`,
 
 자동 DOM·axe·Playwright 결과는 실제 초등학생·실제 기기·VoiceOver 승인과 같은 의미가 아닙니다. 실제 교실 기기와 스크린리더를 포함한 별도 수동 사용성 승인은 아직 수행하지 않았습니다.
 
-## Remaining release state
+## Release state
 
 - 소스·문서와 로컬 내부 review 산출물은 현재 작업 트리에 반영되어 있습니다. 내부 review 산출물은 `.gitignore`로 커밋에서 제외됩니다.
-- 최신 리디자인은 아직 커밋·푸시·GitHub Pages 배포되지 않았습니다. 공개 URL [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/)은 이전 공개 버전이며 로컬 리디자인과 동일하다고 표시하지 않습니다.
-- 사용자가 별도로 승인하면 다음 순서로 진행할 수 있습니다: 변경 파일 검토 → 커밋 → push → GitHub Actions/Pages 공개 경로 검증 → HVC 등록·갤러리 동기화.
+- 커밋: `3b35d40 feat: redesign mean balance learner experience`를 `main`과 `codex/mean-balance-lab-redesign`에 push했습니다.
+- GitHub Actions: [Deploy to GitHub Pages run 33293367821](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33293367821)에서 의존성 설치·빌드·Pages 업로드·Deploy가 모두 성공했습니다.
+- 공개 앱: [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/) HTTP 200, 제목 `평균 균형 조정실`, HTML 참조 JS/CSS/favicon 각 200을 확인했습니다.
+- 공개 학습자 검증: `PLAYWRIGHT_BASE_URL=https://wbmaker2.github.io/mean-balance-lab/ PLAYWRIGHT_PORT=4197 PLAYWRIGHT_REUSE_SERVER=true npx --no-install playwright test --project=chromium` → 25 passed (15.7s), 콘솔·페이지 오류와 외부 요청 0.
+- 남은 운영 작업: HVC 등록·갤러리 동기화와 실제 교실 기기·스크린리더 사용성 승인은 별도 작업입니다.

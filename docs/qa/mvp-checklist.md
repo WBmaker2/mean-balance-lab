@@ -60,9 +60,9 @@
 
 ## Reproducibility evidence
 
-## Local redesign follow-up (2026-08-29)
+## Local redesign follow-up (2026-08-29, historical)
 
-이번 리디자인은 공개 배포가 아닌 로컬 소스 개선 범위입니다. `work/education-webapp-redesign-audit.md`의 P1/P2 관찰을 기준으로 질문·목표·미션 행동 surface, 단계 요약, 산출물 trail, 정상 흐름 업데이트 버튼, 계산·비교·결과 패널의 행동 계층을 보강합니다. 공개 Pages 주소는 별도 배포 승인 전까지 이전 릴리스로 남아 있으므로, 이 문서의 기존 Public release evidence와 새 로컬 검증 결과를 섞어 해석하지 않습니다.
+이 항목은 2026-08-29에 기록한 로컬 소스 개선 단계입니다. `work/education-webapp-redesign-audit.md`의 P1/P2 관찰을 기준으로 질문·목표·미션 행동 surface, 단계 요약, 산출물 trail, 정상 흐름 업데이트 버튼, 계산·비교·결과 패널의 행동 계층을 보강했습니다. 최종 배포 상태는 아래 2026-08-30 항목에 기록하며, 이 역사적 로컬 결과와 섞어 해석하지 않습니다.
 
 새 검증 증거는 `tests/e2e/education-redesign.spec.ts`, `src/components/shared/SectionIntro.test.tsx`, `src/components/layout/ProgressRail.test.tsx`, `src/components/layout/ArtifactTrail.test.tsx`, `src/components/update/UpdateHistoryDialog.test.tsx`에 기록합니다. VoiceOver와 실제 보조공학 사용자 승인은 이번 리디자인에서도 수행하지 않습니다.
 
@@ -78,9 +78,9 @@
 | 빌드 | `npm run build` 성공; `dist/index.html`, hashed local JS/CSS 생성 |
 | preview | `npm run preview -- --host 127.0.0.1 --port 4187` 후 built preview Chromium check, viewport 1280×800. 제목 `평균 균형 조정실`, valid situation route, guarded `/predict`, console/page errors 0, non-loopback requests `[]`, 해시가 붙은 JS/CSS 자산을 확인 |
 
-## Local redesign verification (2026-08-30)
+## Published redesign verification (2026-08-30)
 
-이번 항목은 아직 공개 배포하지 않은 전체 리디자인의 로컬 검증 기록입니다. 기존 Public release evidence와 섞어 공개 최신 상태로 해석하지 않습니다.
+전체 리디자인을 `3b35d40`으로 `main`에 fast-forward하고 GitHub Pages에 배포한 뒤, 공개 URL에서 로컬과 같은 검증 묶음을 실행했습니다.
 
 | 항목 | 증거 | 결과 |
 |---|---|---|
@@ -89,6 +89,6 @@
 | Chromium learner flow | `PLAYWRIGHT_PORT=4188 PLAYWRIGHT_REUSE_SERVER=true npx --no-install playwright test --project=chromium` → 25 passed | 통과 |
 | 반응형·접근성 | 375px overflow 0, 32px root font, keyboard-only, 44px controls, reduced-motion, update dialog focus, serious/critical axe 0 | 통과 |
 | 디자인 증거 | `.impeccable/review/desktop.png` 1440×1680, `.impeccable/review/mobile.png` 390×3087, detector advisory 1건(의도적인 box pattern) | 기록 완료 |
-| 공개 상태 | 커밋·푸시·Pages 배포·HVC 동기화는 실행하지 않음 | 대기 |
+| 공개 상태 | [GitHub Actions run 33293367821](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33293367821) 성공, 공개 URL HTTP 200·자산 200 확인. HVC 동기화는 실행하지 않음 | 통과 |
 
 VoiceOver 및 실제 보조공학 사용자 승인은 이 자동·로컬 검증 범위에 포함하지 않습니다.
