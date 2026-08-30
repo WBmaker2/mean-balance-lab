@@ -39,6 +39,7 @@ describe('EvidenceBuilder', () => {
     expect(builderHeading.id).toBe('evidence-heading');
     expect(sentenceHeading.id).toBe('evidence-sentence-heading');
     expect(sentenceRegion?.getAttribute('aria-labelledby')).toBe(sentenceHeading.id);
+    expect(screen.getByText('살펴본 근거를 골라 문장을 완성해 보세요.')).toBeVisible();
   });
 
   it.each([
@@ -47,8 +48,8 @@ describe('EvidenceBuilder', () => {
   ] as const)('builds the approved representative-value sentence for %s', async (datasetId, sentence) => {
     const onSubmit = renderEvidenceBuilder('representative-review', datasetId, 2);
     const user = userEvent.setup();
-    await user.click(screen.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.' }));
-    await user.click(screen.getByRole('checkbox', { name: '범위와 각 값도 함께 봐야 합니다.' }));
+    await user.click(screen.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 돼요.' }));
+    await user.click(screen.getByRole('checkbox', { name: '범위와 각 값도 함께 봐야 해요.' }));
     await user.click(screen.getByRole('button', { name: '근거 문장 완성' }));
 
     expect(screen.getByText(sentence)).toBeVisible();
@@ -84,8 +85,8 @@ describe('EvidenceBuilder', () => {
   it('keeps representative misconception exclusive from the two good reasons', async () => {
     renderEvidenceBuilder('representative-review', 'review-cards-a');
     const user = userEvent.setup();
-    const usefulness = screen.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.' });
-    const limitation = screen.getByRole('checkbox', { name: '범위와 각 값도 함께 봐야 합니다.' });
+    const usefulness = screen.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 돼요.' });
+    const limitation = screen.getByRole('checkbox', { name: '범위와 각 값도 함께 봐야 해요.' });
     const misconception = screen.getByRole('checkbox', { name: '평균만으로 모든 자료를 판단할 수 있다고 생각했어요.' });
 
     await user.click(usefulness);
@@ -109,10 +110,10 @@ describe('EvidenceBuilder', () => {
 
   it('shows representative safety notices before submission', () => {
     renderEvidenceBuilder('representative-review', 'review-cards-a');
-    const notices = screen.getAllByText(/평균은 자료를 간단히 살펴보는 데 도움이 되지만|평균 하나가 공정성/);
+    const notices = screen.getAllByText(/평균은 자료를 간단히 살펴보는 데 도움이 되지만|평균 하나만으로 공정성/);
     expect(notices).toHaveLength(2);
-    expect(notices[0]).toHaveTextContent('평균은 자료를 간단히 살펴보는 데 도움이 되지만, 모든 차이를 보여 주지는 않습니다.');
-    expect(notices[1]).toHaveTextContent('평균 하나가 공정성이나 개인의 가치를 결정하지 않습니다.');
+    expect(notices[0]).toHaveTextContent('평균은 자료를 간단히 살펴보는 데 도움이 되지만, 모든 차이를 보여 주지는 않아요.');
+    expect(notices[1]).toHaveTextContent('평균 하나만으로 공정성이나 개인의 가치를 정할 수 없어요.');
   });
 
   it('does not offer personal, ranking, or free-text inputs', () => {
@@ -132,7 +133,7 @@ describe('EvidenceBuilder', () => {
     };
     renderEvidenceBuilder('representative-review', 'review-cards-a', 1, record);
     expect(screen.getByText(record.sentence)).toBeVisible();
-    expect(screen.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 돼요.' })).toBeChecked();
     expect(screen.getByRole('button', { name: '근거 문장 수정' })).toBeVisible();
   });
 
@@ -212,8 +213,8 @@ describe('EvidenceBuilder', () => {
     view.rerender(
       <EvidenceBuilder mission="representative-review" dataset={getDataset('review-cards-a')} revisions={1} onSubmit={vi.fn()} existingRecord={second} />,
     );
-    expect(screen.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.' })).not.toBeChecked();
-    expect(screen.getByRole('checkbox', { name: '범위와 각 값도 함께 봐야 합니다.' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 돼요.' })).not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: '범위와 각 값도 함께 봐야 해요.' })).toBeChecked();
     expect(within(screen.getByRole('region', { name: '완성된 근거 문장' })).getByText(second.sentence)).toBeVisible();
   });
 

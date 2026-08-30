@@ -68,11 +68,11 @@ describe('ComparisonPanel', () => {
     const user = userEvent.setup();
     renderTwinsComparison('twins-4-a');
 
-    await user.click(screen.getByRole('checkbox', { name: '두 자료의 평균은 모두 4입니다.' }));
+    await user.click(screen.getByRole('checkbox', { name: '두 자료의 평균은 모두 4예요.' }));
     await user.click(screen.getByRole('button', { name: '비교 확인' }));
     expect(screen.getByText('점들이 얼마나 흩어져 있는지도 살펴보세요.')).toBeVisible();
 
-    await user.click(screen.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 흩어져 있습니다.' }));
+    await user.click(screen.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 흩어져 있어요.' }));
     await user.click(screen.getByRole('button', { name: '비교 확인' }));
     expect(screen.getByText('평균은 같지만 자료의 모양은 다를 수 있어요.')).toBeVisible();
   });
@@ -81,7 +81,7 @@ describe('ComparisonPanel', () => {
     const user = userEvent.setup();
     renderTwinsComparison();
 
-    await user.click(screen.getByRole('checkbox', { name: '두 자료의 모양은 같습니다.' }));
+    await user.click(screen.getByRole('checkbox', { name: '두 자료의 모양은 같아요.' }));
     await user.click(screen.getByRole('button', { name: '비교 확인' }));
 
     expect(screen.getByText('평균이 같아도 각 값과 흩어진 정도는 다를 수 있어요.')).toBeVisible();
@@ -92,8 +92,8 @@ describe('ComparisonPanel', () => {
     const user = userEvent.setup();
     renderTwinsComparison();
 
-    await user.click(screen.getByRole('checkbox', { name: '두 자료의 평균은 모두 4입니다.' }));
-    await user.click(screen.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 흩어져 있습니다.' }));
+    await user.click(screen.getByRole('checkbox', { name: '두 자료의 평균은 모두 4예요.' }));
+    await user.click(screen.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 흩어져 있어요.' }));
     await user.click(screen.getByRole('button', { name: '비교 확인' }));
 
     const currentActions = screen.getAllByRole('button').filter(

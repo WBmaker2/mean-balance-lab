@@ -16,12 +16,14 @@ describe('UpdateHistoryDialog', () => {
     expect(UPDATE_HISTORY[0]).toEqual({
       date: '2026-08-30',
       category: '개선',
-      summary: '선택 상태와 미션별 점도표·모션 안내 보강',
+      summary: '초등학생용 문장과 가상 모형 안내를 쉽게 정리',
     });
   });
 
   it('keeps literal dated entries for deployment, design, and MVP', () => {
     expect(UPDATE_HISTORY).toEqual([
+      { date: '2026-08-30', category: '개선', summary: '초등학생용 문장과 가상 모형 안내를 쉽게 정리' },
+      { date: '2026-08-30', category: '개선', summary: '재배분 점 시뮬레이션 초기화와 수량 검증 보강' },
       { date: '2026-08-30', category: '개선', summary: '선택 상태와 미션별 점도표·모션 안내 보강' },
       { date: '2026-08-30', category: '개선', summary: '모바일 단계 진입 스크롤과 첫 행동 안내 보강' },
       { date: '2026-08-30', category: '개선', summary: '오답 알림 중복 제거' },
@@ -50,7 +52,7 @@ describe('UpdateHistoryDialog', () => {
     const title = screen.getByRole('heading', { name: '업데이트 내역' });
     expect(title.tagName).toBe('H2');
     expect(dialog).toHaveAttribute('aria-labelledby', title.id);
-    expect(screen.getAllByText('2026-08-30')).toHaveLength(6);
+    expect(screen.getAllByText('2026-08-30')).toHaveLength(8);
     expect(screen.getByText('2026-08-29')).toBeVisible();
     expect(screen.getAllByText('2026-08-28')).toHaveLength(2);
     expect(screen.getByText('2026-08-27')).toBeVisible();
@@ -59,6 +61,8 @@ describe('UpdateHistoryDialog', () => {
     expect(screen.getByText('모바일 단계 진입 스크롤과 첫 행동 안내 보강')).toBeVisible();
     expect(screen.getByText('오답 알림 중복 제거')).toBeVisible();
     expect(screen.getByText('선택 상태와 미션별 점도표·모션 안내 보강')).toBeVisible();
+    expect(screen.getByText('초등학생용 문장과 가상 모형 안내를 쉽게 정리')).toBeVisible();
+    expect(screen.getByText('재배분 점 시뮬레이션 초기화와 수량 검증 보강')).toBeVisible();
     expect(screen.getByText('학습 단계 안내와 입력·모바일 화면 개선')).toBeVisible();
     expect(screen.getByText('GitHub Pages 공개 배포 경로 정리')).toBeVisible();
     expect(screen.getByText('평균 균형 조정실 MVP 구현')).toBeVisible();

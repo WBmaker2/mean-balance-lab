@@ -55,6 +55,13 @@ describe('ResultScreen', () => {
     expect(screen.queryByText(/총점|순위|백분율|학급 비교/)).not.toBeInTheDocument();
   });
 
+  it('uses learner-friendly safety language in the full result view', async () => {
+    renderAppAt('#/results', completedSession());
+
+    expect(await screen.findByText('실제 물건을 재는 것이 아니라, 수를 세어 보는 교육용 가상 모형이에요.')).toBeVisible();
+    expect(screen.getByText('평균 하나만으로 공정성이나 개인의 가치를 정할 수 없어요.')).toBeVisible();
+  });
+
   it('edits a canonical attempt in place without increasing revisions', async () => {
     renderAppAt('#/results', completedSession());
     const user = userEvent.setup();
@@ -111,7 +118,7 @@ describe('ResultScreen', () => {
     renderAppAt('#/', completedBalanceStateWithTwoRetries());
     const user = userEvent.setup();
     expect(await screen.findByText('다음 미션: 2. 평균이 같아도 다를까요?')).toBeVisible();
-    await user.click(screen.getByRole('radio', { name: '도전(B 세트)' }));
+    await user.click(screen.getByRole('radio', { name: '도전 자료' }));
     await user.click(screen.getByRole('button', { name: '미션 시작' }));
     expect(window.location.hash).toBe('#/mission/mean-twins/twins-6-b/situation');
   });
@@ -120,7 +127,7 @@ describe('ResultScreen', () => {
     renderAppAt('#/', completedSession());
     expect(await screen.findByRole('button', { name: '전체 결과 보기' })).toBeVisible();
     expect(screen.queryByRole('button', { name: '미션 시작' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('radio', { name: '기본(A 세트)' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: '기본 자료' })).not.toBeInTheDocument();
   });
 
   it('lists every unfinished required mission in registry order', () => {

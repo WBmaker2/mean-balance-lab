@@ -85,7 +85,7 @@ npm run preview -- --host 127.0.0.1
 
 ## 업데이트 내역 정책
 
-화면 하단의 `업데이트 내역` 버튼에서 날짜·구분·변경 요약을 확인할 수 있습니다. 현재 기록에는 `2026-08-30 / 개선 / 선택 상태와 미션별 점도표·모션 안내 보강`, `2026-08-30 / 개선 / 모바일 단계 진입 스크롤과 첫 행동 안내 보강`, `2026-08-30 / 개선 / 오답 알림 중복 제거`, `2026-08-30 / 개선 / 바구니 동그라미 수량 실시간 시뮬레이션 추가`, `2026-08-30 / 개선 / 빈 트레이 장식 이미지와 DOM 수량 오버레이 보강`, `2026-08-30 / 개선 / 교실 측정 노트 작업표 시각 세계와 3열 학습 작업대 적용`, `2026-08-29 / 개선 / 학습 화면 계층과 모바일 행동 흐름 개선`, `2026-08-28 / 개선 / 배포 환경의 단계 초점 인계 보완`, `2026-08-28 / 개선 / 학습 단계 안내와 입력·모바일 화면 개선`, `2026-08-27 / 배포 / GitHub Pages 공개 배포 경로 정리`가 포함되어 있습니다. 앱을 수정할 때마다 `src/content/updateHistory.ts`에 실제 Asia/Seoul 날짜와 짧은 변경 요약을 추가하고, 버튼 대화상자에서 확인되는 기록과 함께 검증합니다.
+화면 하단의 `업데이트 내역` 버튼에서 날짜·구분·변경 요약을 확인할 수 있습니다. 현재 기록에는 `2026-08-30 / 개선 / 초등학생용 문장과 가상 모형 안내를 쉽게 정리`, `2026-08-30 / 개선 / 재배분 점 시뮬레이션 초기화와 수량 검증 보강`, `2026-08-30 / 개선 / 선택 상태와 미션별 점도표·모션 안내 보강`, `2026-08-30 / 개선 / 모바일 단계 진입 스크롤과 첫 행동 안내 보강`, `2026-08-30 / 개선 / 오답 알림 중복 제거`, `2026-08-30 / 개선 / 바구니 동그라미 수량 실시간 시뮬레이션 추가`, `2026-08-30 / 개선 / 빈 트레이 장식 이미지와 DOM 수량 오버레이 보강`, `2026-08-30 / 개선 / 교실 측정 노트 작업표 시각 세계와 3열 학습 작업대 적용`, `2026-08-29 / 개선 / 학습 화면 계층과 모바일 행동 흐름 개선`, `2026-08-28 / 개선 / 배포 환경의 단계 초점 인계 보완`, `2026-08-28 / 개선 / 학습 단계 안내와 입력·모바일 화면 개선`, `2026-08-27 / 배포 / GitHub Pages 공개 배포 경로 정리`가 포함되어 있습니다. 앱을 수정할 때마다 `src/content/updateHistory.ts`에 실제 Asia/Seoul 날짜와 짧은 변경 요약을 추가하고, 버튼 대화상자에서 확인되는 기록과 함께 검증합니다.
 
 2026-08-29 리디자인에서는 질문·목표·미션 행동을 카드 계층으로 나누고, 단계 수·현재 행동·검증된 산출물을 함께 보여 주며, 업데이트 버튼을 콘텐츠를 가리지 않는 정상 문서 흐름으로 옮겼습니다. 2026-08-30 전체 리디자인에서는 이 계층을 교실 측정 노트 작업표로 통합하고, 처음 자료·현재 작업대·평균 수식 힌트·진행 장부를 한 장 읽기 순서로 연결했습니다. 같은 날 이미지 중심 후속 작업에서는 빈 트레이 underlay와 DOM 수량 오버레이, 노트·기록·설정 도구 모음을 추가했고 `759685a`로 GitHub Pages에 배포했습니다. 이어진 동그라미 시뮬레이션 추가 작업은 현재 수량에 맞춰 바구니 동그라미가 즉시 갱신되도록 연결하고 `366c26f`로 커밋·push했으며, GitHub Actions run [33297842402](https://github.com/WBmaker2/mean-balance-lab/actions/runs/33297842402)으로 배포했습니다. 공개 검증과 각 변경의 배포 증거는 [`work/education-webapp-redesign-report.md`](./work/education-webapp-redesign-report.md)에서 확인할 수 있습니다.
 
@@ -95,6 +95,6 @@ npm run preview -- --host 127.0.0.1
 
 ## 현재 운영 범위
 
-공개 저장소는 [`WBmaker2/mean-balance-lab`](https://github.com/WBmaker2/mean-balance-lab)이며, 공개 앱은 [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/)입니다. `main`에 반영된 변경은 [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml)에 정의된 GitHub Pages workflow를 통해 배포됩니다. 현재 검증 범위는 로컬 개발 서버와 빌드 산출물의 실행·접근성·학습 경로 확인 및 공개 Pages 경로 확인입니다.
+공개 저장소는 [`WBmaker2/mean-balance-lab`](https://github.com/WBmaker2/mean-balance-lab)이며, 공개 앱은 [`https://wbmaker2.github.io/mean-balance-lab/`](https://wbmaker2.github.io/mean-balance-lab/)입니다. `main`에 반영된 변경은 [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml)에 정의된 GitHub Pages workflow를 통해 배포됩니다. 현재 검증 범위는 로컬 개발 서버와 빌드 산출물의 실행·접근성·학습 경로 확인 및 공개 Pages 경로 확인입니다. 최근 학생용 문장·시뮬레이션 검증은 [`work/elementary-webapp-ux-text-simulation-report.md`](./work/elementary-webapp-ux-text-simulation-report.md)에 기록했습니다.
 
 구현 구조와 세부 검증 기록은 [`2026-08-26-mean-balance-lab-implementation-plan.md`](./2026-08-26-mean-balance-lab-implementation-plan.md), [`2026-08-28-mean-balance-lab-improvement-plan.md`](./2026-08-28-mean-balance-lab-improvement-plan.md), [`docs/qa/mvp-checklist.md`](./docs/qa/mvp-checklist.md)에서 확인할 수 있습니다.

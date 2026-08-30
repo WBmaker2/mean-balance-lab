@@ -31,7 +31,7 @@ export const SituationPanel = ({ dataset, onAdvance }: SituationPanelProps) => (
     </div>
     <aside className="safety-note" aria-label="가상 자료 안내">
       <p>실제 자료가 아닌 수학 연습용 가상 자료예요.</p>
-      <p>{SAFETY_COPY.modelBoundary}</p>
+      <p>{SAFETY_COPY.learnerModelBoundary}</p>
     </aside>
     <div className="action-group">
       <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음: 평균 예측</ActionButton>

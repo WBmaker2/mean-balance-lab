@@ -5,6 +5,8 @@ export interface UpdateHistoryEntry {
 }
 
 export const UPDATE_HISTORY: readonly UpdateHistoryEntry[] = [
+  { date: '2026-08-30', category: '개선', summary: '초등학생용 문장과 가상 모형 안내를 쉽게 정리' },
+  { date: '2026-08-30', category: '개선', summary: '재배분 점 시뮬레이션 초기화와 수량 검증 보강' },
   { date: '2026-08-30', category: '개선', summary: '선택 상태와 미션별 점도표·모션 안내 보강' },
   { date: '2026-08-30', category: '개선', summary: '모바일 단계 진입 스크롤과 첫 행동 안내 보강' },
   { date: '2026-08-30', category: '개선', summary: '오답 알림 중복 제거' },

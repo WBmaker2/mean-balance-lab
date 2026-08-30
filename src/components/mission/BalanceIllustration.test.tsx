@@ -31,4 +31,17 @@ describe('BalanceIllustration', () => {
     expect(screen.getByRole('figure', { name: '구슬 분배 작업대' })).toHaveAttribute('data-balanced', 'false');
     expect(document.querySelectorAll('.quantity-dot')).toHaveLength(20);
   });
+
+  it('keeps each basket dot count aligned with the current values after one move', () => {
+    render(
+      <BalanceIllustration initialValues={[2, 4, 6, 8]} currentValues={[3, 4, 6, 7]} meanValue={5} balanced={false} />,
+    );
+
+    expect(document.querySelector('[data-visualization="quantity-dots"]'))
+      .toHaveAttribute('data-current-values', '3,4,6,7');
+    expect(Array.from(document.querySelectorAll('[data-dot-count]'))
+      .map((basket) => basket.getAttribute('data-dot-count')))
+      .toEqual(['3', '4', '6', '7']);
+    expect(document.querySelectorAll('.quantity-dot')).toHaveLength(20);
+  });
 });

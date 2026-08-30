@@ -39,8 +39,8 @@ export const AppShell = () => {
           </details>
         </div>
         <footer className="shell-footer">
-          <p>가상 자료로 평균의 뜻과 한계를 살펴봅니다.</p>
-          <p className="footer-boundary">이름이나 실제 자료를 입력하지 않는 안전한 학습 활동입니다.</p>
+          <p>가상 자료로 평균의 뜻과 한계를 살펴봐요.</p>
+          <p className="footer-boundary">이름이나 실제 자료를 입력하지 않는 안전한 학습 활동이에요.</p>
         </footer>
       </div>
       <UpdateHistoryDialog />

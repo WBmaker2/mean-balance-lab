@@ -90,6 +90,42 @@ describe('recoverable lab session reducer', () => {
     expect(undone.activeRun?.artifacts.redistribution?.undoStack).toEqual([]);
   });
 
+  it('resets only the active redistribution and preserves the rest of the run', () => {
+    const state = {
+      ...createInitialSession(),
+      activeRun: {
+        missionId: 'balance-delivery' as const,
+        datasetId: 'balance-20-a' as const,
+        stage: 'redistribute' as const,
+        revisions: 0,
+        transientFeedback: null,
+        artifacts: {
+          prediction: { value: 5 as const },
+          redistribution: {
+            initialValues: [2, 4, 6, 8],
+            currentValues: [5, 5, 5, 5],
+            undoStack: [[2, 4, 6, 8]],
+            confirmed: true,
+          },
+          calculations: {
+            current: { target: 'current' as const, total: 20, count: 4, average: 5, verified: true },
+          },
+        },
+      },
+    };
+
+    const reset = sessionReducer(state, { type: 'RESET_REDISTRIBUTION' });
+
+    expect(reset.activeRun?.stage).toBe('redistribute');
+    expect(reset.activeRun?.artifacts.prediction).toEqual({ value: 5 });
+    expect(reset.activeRun?.artifacts.calculations?.current?.verified).toBe(true);
+    expect(reset.activeRun?.artifacts.redistribution).toEqual({
+      initialValues: [2, 4, 6, 8],
+      currentValues: [2, 4, 6, 8],
+      undoStack: [],
+    });
+  });
+
   it('requires redistribution confirmation before advancing to calculation', () => {
     let state = sessionReducer(createInitialSession(), {
       type: 'START_DATASET', missionId: 'balance-delivery', datasetId: 'balance-20-a',

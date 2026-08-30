@@ -133,7 +133,7 @@ describe('learning router handoff', () => {
     expect(window.location.hash).toContain('/compare');
     expect(await screen.findByRole('heading', { name: '평균과 자료의 모습을 비교해 볼까요?' })).toBeVisible();
 
-    await user.click(screen.getByRole('radio', { name: '범위나 각 값을 함께 살펴봐야 합니다.' }));
+    await user.click(screen.getByRole('radio', { name: '범위나 각 값을 함께 살펴봐야 해요.' }));
     await user.click(screen.getByRole('button', { name: '비교 확인' }));
     await user.click(screen.getByRole('button', { name: '다음 단계' }));
     expect(window.location.hash).toContain('/explain');

@@ -165,7 +165,7 @@ describe('StoragePreference', () => {
     expect(sessionStorage.getItem(TAB_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(DEVICE_STORAGE_KEY)).toBeNull();
     expect(screen.queryByRole('heading', { name: '전체 결과' })).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '평균은 여러 값을 어떻게 대표하며, 한 값이 달라지면 평균은 왜 움직일까요?' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: '평균은 여러 값을 어떻게 나타내고, 값 하나가 달라지면 평균은 어떻게 달라질까요?' })).toBeVisible();
   });
 
   it('preserves both keys and the current route when clearing is cancelled', async () => {

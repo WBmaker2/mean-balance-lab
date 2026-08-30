@@ -27,7 +27,7 @@ const startNextDataset = async (page: Page, missionId: MissionId, datasetId: Dat
   await page.goto('./#/');
   await expect(page.getByText(`다음 미션: ${missionTitles[missionId]}`, { exact: true })).toBeVisible();
   const challenge = datasetId.endsWith('-b');
-  const difficulty = page.getByRole('radio', { name: challenge ? '도전(B 세트)' : '기본(A 세트)', exact: true });
+  const difficulty = page.getByRole('radio', { name: challenge ? '도전 자료' : '기본 자료', exact: true });
   await expect(difficulty).toBeVisible();
   await difficulty.check();
   await expect(page.getByText(challenge ? '도전 자료로 시작' : '기본 자료로 시작', { exact: true })).toBeVisible();
@@ -52,7 +52,7 @@ const moveOne = async (page: Page, source: number, destination: number) => {
 export const startBalanceMission = async (page: Page): Promise<void> => {
   await page.goto('./#/');
   await expect(page.getByText('다음 미션: 1. 골고루 나누기', { exact: true })).toBeVisible();
-  await page.getByRole('radio', { name: '기본(A 세트)', exact: true }).check();
+  await page.getByRole('radio', { name: '기본 자료', exact: true }).check();
   await page.getByRole('button', { name: '미션 시작', exact: true }).click();
   await expect(page.getByText(situationValues['balance-20-a'], { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '다음: 평균 예측', exact: true }).click();
@@ -107,7 +107,7 @@ const completeDataset = async (page: Page, missionId: MissionId, datasetId: Data
       ? '자료 A 평균 4, 자료 B 평균 4 / 자료 A 범위 0, 자료 B 범위 6'
       : '자료 A 평균 6, 자료 B 평균 6 / 자료 A 범위 0, 자료 B 범위 8', { exact: true })).toBeVisible();
     await page.getByRole('checkbox', { name: `두 자료의 평균은 모두 ${expectedMeans[datasetId]}입니다.`, exact: true }).check();
-    await page.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 흩어져 있습니다.', exact: true }).check();
+    await page.getByRole('checkbox', { name: '자료 B가 자료 A보다 더 흩어져 있어요.', exact: true }).check();
     await page.getByRole('button', { name: '비교 확인', exact: true }).click();
     await page.getByRole('button', { name: '다음 단계', exact: true }).click();
   } else if (datasetId.startsWith('outlier-')) {
@@ -128,7 +128,7 @@ const completeDataset = async (page: Page, missionId: MissionId, datasetId: Data
     await submitCalculation(page, '현재 자료의 평균을 계산해 볼까요?', total, count, expectedMeans[datasetId]);
     await page.getByRole('button', { name: '다음 단계', exact: true }).click();
     await expect(page.getByRole('heading', { name: '평균과 자료의 모습을 비교해 볼까요?', exact: true })).toBeVisible();
-    await page.getByRole('radio', { name: '범위나 각 값을 함께 살펴봐야 합니다.', exact: true }).check();
+    await page.getByRole('radio', { name: '범위나 각 값을 함께 살펴봐야 해요.', exact: true }).check();
     await page.getByRole('button', { name: '비교 확인', exact: true }).click();
     await page.getByRole('button', { name: '다음 단계', exact: true }).click();
   }
@@ -139,8 +139,8 @@ const completeDataset = async (page: Page, missionId: MissionId, datasetId: Data
       : datasetId.startsWith('outlier-') ? '합계 변화와 평균 변화를 연결했어요.' : null;
   if (evidence) await page.getByRole('radio', { name: evidence, exact: true }).check();
   else {
-    await page.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 됩니다.', exact: true }).check();
-    await page.getByRole('checkbox', { name: '범위와 각 값도 함께 봐야 합니다.', exact: true }).check();
+    await page.getByRole('checkbox', { name: '평균은 여러 값을 한 수로 살펴보는 데 도움이 돼요.', exact: true }).check();
+    await page.getByRole('checkbox', { name: '범위와 각 값도 함께 봐야 해요.', exact: true }).check();
   }
   await page.getByRole('button', { name: '근거 문장 완성', exact: true }).click();
   await expect(page.getByText('근거 문장을 저장했어요.', { exact: true })).toBeVisible();

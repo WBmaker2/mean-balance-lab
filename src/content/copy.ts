@@ -18,6 +18,7 @@ export const CALCULATION_COPY = {
 } as const;
 
 export const COMPARISON_COPY = {
+  outlierPredictionHint: '바뀐 값이 커졌는지 작아졌는지 다시 살펴봐요. 합계와 평균의 숫자는 계산 단계에서 확인해요.',
   twinsMeanNextAction: '두 자료의 평균을 먼저 비교해 보세요.',
   twinsMeanNextActionDetail: '자료 A와 자료 B의 합계를 각각 자료 개수로 나누어 보세요.',
   twinsSpreadMessage: '점들이 얼마나 흩어져 있는지도 살펴보세요.',
@@ -98,6 +99,9 @@ export const buildRepresentativeEvidenceSentence = (modelSentence: string): stri
 
 export const SAFETY_COPY = {
   modelBoundary: '이 활동은 실제 세계를 정밀하게 측정하지 않는 교육용 이산 모형입니다.',
+  learnerModelBoundary: '실제 물건을 재는 것이 아니라, 수를 세어 보는 교육용 가상 모형이에요.',
   fairness: '평균 하나가 공정성이나 개인의 가치를 결정하지 않습니다.',
+  learnerFairness: '평균 하나만으로 공정성이나 개인의 가치를 정할 수 없어요.',
   usefulness: '평균은 자료를 간단히 살펴보는 데 도움이 되지만, 모든 차이를 보여 주지는 않습니다.',
+  learnerUsefulness: '평균은 자료를 간단히 살펴보는 데 도움이 되지만, 모든 차이를 보여 주지는 않아요.',
 } as const;

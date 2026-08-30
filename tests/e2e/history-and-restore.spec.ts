@@ -56,7 +56,7 @@ test('direct navigation without a run cannot expose a locked later stage', async
   await expect(page.getByRole('heading', { name: '근거 문장을 완성해 볼까요?', exact: true })).toHaveCount(0);
 
   await page.goto('./#/');
-  await expect(page.getByRole('heading', { name: '평균은 여러 값을 어떻게 대표하며, 한 값이 달라지면 평균은 왜 움직일까요?', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '평균은 여러 값을 어떻게 나타내고, 값 하나가 달라지면 평균은 어떻게 달라질까요?', exact: true })).toBeVisible();
   await page.goBack();
   await expect(page.getByRole('heading', { name: '평균을 먼저 예측해 볼까요?', exact: true })).toBeVisible();
 });
