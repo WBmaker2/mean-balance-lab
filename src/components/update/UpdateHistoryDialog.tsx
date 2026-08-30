@@ -46,7 +46,9 @@ export const UpdateHistoryDialog = () => {
   const closeRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const wasOpenRef = useRef(false);
-  const titleId = `update-history-title-${useId().replaceAll(':', '')}`;
+  const idPrefix = useId().replaceAll(':', '');
+  const titleId = `update-history-title-${idPrefix}`;
+  const dialogId = `update-history-dialog-${idPrefix}`;
 
   useEffect(() => {
     if (!isOpen) {
@@ -131,25 +133,24 @@ export const UpdateHistoryDialog = () => {
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        className="update-history-trigger print-hidden"
-        style={{
-          position: 'fixed',
-          right: '1rem',
-          bottom: '1rem',
-          minWidth: '44px',
-          minHeight: '44px',
-          zIndex: 10,
-        }}
-        onClick={() => setIsOpen(true)}
-      >
-        업데이트 내역
-      </button>
+      <div className="update-history-anchor print-hidden">
+        <button
+          ref={triggerRef}
+          type="button"
+          className="update-history-trigger"
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
+          aria-controls={isOpen ? dialogId : undefined}
+          style={{ minWidth: '44px', minHeight: '44px' }}
+          onClick={() => setIsOpen(true)}
+        >
+          업데이트 내역
+        </button>
+      </div>
       {isOpen ? (
         <div
           ref={dialogRef}
+          id={dialogId}
           className="update-history-dialog print-hidden"
           role="dialog"
           aria-modal="true"

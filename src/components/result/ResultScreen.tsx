@@ -6,6 +6,7 @@ import { useLabSession } from '../../state/LabSessionContext';
 import { ActionButton } from '../shared/ActionButton';
 import { MissionSummary } from '../mission/MissionSummary';
 import { TeacherSummary } from './TeacherSummary';
+import { SectionIntro } from '../shared/SectionIntro';
 
 const requiredAttempts = (attempts: ReturnType<typeof useLabSession>['state']['attempts']) => MISSIONS.map((mission) => {
   const attempt = attempts[mission.requiredDatasetId];
@@ -48,18 +49,33 @@ export const ResultScreen = () => {
   if (!isComplete) {
     const remainingTitles = getIncompleteRequiredMissionTitles(state);
     return (
-      <section aria-labelledby="result-heading">
-        <h1 id="result-heading">전체 결과</h1>
-        <p role="status">{resultLockCopy(remainingTitles)}</p>
+      <section className="worksheet-page locked-result stage-panel" data-stage="results" aria-labelledby="result-heading">
+        <SectionIntro
+          id="result-heading"
+          title="전체 결과"
+          description="네 미션의 근거를 모두 모으면 한 화면에서 다시 볼 수 있어요."
+          tone="blue"
+        />
+        <p className="result-lock-message" role="status">{resultLockCopy(remainingTitles)}</p>
+        <div className="action-group">
+          <ActionButton type="button" emphasis="next" onClick={() => navigate('/')}>첫 미션으로 돌아가기</ActionButton>
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="full-result" aria-labelledby="result-heading">
-      <h1 id="result-heading">전체 결과</h1>
-      <p className="model-boundary">이 활동은 실제 세계를 정밀하게 측정하지 않는 교육용 이산 모형입니다.</p>
-      <p className="fairness-notice">평균 하나가 공정성이나 개인의 가치를 결정하지 않습니다.</p>
+    <section className="worksheet-page full-result" aria-labelledby="result-heading">
+      <SectionIntro
+        id="result-heading"
+        title="전체 결과"
+        description="내가 고른 근거를 다시 읽고, 평균이 알려 주는 것과 알려 주지 않는 것을 정리해 보세요."
+        tone="green"
+      />
+      <div className="result-safety-notes" aria-label="결과를 읽는 방법">
+        <p className="model-boundary">이 활동은 실제 세계를 정밀하게 측정하지 않는 교육용 이산 모형입니다.</p>
+        <p className="fairness-notice">평균 하나가 공정성이나 개인의 가치를 결정하지 않습니다.</p>
+      </div>
       <section className="mission-result-cards" aria-labelledby="mission-results-heading">
         <h2 id="mission-results-heading">미션별 근거</h2>
         {records.map(({ mission, attempt }) => {

@@ -7,6 +7,12 @@ interface ArtifactTrailProps {
   revisions?: number | undefined;
 }
 
+interface ArtifactRow {
+  kind: 'prediction' | 'redistribution' | 'calculation' | 'comparison' | 'evidence' | 'revision';
+  text: string;
+  description: string;
+}
+
 const predictionText = (value: PredictionValue): string => {
   if (typeof value === 'number') return `예측: 평균 ${value}`;
   const labels: Readonly<Record<Exclude<PredictionValue, number>, string>> = {
@@ -37,31 +43,38 @@ const comparisonLabels: Readonly<Record<ComparisonChoiceId, string>> = {
 };
 
 export const ArtifactTrail = ({ artifacts, revisions }: ArtifactTrailProps) => {
-  const rows: string[] = [];
-  if (artifacts.prediction) rows.push(predictionText(artifacts.prediction.value));
+  const rows: ArtifactRow[] = [];
+  if (artifacts.prediction) rows.push({ kind: 'prediction', text: predictionText(artifacts.prediction.value), description: '처음에 생각한 평균이에요.' });
 
   const redistribution = artifacts.redistribution;
   if (redistribution
     && sum(redistribution.initialValues) === sum(redistribution.currentValues)
     && isBalanced(redistribution.currentValues)) {
-    rows.push(`재배분: ${redistribution.currentValues.join(', ')}`);
+    rows.push({ kind: 'redistribution', text: `재배분: ${redistribution.currentValues.join(', ')}`, description: '전체 양을 지키며 고르게 나눈 결과예요.' });
   }
 
   Object.values(artifacts.calculations ?? {}).forEach((artifact) => {
-    if (artifact?.verified) rows.push(calculationText(artifact));
+    if (artifact?.verified) rows.push({ kind: 'calculation', text: calculationText(artifact), description: '확인한 평균 계산이에요.' });
   });
   if (artifacts.comparison?.verified) {
     const labels = artifacts.comparison.selectedIds.map((id) => comparisonLabels[id]).join(', ');
-    rows.push(`비교: ${labels}`);
+    rows.push({ kind: 'comparison', text: `비교: ${labels}`, description: '자료를 비교한 근거예요.' });
   }
-  if (artifacts.evidence) rows.push(`근거: ${artifacts.evidence.sentence}`);
-  if (revisions !== undefined && revisions > 0) rows.push(`수정 횟수: ${revisions}`);
+  if (artifacts.evidence) rows.push({ kind: 'evidence', text: `근거: ${artifacts.evidence.sentence}`, description: '완성한 근거 문장이에요.' });
+  if (revisions !== undefined && revisions > 0) rows.push({ kind: 'revision', text: `수정 횟수: ${revisions}`, description: '다시 생각한 횟수예요.' });
 
   if (rows.length === 0) return null;
   return (
-    <section aria-label="지금까지 남긴 자료">
+    <section className="artifact-trail notebook-evidence" aria-label="지금까지 남긴 자료">
       <h2>지금까지 남긴 자료</h2>
-      <ul>{rows.map((row, index) => <li key={`${row}-${index}`}>{row}</li>)}</ul>
+      <ul>
+        {rows.map((row, index) => (
+          <li key={`${row.kind}-${row.text}-${index}`} data-artifact-kind={row.kind}>
+            <span className="artifact-row-text">{row.text}</span>
+            <span className="artifact-row-description">{row.description}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 };

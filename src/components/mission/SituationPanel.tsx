@@ -1,6 +1,7 @@
 import { SAFETY_COPY } from '../../content/copy';
 import type { MissionDataset } from '../../domain/types';
 import { ActionButton } from '../shared/ActionButton';
+import { SectionIntro } from '../shared/SectionIntro';
 
 interface SituationPanelProps {
   dataset: MissionDataset;
@@ -17,13 +18,23 @@ const values = (dataset: MissionDataset): string => {
 };
 
 export const SituationPanel = ({ dataset, onAdvance }: SituationPanelProps) => (
-  <section aria-labelledby="situation-heading">
-    <p>가상 자료</p>
-    <h1 id="situation-heading">상황을 살펴볼까요?</h1>
-    <p>{dataset.context}</p>
-    <p>{values(dataset)}</p>
-    <p>실제 자료가 아닌 수학 연습용 가상 자료예요.</p>
-    <p>{SAFETY_COPY.modelBoundary}</p>
-    <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음: 평균 예측</ActionButton>
+  <section className="stage-panel stage-panel-situation" data-stage="situation" aria-labelledby="situation-heading">
+    <SectionIntro
+      id="situation-heading"
+      title="상황을 살펴볼까요?"
+      description="먼저 자료가 어떤 상황인지 읽고, 평균을 생각할 준비를 해요."
+      tone="blue"
+    />
+    <div className="data-preview" aria-label="살펴볼 가상 자료">
+      <p className="data-preview-context">{dataset.context}</p>
+      <p className="data-preview-values">{values(dataset)}</p>
+    </div>
+    <aside className="safety-note" aria-label="가상 자료 안내">
+      <p>실제 자료가 아닌 수학 연습용 가상 자료예요.</p>
+      <p>{SAFETY_COPY.modelBoundary}</p>
+    </aside>
+    <div className="action-group">
+      <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음: 평균 예측</ActionButton>
+    </div>
   </section>
 );

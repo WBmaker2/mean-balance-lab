@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MISSIONS } from './missions';
-import { stageLabel } from './stages';
+import { stageAction, stageLabel } from './stages';
 import { mean, range, sum } from '../domain/math';
 
 const EXPECTED_CONTRACT = [
@@ -140,5 +140,10 @@ describe('MISSIONS', () => {
     expect(MISSIONS.find((mission) => mission.id === 'representative-review')?.learnerTitle)
       .toBe('4. 평균만으로 괜찮을까요?');
     expect(stageLabel('mission-result')).toBe('미션 결과');
+  });
+
+  it('exposes a short learner action for every stage', () => {
+    expect(stageAction('predict')).toBe('평균이 어떻게 될지 먼저 골라 봐요.');
+    expect(stageAction('mission-result')).toBe('배운 내용을 확인하고 다음 미션을 골라요.');
   });
 });

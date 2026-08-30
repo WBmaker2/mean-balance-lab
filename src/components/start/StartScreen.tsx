@@ -5,6 +5,7 @@ import { MISSIONS } from '../../content/missions';
 import { isCanonicalEvidenceRecord } from '../../domain/evaluation';
 import { routeFor } from '../../app/router';
 import { ActionButton } from '../shared/ActionButton';
+import { SectionIntro } from '../shared/SectionIntro';
 import { stageLabel } from '../../content/stages';
 
 type Difficulty = 'a' | 'b';
@@ -57,24 +58,31 @@ export const StartScreen = () => {
   };
 
   return (
-    <section aria-labelledby="start-heading">
+    <section className="worksheet-page start-screen">
       {recoveryMessage ? <p role="alert">{recoveryMessage}</p> : null}
-      <p>오늘의 질문</p>
-      <h1 id="start-heading">평균은 여러 값을 어떻게 대표하며, 한 값이 달라지면 평균은 왜 움직일까요?</h1>
-      <h2>오늘의 목표</h2>
-      <ul>{goals.map((goal) => <li key={goal}>{goal}</li>)}</ul>
+      <SectionIntro
+        id="start-heading"
+        title="평균은 여러 값을 어떻게 대표하며, 한 값이 달라지면 평균은 왜 움직일까요?"
+        description="자료를 직접 살펴보며 평균의 뜻과 움직임을 찾아봐요."
+        tone="blue"
+      />
+      <section className="goal-card" aria-labelledby="goal-heading">
+        <h2 id="goal-heading">오늘의 목표</h2>
+        <p>평균을 네 가지 방법으로 살펴봐요.</p>
+        <ul>{goals.map((goal) => <li key={goal}>{goal}</li>)}</ul>
+      </section>
       {activeRun && activeMission && activeDataset ? (
-        <aside aria-label="진행 중인 미션">
-          <h2>진행 중인 미션</h2>
-          <p>{activeMission.learnerTitle}</p>
+        <aside className="resume-card" aria-label="진행 중인 미션">
+          <h2>{activeMission.learnerTitle}</h2>
           <p>자료: {activeDataset.label}</p>
           <p>현재 단계: {stageLabel(activeRun.stage)}</p>
           <ActionButton type="button" onClick={resume}>이어서 하기</ActionButton>
         </aside>
       ) : null}
       {nextMission ? (
-        <>
-          <p>다음 미션: {nextMission.learnerTitle}</p>
+        <section className="next-mission-card" aria-labelledby="next-mission-heading">
+          <h2 id="next-mission-heading">다음 미션: {nextMission.learnerTitle}</h2>
+          <p>{nextMission.learningGoal}</p>
           <fieldset>
             <legend>자료 난이도</legend>
             <label>
@@ -86,11 +94,19 @@ export const StartScreen = () => {
               도전(B 세트)
             </label>
           </fieldset>
-          <p>{difficulty === 'a' ? '기본 자료로 시작' : '도전 자료로 시작'}</p>
-          <ActionButton type="button" emphasis="next" onClick={start}>미션 시작</ActionButton>
-        </>
+          <p className="difficulty-description">{difficulty === 'a' ? '기본 자료로 시작' : '도전 자료로 시작'}</p>
+          <div className="start-actions">
+            {activeRun && activeRun.missionId === nextMission.id && activeRun.datasetId === dataset?.id ? (
+              <ActionButton type="button" emphasis="next" onClick={resume}>이어서 하기</ActionButton>
+            ) : (
+              <ActionButton type="button" emphasis="next" onClick={start}>미션 시작</ActionButton>
+            )}
+          </div>
+        </section>
       ) : (
-        <ActionButton type="button" emphasis="next" onClick={() => navigate('/results')}>전체 결과 보기</ActionButton>
+        <div className="start-actions">
+          <ActionButton type="button" emphasis="next" onClick={() => navigate('/results')}>전체 결과 보기</ActionButton>
+        </div>
       )}
     </section>
   );

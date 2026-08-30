@@ -94,66 +94,76 @@ export const CalculationCheck = ({
   };
 
   return (
-    <section aria-labelledby={`calculation-heading-${target}`}>
+    <section className={`stage-panel calculation-panel calculation-panel-${target}`} data-stage-subpanel="calculate" aria-labelledby={`calculation-heading-${target}`}>
       <h2 id={`calculation-heading-${target}`}>{targetLabel[target]}의 평균을 계산해 볼까요?</h2>
+      <p className="calculation-instruction">이 자료를 보고 합계, 자료 개수, 평균을 차례로 적어 보세요.</p>
+      <p className="calculation-source" aria-label={`${targetLabel[target]}의 값`}>자료: {values.join(', ')}</p>
       {isSuccess ? (
         <>
-          <p role="status">{shownFeedback?.message}</p>
-          <p aria-label="평균 계산 방정식">{sum(values)} ÷ {values.length} = {mean(values)}</p>
-          {showNextAction ? <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음 단계</ActionButton> : null}
+          <p className="feedback-success" role="status">{shownFeedback?.message}</p>
+          <p className="calculation-equation" aria-label="평균 계산 방정식">{sum(values)} ÷ {values.length} = {mean(values)}</p>
+          {showNextAction ? (
+            <div className="action-group">
+              <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음 단계</ActionButton>
+            </div>
+          ) : null}
         </>
       ) : (
-        <form onSubmit={submit} noValidate>
-          <label htmlFor={`calculation-total-${target}`}>합계</label>
-          <input
-            ref={totalRef}
-            id={`calculation-total-${target}`}
-            type="number"
-            inputMode="numeric"
-            min="0"
-            step="1"
-            required
-            aria-describedby={hintIds.total}
-            aria-invalid={firstIncorrect === 'total' ? 'true' : undefined}
-            disabled={!isActive}
-            value={enteredTotal}
-            onChange={(event) => setEnteredTotal(event.target.value)}
-          />
-          <span id={hintIds.total} className="sr-only">0 이상의 자연수를 입력하세요.</span>
-          <label htmlFor={`calculation-count-${target}`}>자료 개수</label>
-          <input
-            ref={countRef}
-            id={`calculation-count-${target}`}
-            type="number"
-            inputMode="numeric"
-            min="0"
-            step="1"
-            required
-            aria-describedby={hintIds.count}
-            aria-invalid={firstIncorrect === 'count' ? 'true' : undefined}
-            disabled={!isActive}
-            value={enteredCount}
-            onChange={(event) => setEnteredCount(event.target.value)}
-          />
-          <span id={hintIds.count} className="sr-only">0 이상의 자연수를 입력하세요.</span>
-          <label htmlFor={`calculation-mean-${target}`}>평균</label>
-          <input
-            ref={meanRef}
-            id={`calculation-mean-${target}`}
-            type="number"
-            inputMode="numeric"
-            min="0"
-            step="1"
-            required
-            aria-describedby={hintIds.mean}
-            aria-invalid={firstIncorrect === 'mean' ? 'true' : undefined}
-            disabled={!isActive}
-            value={enteredMean}
-            onChange={(event) => setEnteredMean(event.target.value)}
-          />
-          <span id={hintIds.mean} className="sr-only">0 이상의 자연수를 입력하세요.</span>
+        <form className="calculation-form" onSubmit={submit} noValidate>
+          <div className="calculation-fields">
+            <label htmlFor={`calculation-total-${target}`}>합계</label>
+            <input
+              ref={totalRef}
+              id={`calculation-total-${target}`}
+              type="number"
+              inputMode="numeric"
+              min="0"
+              step="1"
+              required
+              aria-describedby={hintIds.total}
+              aria-invalid={firstIncorrect === 'total' ? 'true' : undefined}
+              disabled={!isActive}
+              value={enteredTotal}
+              onChange={(event) => setEnteredTotal(event.target.value)}
+            />
+            <span id={hintIds.total} className="sr-only">0 이상의 자연수를 입력하세요.</span>
+            <label htmlFor={`calculation-count-${target}`}>자료 개수</label>
+            <input
+              ref={countRef}
+              id={`calculation-count-${target}`}
+              type="number"
+              inputMode="numeric"
+              min="0"
+              step="1"
+              required
+              aria-describedby={hintIds.count}
+              aria-invalid={firstIncorrect === 'count' ? 'true' : undefined}
+              disabled={!isActive}
+              value={enteredCount}
+              onChange={(event) => setEnteredCount(event.target.value)}
+            />
+            <span id={hintIds.count} className="sr-only">0 이상의 자연수를 입력하세요.</span>
+            <label htmlFor={`calculation-mean-${target}`}>평균</label>
+            <input
+              ref={meanRef}
+              id={`calculation-mean-${target}`}
+              type="number"
+              inputMode="numeric"
+              min="0"
+              step="1"
+              required
+              aria-describedby={hintIds.mean}
+              aria-invalid={firstIncorrect === 'mean' ? 'true' : undefined}
+              disabled={!isActive}
+              value={enteredMean}
+              onChange={(event) => setEnteredMean(event.target.value)}
+            />
+            <span id={hintIds.mean} className="sr-only">0 이상의 자연수를 입력하세요.</span>
+          </div>
           {shownFeedback && !isSuccess ? <FeedbackPrompt {...shownFeedback} /> : null}
-          <ActionButton type="submit" emphasis={isActive ? 'next' : 'normal'} disabled={!isActive}>{buttonLabel}</ActionButton>
+          <div className="action-group">
+            <ActionButton type="submit" emphasis={isActive ? 'next' : 'normal'} disabled={!isActive}>{buttonLabel}</ActionButton>
+          </div>
         </form>
       )}
     </section>

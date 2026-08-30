@@ -103,9 +103,22 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
   };
 
   return (
-    <>
-      <ProgressRail mission={mission} dataset={dataset} currentStage={stage} />
-      <ArtifactTrail artifacts={run?.artifacts ?? {}} revisions={run?.revisions} />
+    <div className="notebook-shell">
+      <aside className="notebook-context" aria-labelledby="mission-context-heading">
+        <p className="notebook-label">평균 균형 조정실 · 실험 기록</p>
+        <h2 id="mission-context-heading">{mission.learnerTitle}</h2>
+        <p>{dataset.context}</p>
+        {dataset.kind === 'balance' ? (
+          <section className="context-snapshot" aria-labelledby="context-snapshot-heading">
+            <h3 id="context-snapshot-heading">처음 상자 수량</h3>
+            <ol>
+              {dataset.values.map((value, index) => <li key={`${dataset.id}-context-${index}`}>{index + 1}번 상자: {value}개</li>)}
+            </ol>
+          </section>
+        ) : null}
+        <p className="notebook-note">가상 자료로 평균의 뜻을 직접 확인해 보세요.</p>
+      </aside>
+      <div className="notebook-workbench">
       {stage === 'situation' ? (
         <SituationPanel dataset={dataset} onAdvance={nextStage} />
       ) : stage === 'predict' ? (
@@ -118,20 +131,29 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
       ) : stage === 'redistribute' && dataset.kind === 'balance' && run ? (
         <RedistributionPanel dataset={dataset} run={run} dispatch={dispatch} onAdvance={nextStage} />
       ) : stage === 'calculate' && dataset.kind === 'twins' ? (
-        <section aria-labelledby="calculation-heading">
-          <h1 id="calculation-heading">두 자료의 평균을 계산해 볼까요?</h1>
+        <section className="stage-panel stage-panel-calculate" data-stage="calculate" aria-labelledby="calculation-heading">
+          <div className="stage-heading">
+            <h1 id="calculation-heading">두 자료의 평균을 계산해 볼까요?</h1>
+            <p className="stage-description">자료 A와 자료 B를 차례로 계산해 두 평균을 비교할 준비를 해요.</p>
+          </div>
           {renderCalculation('left', run?.artifacts.calculations?.left?.verified !== true, false)}
           {renderCalculation('right', run?.artifacts.calculations?.left?.verified === true, true)}
         </section>
       ) : stage === 'calculate' && dataset.kind === 'outlier' ? (
-        <section aria-labelledby="calculation-heading">
-          <h1 id="calculation-heading">변경 전과 후의 평균을 계산해 볼까요?</h1>
+        <section className="stage-panel stage-panel-calculate" data-stage="calculate" aria-labelledby="calculation-heading">
+          <div className="stage-heading">
+            <h1 id="calculation-heading">변경 전과 후의 평균을 계산해 볼까요?</h1>
+            <p className="stage-description">먼저 변경 전, 다음으로 변경 후 자료의 평균을 계산해요.</p>
+          </div>
           {renderCalculation('before', run?.artifacts.calculations?.before?.verified !== true, false)}
           {renderCalculation('after', run?.artifacts.calculations?.before?.verified === true, true)}
         </section>
       ) : stage === 'calculate' ? (
-        <section aria-labelledby="calculation-heading">
-          <h1 id="calculation-heading">평균을 계산해 볼까요?</h1>
+        <section className="stage-panel stage-panel-calculate" data-stage="calculate" aria-labelledby="calculation-heading">
+          <div className="stage-heading">
+            <h1 id="calculation-heading">평균을 계산해 볼까요?</h1>
+            <p className="stage-description">고르게 나눈 결과를 합계와 자료 개수로 다시 확인해요.</p>
+          </div>
           {renderCalculation('current', true, true)}
         </section>
       ) : stage === 'compare' && dataset.kind === 'twins' && run ? (
@@ -185,6 +207,11 @@ export const MissionScreen = ({ mission, dataset, stage }: MissionScreenProps) =
           onAdvance={nextStage}
         />
       )}
-    </>
+      </div>
+      <aside className="notebook-records" aria-label="실험 진행과 검증 기록">
+        <ProgressRail mission={mission} dataset={dataset} currentStage={stage} />
+        <ArtifactTrail artifacts={run?.artifacts ?? {}} revisions={run?.revisions} />
+      </aside>
+    </div>
   );
 };

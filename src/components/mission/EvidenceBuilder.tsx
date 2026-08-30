@@ -162,18 +162,20 @@ export const EvidenceBuilder = ({
   };
 
   return (
-    <section aria-labelledby={headingId}>
-      <HeadingTag id={headingId}>근거 문장을 완성해 볼까요?</HeadingTag>
-      <p>검토한 근거를 골라 고정된 문장을 완성해 보세요.</p>
+    <section className="stage-panel stage-panel-explain evidence-panel" data-stage="explain" aria-labelledby={headingId}>
+      <div className="stage-heading">
+        <HeadingTag id={headingId}>근거 문장을 완성해 볼까요?</HeadingTag>
+        <p className="stage-description">검토한 근거를 골라 고정된 문장을 완성해 보세요.</p>
+      </div>
 
       {isRepresentative(mission) ? (
-        <aside aria-label="대표값 안전 안내">
+        <aside className="safety-note" aria-label="대표값 안전 안내">
           <p>{SAFETY_COPY.usefulness}</p>
           <p>{SAFETY_COPY.fairness}</p>
         </aside>
       ) : null}
 
-      <form onSubmit={submit}>
+      <form className="evidence-form" onSubmit={submit}>
         <fieldset>
           <legend>사용한 근거를 골라 보세요.</legend>
           {isRepresentative(mission) ? (
@@ -202,7 +204,7 @@ export const EvidenceBuilder = ({
           )}
         </fieldset>
 
-        <section aria-labelledby={sentenceHeadingId}>
+        <section className="evidence-sentence" aria-labelledby={sentenceHeadingId}>
           <SentenceHeadingTag id={sentenceHeadingId}>완성된 근거 문장</SentenceHeadingTag>
           {submitted ? <p role="status">근거 문장을 저장했어요.</p> : null}
           <p>{submitted?.sentence ?? (selectedIds.length > 0 ? sentence : '근거를 선택하면 문장이 나타나요.')}</p>
@@ -211,11 +213,15 @@ export const EvidenceBuilder = ({
         {feedback ? <FeedbackPrompt {...feedback} /> : null}
         {submitted ? (
           <>
-            <ActionButton type="button" onClick={edit}>근거 문장 수정</ActionButton>
-            {onAdvance ? <ActionButton type="button" emphasis="next" onClick={onAdvance}>미션 결과 보기</ActionButton> : null}
+            <div className="action-group">
+              <ActionButton type="button" onClick={edit}>근거 문장 수정</ActionButton>
+              {onAdvance ? <ActionButton type="button" emphasis="next" onClick={onAdvance}>미션 결과 보기</ActionButton> : null}
+            </div>
           </>
         ) : (
-          <ActionButton type="submit" emphasis="next">근거 문장 완성</ActionButton>
+          <div className="action-group">
+            <ActionButton type="submit" emphasis="next">근거 문장 완성</ActionButton>
+          </div>
         )}
       </form>
     </section>

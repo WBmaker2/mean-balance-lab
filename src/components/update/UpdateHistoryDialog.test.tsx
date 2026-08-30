@@ -12,16 +12,18 @@ describe('UpdateHistoryDialog', () => {
     window.location.hash = '#/';
   });
 
-  it('records the 2026-08-28 improvement', () => {
+  it('records the 2026-08-30 notebook redesign improvement', () => {
     expect(UPDATE_HISTORY[0]).toEqual({
-      date: '2026-08-28',
+      date: '2026-08-30',
       category: '개선',
-      summary: '배포 환경의 단계 초점 인계 보완',
+      summary: '교실 측정 노트 작업표 시각 세계와 3열 학습 작업대 적용',
     });
   });
 
   it('keeps literal dated entries for deployment, design, and MVP', () => {
     expect(UPDATE_HISTORY).toEqual([
+      { date: '2026-08-30', category: '개선', summary: '교실 측정 노트 작업표 시각 세계와 3열 학습 작업대 적용' },
+      { date: '2026-08-29', category: '개선', summary: '학습 화면 계층과 모바일 행동 흐름 개선' },
       { date: '2026-08-28', category: '개선', summary: '배포 환경의 단계 초점 인계 보완' },
       { date: '2026-08-28', category: '개선', summary: '학습 단계 안내와 입력·모바일 화면 개선' },
       { date: '2026-08-27', category: '배포', summary: 'GitHub Pages 공개 배포 경로 정리' },
@@ -43,6 +45,7 @@ describe('UpdateHistoryDialog', () => {
     const title = screen.getByRole('heading', { name: '업데이트 내역' });
     expect(title.tagName).toBe('H2');
     expect(dialog).toHaveAttribute('aria-labelledby', title.id);
+    expect(screen.getByText('2026-08-29')).toBeVisible();
     expect(screen.getAllByText('2026-08-28')).toHaveLength(2);
     expect(screen.getByText('2026-08-27')).toBeVisible();
     expect(screen.getAllByText('2026-08-26')).toHaveLength(2);
@@ -115,16 +118,17 @@ describe('UpdateHistoryDialog', () => {
     }
   });
 
-  it('keeps the trigger fixed, at least 44px, and out of current-action emphasis', () => {
+  it('keeps the trigger in normal flow, at least 44px, and out of current-action emphasis', () => {
     render(<UpdateHistoryDialog />);
     const trigger = screen.getByRole('button', { name: '업데이트 내역' });
     const computed = getComputedStyle(trigger);
 
-    expect(computed.position).toBe('fixed');
+    expect(computed.position).toBe('static');
     expect(Number.parseFloat(computed.minWidth)).toBeGreaterThanOrEqual(44);
     expect(Number.parseFloat(computed.minHeight)).toBeGreaterThanOrEqual(44);
-    expect(trigger.style.right).not.toBe('');
-    expect(trigger.style.bottom).not.toBe('');
+    expect(trigger.style.position).toBe('');
+    expect(trigger.style.right).toBe('');
+    expect(trigger.style.bottom).toBe('');
     expect(trigger).not.toHaveClass('gi-pulse');
     expect(trigger).not.toHaveAttribute('data-current-action');
   });

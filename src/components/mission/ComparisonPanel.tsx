@@ -9,6 +9,7 @@ import type { LabAction } from '../../domain/session';
 import { ActionButton } from '../shared/ActionButton';
 import { DotPlot } from '../shared/DotPlot';
 import { FeedbackPrompt } from '../shared/FeedbackPrompt';
+import { SectionIntro } from '../shared/SectionIntro';
 import { OutlierDeltaPanel, type OutlierDeltaPanelProps } from './OutlierDeltaPanel';
 
 interface TwinComparisonPanelProps {
@@ -92,11 +93,15 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null, o
   };
 
   return (
-    <section aria-labelledby="comparison-heading">
-      <h1 id="comparison-heading">평균 쌍둥이 자료를 비교해 볼까요?</h1>
-      <p>계산 결과를 먼저 보고 점도표의 모양을 살펴보세요.</p>
+    <section className="stage-panel stage-panel-compare" data-stage="compare" aria-labelledby="comparison-heading">
+      <SectionIntro
+        id="comparison-heading"
+        title="평균 쌍둥이 자료를 비교해 볼까요?"
+        description="계산 결과를 먼저 보고 점도표의 모양을 살펴보세요."
+        tone="blue"
+      />
 
-      <section aria-label="두 자료의 계산 결과">
+      <section className="concept-summary" aria-label="두 자료의 계산 결과">
         <h2>계산 결과</h2>
         <p>자료 A 평균 {leftMean}, 자료 B 평균 {rightMean} / 자료 A 범위 {leftRange}, 자료 B 범위 {rightRange}</p>
       </section>
@@ -112,7 +117,7 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null, o
         </section>
       </div>
 
-      <p ref={plotExplanationRef} tabIndex={-1} role="note" aria-label="점도표 설명">
+      <p className="plot-explanation" ref={plotExplanationRef} tabIndex={-1} role="note" aria-label="점도표 설명">
         점도표에서 같은 값이 모인 정도와 가장 작은 값부터 큰 값까지의 흩어진 정도를 비교해 보세요.
       </p>
 
@@ -145,15 +150,17 @@ const TwinsComparisonPanel = ({ dataset, artifacts, dispatch, feedback = null, o
       </fieldset>
 
       {shownFeedback ? <FeedbackPrompt {...shownFeedback} /> : null}
-      {verified ? (
-        <ActionButton type="button" emphasis="next" onClick={onAdvance ?? (() => plotExplanationRef.current?.focus())}>
-          다음 단계
-        </ActionButton>
-      ) : (
-        <ActionButton type="button" emphasis="next" onClick={submit}>
-          비교 확인
-        </ActionButton>
-      )}
+      <div className="action-group">
+        {verified ? (
+          <ActionButton type="button" emphasis="next" onClick={onAdvance ?? (() => plotExplanationRef.current?.focus())}>
+            다음 단계
+          </ActionButton>
+        ) : (
+          <ActionButton type="button" emphasis="next" onClick={submit}>
+            비교 확인
+          </ActionButton>
+        )}
+      </div>
     </section>
   );
 };
@@ -189,10 +196,14 @@ const RepresentativeComparisonPanel = ({
   };
 
   return (
-    <section aria-labelledby="representative-comparison-heading">
-      <h1 id="representative-comparison-heading">평균과 자료의 모습을 비교해 볼까요?</h1>
-      <p>평균과 범위, 각 값을 함께 살펴보고 평균만으로 충분한지 판단해 보세요.</p>
-      <section aria-label="대표값 비교 결과">
+    <section className="stage-panel stage-panel-compare" data-stage="compare" aria-labelledby="representative-comparison-heading">
+      <SectionIntro
+        id="representative-comparison-heading"
+        title="평균과 자료의 모습을 비교해 볼까요?"
+        description="평균과 범위, 각 값을 함께 살펴보고 평균만으로 충분한지 판단해 보세요."
+        tone="green"
+      />
+      <section className="concept-summary" aria-label="대표값 비교 결과">
         <h2>계산 결과</h2>
         <p>평균 {mean(dataset.values)} / 범위 {range(dataset.values)}</p>
         <p>각 값: {dataset.values.join(', ')}</p>
@@ -219,11 +230,13 @@ const RepresentativeComparisonPanel = ({
         </label>
       </fieldset>
       {shownFeedback ? <FeedbackPrompt {...shownFeedback} /> : null}
-      {verified ? (
-        <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음 단계</ActionButton>
-      ) : (
-        <ActionButton type="button" emphasis="next" onClick={submit}>비교 확인</ActionButton>
-      )}
+      <div className="action-group">
+        {verified ? (
+          <ActionButton type="button" emphasis="next" onClick={onAdvance}>다음 단계</ActionButton>
+        ) : (
+          <ActionButton type="button" emphasis="next" onClick={submit}>비교 확인</ActionButton>
+        )}
+      </div>
     </section>
   );
 };

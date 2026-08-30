@@ -6,6 +6,7 @@ import { useLiveAnnouncement } from '../../hooks/useLiveAnnouncement';
 import { ActionButton } from '../shared/ActionButton';
 import { FeedbackPrompt } from '../shared/FeedbackPrompt';
 import { LiveRegion } from '../shared/LiveRegion';
+import { SectionIntro } from '../shared/SectionIntro';
 
 export interface RedistributionPanelProps {
   dataset: BalanceDataset;
@@ -102,44 +103,72 @@ export const RedistributionPanel = ({ dataset, run, dispatch, onAdvance }: Redis
   };
 
   return (
-    <section aria-labelledby="redistribution-heading">
-      <h1 id="redistribution-heading">구슬을 고르게 옮겨 볼까요?</h1>
-      <p>한 번에 1개만 옮기며 전체 양을 그대로 보존해 보세요.</p>
-      <p aria-label="전체 합계">합계 {initialTotal}개</p>
-      <div aria-label="상자 수량" className="box-grid">
-        {currentValues.map((value, index) => {
-          const sourceRecommended = selectedSource === null && recommendedMove?.fromIndex === index;
-          const destinationRecommended = selectedSource !== null && destinationRecommendation === index;
-          return (
-            <article key={`${dataset.id}-${index}`} className={`box-card box-pattern-${PATTERNS[index % PATTERNS.length]}`}>
-              <h2>{index + 1}번 상자</h2>
-              <p aria-label={`${index + 1}번 상자 현재 수량`}>현재 수량 {value}개</p>
-              <ActionButton
-                type="button"
-                emphasis={sourceRecommended ? 'next' : 'normal'}
-                disabled={value === 0}
-                onClick={() => selectSource(index)}
-              >
-                {index + 1}번 상자에서 1개 꺼내기
-              </ActionButton>
-              <ActionButton
-                type="button"
-                emphasis={destinationRecommended ? 'next' : 'normal'}
-                onClick={() => selectDestination(index)}
-              >
-                {index + 1}번 상자에 1개 넣기
-              </ActionButton>
-            </article>
-          );
-        })}
+    <section className="stage-panel stage-panel-redistribute" data-stage="redistribute" aria-labelledby="redistribution-heading">
+      <SectionIntro
+        id="redistribution-heading"
+        title="구슬을 고르게 옮겨 볼까요?"
+        description="한 번에 1개만 옮기며 전체 양을 그대로 보존해 보세요."
+        tone="green"
+      />
+      <p className="total-badge" aria-label="전체 합계">합계 {initialTotal}개</p>
+      <div className="redistribution-board">
+        <section className="redistribution-original" aria-labelledby="redistribution-original-heading">
+          <h2 id="redistribution-original-heading">처음 자료</h2>
+          <ol className="tray-values" aria-label="처음 상자 수량">
+            {dataset.values.map((value, index) => <li key={`${dataset.id}-original-${index}`}><span>{index + 1}번</span><strong>{value}</strong></li>)}
+          </ol>
+          <p>전체 양 {initialTotal}개를 그대로 지켜요.</p>
+        </section>
+        <div className="redistribution-connector" aria-hidden="true"><span>1개씩 옮기기</span></div>
+        <section className="redistribution-current" aria-labelledby="redistribution-current-heading">
+          <h2 id="redistribution-current-heading">현재 작업대</h2>
+          <div className="box-grid" aria-label="상자 수량">
+            {currentValues.map((value, index) => {
+              const sourceRecommended = selectedSource === null && recommendedMove?.fromIndex === index;
+              const destinationRecommended = selectedSource !== null && destinationRecommendation === index;
+              return (
+                <article key={`${dataset.id}-${index}`} className={`box-card box-pattern-${PATTERNS[index % PATTERNS.length]}`}>
+                  <h2>{index + 1}번 상자</h2>
+                  <p aria-label={`${index + 1}번 상자 현재 수량`}>현재 수량 {value}개</p>
+                  <ActionButton
+                    type="button"
+                    emphasis={sourceRecommended ? 'next' : 'normal'}
+                    disabled={value === 0}
+                    aria-label={`${index + 1}번 상자에서 1개 꺼내기`}
+                    onClick={() => selectSource(index)}
+                  >
+                    1개 꺼내기
+                  </ActionButton>
+                  <ActionButton
+                    type="button"
+                    emphasis={destinationRecommended ? 'next' : 'normal'}
+                    aria-label={`${index + 1}번 상자에 1개 넣기`}
+                    onClick={() => selectDestination(index)}
+                  >
+                    1개 넣기
+                  </ActionButton>
+                </article>
+              );
+            })}
+          </div>
+          <p className="current-values" aria-label="현재 상자 수량">현재 수량 {currentValues.join(', ')}</p>
+        </section>
       </div>
-      <p>현재 수량 {currentValues.join(', ')}</p>
+      <p className="mean-equation-hint" aria-label="평균 계산 힌트">
+        <span>평균</span>
+        <strong>{initialTotal}</strong>
+        <span>÷ {dataset.values.length}</span>
+        <span>=</span>
+        <strong>{balanced ? mean(currentValues) : '?'}</strong>
+      </p>
       {feedback ? <FeedbackPrompt {...feedback} /> : null}
       <LiveRegion message={message} />
-      <ActionButton type="button" emphasis="normal" disabled={!canUndo} onClick={undo}>마지막 이동 취소</ActionButton>
-      <ActionButton type="button" emphasis={balanced ? 'next' : 'normal'} onClick={confirmBalanced}>
-        고르게 나누기 확인
-      </ActionButton>
+      <div className="action-group action-group-secondary">
+        <ActionButton type="button" emphasis="normal" disabled={!canUndo} onClick={undo}>마지막 이동 취소</ActionButton>
+        <ActionButton type="button" emphasis={balanced ? 'next' : 'normal'} onClick={confirmBalanced}>
+          고르게 나누기 확인
+        </ActionButton>
+      </div>
     </section>
   );
 };

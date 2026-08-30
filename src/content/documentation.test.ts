@@ -29,6 +29,8 @@ it('documents every required local command and safety boundary', () => {
   expect(readme).toContain('이름, 학번, 성적, 키, 몸무게를 입력받거나 저장하지 않습니다.');
   expect(readme).toContain('이 활동은 실제 세계를 정밀하게 측정하지 않는 교육용 이산 모형입니다.');
   expect(readme).toContain('현재 범위에 포함하지 않습니다.');
+  expect(readme).toContain('2026-08-29 리디자인에서는 질문·목표·미션 행동을 카드 계층으로 나누고');
+  expect(readme).toContain('2026-08-29 / 개선 / 학습 화면 계층과 모바일 행동 흐름 개선');
   expect(readme).toContain('2026-08-27 / 배포 / GitHub Pages 공개 배포 경로 정리');
   expect(readme).toContain('https://github.com/WBmaker2/mean-balance-lab');
   expect(readme).toContain('https://wbmaker2.github.io/mean-balance-lab/');

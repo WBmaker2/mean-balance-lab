@@ -11,6 +11,7 @@ describe('ResultScreen', () => {
   it('locks final results until all four required canonical attempts exist', async () => {
     renderAppAt('#/results', sessionWithThreeRequiredMissions());
     expect(await screen.findByText('전체 결과를 보려면 4. 평균만으로 괜찮을까요? 미션을 끝내야 해요.')).toBeVisible();
+    expect(document.querySelector('section.locked-result')).toHaveClass('worksheet-page');
     expect(screen.queryByRole('button', { name: '교사용 요약 인쇄' })).not.toBeInTheDocument();
   });
 
@@ -25,6 +26,7 @@ describe('ResultScreen', () => {
   it('shows each card in evidence, revisions, level, actions order without aggregate scoring', async () => {
     renderAppAt('#/results', completedSession());
     expect(await screen.findByRole('heading', { name: '전체 결과' })).toBeVisible();
+    expect(document.querySelector('section.full-result')).toHaveClass('worksheet-page');
     const cards = screen.getAllByRole('region').filter((region) => region.classList.contains('mission-summary'));
     expect(cards).toHaveLength(4);
     cards.forEach((card) => {

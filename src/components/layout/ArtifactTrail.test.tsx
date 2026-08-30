@@ -9,10 +9,13 @@ describe('ArtifactTrail', () => {
   it('keeps verified prior artifacts visible after stage advance', () => {
     render(<ArtifactTrail artifacts={verifiedBalanceArtifacts()} revisions={2} />);
 
+    expect(screen.getByRole('region', { name: '지금까지 남긴 자료' })).toHaveClass('notebook-evidence');
     expect(screen.getByText('예측: 평균 5')).toBeVisible();
     expect(screen.getByText('재배분: 5, 5, 5, 5')).toBeVisible();
     expect(screen.getByText('현재 자료 계산: 20 ÷ 4 = 5')).toBeVisible();
     expect(screen.getByText('수정 횟수: 2')).toBeVisible();
+    expect(screen.getByText('예측: 평균 5').closest('li')).toHaveAttribute('data-artifact-kind', 'prediction');
+    expect(screen.getByText('재배분: 5, 5, 5, 5').closest('li')).toHaveAttribute('data-artifact-kind', 'redistribution');
   });
 
   it('labels both verified calculations', () => {
@@ -22,6 +25,7 @@ describe('ArtifactTrail', () => {
     } }} />);
     expect(screen.getByText('자료 A 계산: 16 ÷ 4 = 4')).toBeVisible();
     expect(screen.getByText('자료 B 계산: 16 ÷ 4 = 4')).toBeVisible();
+    expect(screen.getByText('자료 A 계산: 16 ÷ 4 = 4').closest('li')).toHaveAttribute('data-artifact-kind', 'calculation');
   });
 
   it('omits unanswered artifact rows', () => {

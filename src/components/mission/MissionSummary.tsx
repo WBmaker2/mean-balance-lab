@@ -48,12 +48,15 @@ export const MissionSummary = ({
   };
 
   return (
-    <section className="mission-summary" aria-labelledby={headingId}>
-      {headingLevel === 'h1'
-        ? <h1 id={headingId}>{mission.learnerTitle} 결과</h1>
-        : headingLevel === 'h2'
-          ? <h2 id={headingId}>{mission.learnerTitle} 결과</h2>
-          : <h3 id={headingId}>{mission.learnerTitle} 결과</h3>}
+    <section className="mission-summary stage-panel-result" data-stage="mission-result" aria-labelledby={headingId}>
+      <div className="summary-intro">
+        {headingLevel === 'h1'
+          ? <h1 id={headingId}>{mission.learnerTitle} 결과</h1>
+          : headingLevel === 'h2'
+            ? <h2 id={headingId}>{mission.learnerTitle} 결과</h2>
+            : <h3 id={headingId}>{mission.learnerTitle} 결과</h3>}
+        <p className="stage-description">내가 선택한 근거와 고쳐 생각한 과정을 다시 살펴보세요.</p>
+      </div>
       {editing ? (
         <EvidenceBuilder
           mission={mission.id}
